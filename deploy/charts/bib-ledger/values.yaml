@@ -1,0 +1,43 @@
+replicaCount: 2
+
+image:
+  repository: bib-ledger-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  httpPort: 8081
+  grpcPort: 9081
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_USER: bib
+  DB_NAME: bib_ledger
+  DB_SSLMODE: require
+  KAFKA_BROKERS: kafka:9092
+  LOG_LEVEL: info
+  LOG_FORMAT: json
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8081
+  initialDelaySeconds: 10
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 8081
+  initialDelaySeconds: 5
+  periodSeconds: 10

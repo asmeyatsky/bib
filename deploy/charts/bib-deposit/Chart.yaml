@@ -1,0 +1,6 @@
+apiVersion: v2
+name: bib-deposit
+description: BIB Deposit Service - Deposit products, tiered interest, accruals
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

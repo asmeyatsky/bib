@@ -1,0 +1,48 @@
+replicaCount: 2
+
+image:
+  repository: bib/card-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  grpc:
+    port: 8089
+    targetPort: 8089
+  http:
+    port: 9089
+    targetPort: 9089
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  GRPC_PORT: "8089"
+  HTTP_PORT: "9089"
+  DATABASE_URL: "postgres://bib:bib@bib-postgres:5432/bib_card?sslmode=disable"
+  KAFKA_BROKER: "bib-kafka:9092"
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 9089
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  timeoutSeconds: 5
+
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 9089
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

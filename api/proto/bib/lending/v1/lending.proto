@@ -1,0 +1,97 @@
+syntax = "proto3";
+package bib.lending.v1;
+option go_package = "github.com/bibbank/bib/api/gen/go/bib/lending/v1;lendingv1";
+
+import "bib/common/v1/money.proto";
+import "bib/common/v1/audit.proto";
+import "google/protobuf/timestamp.proto";
+
+enum LoanApplicationStatus {
+  LOAN_APPLICATION_STATUS_UNSPECIFIED = 0;
+  LOAN_APPLICATION_STATUS_SUBMITTED = 1;
+  LOAN_APPLICATION_STATUS_UNDER_REVIEW = 2;
+  LOAN_APPLICATION_STATUS_APPROVED = 3;
+  LOAN_APPLICATION_STATUS_REJECTED = 4;
+  LOAN_APPLICATION_STATUS_DISBURSED = 5;
+}
+
+enum LoanStatus {
+  LOAN_STATUS_UNSPECIFIED = 0;
+  LOAN_STATUS_ACTIVE = 1;
+  LOAN_STATUS_DELINQUENT = 2;
+  LOAN_STATUS_DEFAULT = 3;
+  LOAN_STATUS_PAID_OFF = 4;
+  LOAN_STATUS_WRITTEN_OFF = 5;
+}
+
+message LoanApplication {
+  string id = 1;
+  string tenant_id = 2;
+  string applicant_id = 3;
+  bib.common.v1.Money requested_amount = 4;
+  int32 term_months = 5;
+  string purpose = 6;
+  LoanApplicationStatus status = 7;
+  string decision_reason = 8;
+  string credit_score = 9;
+  bib.common.v1.AuditInfo audit = 10;
+}
+
+message AmortizationEntry {
+  int32 period = 1;
+  google.protobuf.Timestamp due_date = 2;
+  bib.common.v1.Money principal = 3;
+  bib.common.v1.Money interest = 4;
+  bib.common.v1.Money total = 5;
+  bib.common.v1.Money remaining_balance = 6;
+}
+
+message Loan {
+  string id = 1;
+  string tenant_id = 2;
+  string application_id = 3;
+  string borrower_account_id = 4;
+  bib.common.v1.Money principal = 5;
+  string interest_rate_bps = 6;
+  int32 term_months = 7;
+  LoanStatus status = 8;
+  repeated AmortizationEntry schedule = 9;
+  bib.common.v1.Money outstanding_balance = 10;
+  google.protobuf.Timestamp next_payment_due = 11;
+  bib.common.v1.AuditInfo audit = 12;
+}
+
+message SubmitLoanApplicationRequest {
+  string tenant_id = 1;
+  string applicant_id = 2;
+  bib.common.v1.Money requested_amount = 3;
+  int32 term_months = 4;
+  string purpose = 5;
+}
+
+message SubmitLoanApplicationResponse {
+  LoanApplication application = 1;
+}
+
+message GetLoanRequest {
+  string id = 1;
+}
+
+message GetLoanResponse {
+  Loan loan = 1;
+}
+
+message MakePaymentRequest {
+  string loan_id = 1;
+  bib.common.v1.Money amount = 2;
+}
+
+message MakePaymentResponse {
+  Loan loan = 1;
+}
+
+service LendingService {
+  rpc SubmitLoanApplication(SubmitLoanApplicationRequest) returns (SubmitLoanApplicationResponse);
+  rpc GetLoan(GetLoanRequest) returns (GetLoanResponse);
+  rpc MakePayment(MakePaymentRequest) returns (MakePaymentResponse);
+}

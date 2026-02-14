@@ -1,0 +1,18 @@
+syntax = "proto3";
+package bib.common.v1;
+option go_package = "github.com/bibbank/bib/api/gen/go/bib/common/v1;commonv1";
+
+message Money {
+  string amount = 1;  // decimal string e.g. "100.0000"
+  string currency = 2; // ISO 4217 code
+}
+
+message Pagination {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message PaginationResponse {
+  string next_page_token = 1;
+  int32 total_count = 2;
+}

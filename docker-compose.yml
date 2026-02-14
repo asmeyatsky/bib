@@ -1,0 +1,437 @@
+version: "3.9"
+services:
+  # ---------------------------------------------------------------------------
+  # Infrastructure
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bib
+      POSTGRES_PASSWORD: bib_dev_password
+      POSTGRES_DB: bib
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bib"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.7.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.7.1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.62
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "16686:16686" # Jaeger UI
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+
+  # ---------------------------------------------------------------------------
+  # Application Services
+  # ---------------------------------------------------------------------------
+  ledger-service:
+    build:
+      context: ./services/ledger-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+      - "9081:9081"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bib
+      DB_PASSWORD: bib_dev_password
+      DB_NAME: bib_ledger
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: kafka:29092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      HTTP_PORT: "8081"
+      GRPC_PORT: "9081"
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  account-service:
+    build:
+      context: ./services/account-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+      - "9082:9082"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bib
+      DB_PASSWORD: bib_dev_password
+      DB_NAME: bib_account
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: kafka:29092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      HTTP_PORT: "8082"
+      GRPC_PORT: "9082"
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  fx-service:
+    build:
+      context: ./services/fx-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+      - "9083:9083"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bib
+      DB_PASSWORD: bib_dev_password
+      DB_NAME: bib_fx
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: kafka:29092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      HTTP_PORT: "8083"
+      GRPC_PORT: "9083"
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8083/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  deposit-service:
+    build:
+      context: ./services/deposit-service
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+      - "9084:9084"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bib
+      DB_PASSWORD: bib_dev_password
+      DB_NAME: bib_deposit
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: kafka:29092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      HTTP_PORT: "8084"
+      GRPC_PORT: "9084"
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8084/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  identity-service:
+    build:
+      context: ./services/identity-service
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+      - "9085:9085"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bib
+      DB_PASSWORD: bib_dev_password
+      DB_NAME: bib_identity
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: kafka:29092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      HTTP_PORT: "8085"
+      GRPC_PORT: "9085"
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8085/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  payment-service:
+    build:
+      context: ./services/payment-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8086"
+      - "9086:9086"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bib
+      DB_PASSWORD: bib_dev_password
+      DB_NAME: bib_payment
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: kafka:29092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      HTTP_PORT: "8086"
+      GRPC_PORT: "9086"
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8086/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  lending-service:
+    build:
+      context: ./services/lending-service
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8087"
+      - "9087:9087"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bib
+      DB_PASSWORD: bib_dev_password
+      DB_NAME: bib_lending
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: kafka:29092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      HTTP_PORT: "8087"
+      GRPC_PORT: "9087"
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8087/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  fraud-service:
+    build:
+      context: ./services/fraud-service
+      dockerfile: Dockerfile
+    ports:
+      - "8088:8088"
+      - "9088:9088"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bib
+      DB_PASSWORD: bib_dev_password
+      DB_NAME: bib_fraud
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: kafka:29092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      HTTP_PORT: "8088"
+      GRPC_PORT: "9088"
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8088/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  card-service:
+    build:
+      context: ./services/card-service
+      dockerfile: Dockerfile
+    ports:
+      - "8089:8089"
+      - "9089:9089"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bib
+      DB_PASSWORD: bib_dev_password
+      DB_NAME: bib_card
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: kafka:29092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      HTTP_PORT: "8089"
+      GRPC_PORT: "9089"
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8089/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  reporting-service:
+    build:
+      context: ./services/reporting-service
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8090"
+      - "9090:9090"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bib
+      DB_PASSWORD: bib_dev_password
+      DB_NAME: bib_reporting
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: kafka:29092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      HTTP_PORT: "8090"
+      GRPC_PORT: "9090"
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # API Gateway
+  # ---------------------------------------------------------------------------
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      LEDGER_SERVICE_ADDR: ledger-service:9081
+      ACCOUNT_SERVICE_ADDR: account-service:9082
+      FX_SERVICE_ADDR: fx-service:9083
+      DEPOSIT_SERVICE_ADDR: deposit-service:9084
+      IDENTITY_SERVICE_ADDR: identity-service:9085
+      PAYMENT_SERVICE_ADDR: payment-service:9086
+      LENDING_SERVICE_ADDR: lending-service:9087
+      FRAUD_SERVICE_ADDR: fraud-service:9088
+      CARD_SERVICE_ADDR: card-service:9089
+      REPORTING_SERVICE_ADDR: reporting-service:9090
+      KAFKA_BROKERS: kafka:29092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      HTTP_PORT: "8080"
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+    depends_on:
+      ledger-service:
+        condition: service_healthy
+      account-service:
+        condition: service_healthy
+      fx-service:
+        condition: service_healthy
+      deposit-service:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
+      lending-service:
+        condition: service_healthy
+      fraud-service:
+        condition: service_healthy
+      card-service:
+        condition: service_healthy
+      reporting-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  pg_data:

@@ -1,0 +1,12 @@
+apiVersion: v2
+name: bib-fx
+description: Helm chart for the BIB FX Service
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - banking
+  - fx
+  - foreign-exchange
+maintainers:
+  - name: BIB Platform Team

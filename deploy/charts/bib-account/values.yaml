@@ -1,0 +1,59 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/bibbank/account-service
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  grpcPort: 8082
+  httpPort: 9082
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+env:
+  GRPC_PORT: "8082"
+  HTTP_PORT: "9082"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_USER: "bib"
+  DB_NAME: "bib_account"
+  DB_SSL_MODE: "disable"
+  KAFKA_BROKERS: "kafka:9092"
+  SERVICE_NAME: "account-service"
+
+secrets:
+  DB_PASSWORD: "bib"
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

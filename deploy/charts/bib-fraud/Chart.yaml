@@ -1,0 +1,6 @@
+apiVersion: v2
+name: bib-fraud
+description: BIB Fraud Service - Real-time risk scoring and transaction monitoring
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

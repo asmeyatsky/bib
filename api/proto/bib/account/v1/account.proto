@@ -1,0 +1,99 @@
+syntax = "proto3";
+package bib.account.v1;
+option go_package = "github.com/bibbank/bib/api/gen/go/bib/account/v1;accountv1";
+
+import "bib/common/v1/money.proto";
+import "bib/common/v1/audit.proto";
+import "google/protobuf/timestamp.proto";
+
+enum AccountStatus {
+  ACCOUNT_STATUS_UNSPECIFIED = 0;
+  ACCOUNT_STATUS_PENDING = 1;
+  ACCOUNT_STATUS_ACTIVE = 2;
+  ACCOUNT_STATUS_FROZEN = 3;
+  ACCOUNT_STATUS_CLOSED = 4;
+}
+
+enum AccountType {
+  ACCOUNT_TYPE_UNSPECIFIED = 0;
+  ACCOUNT_TYPE_CHECKING = 1;
+  ACCOUNT_TYPE_SAVINGS = 2;
+  ACCOUNT_TYPE_LOAN = 3;
+  ACCOUNT_TYPE_NOMINAL = 4;
+}
+
+message AccountHolder {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string identity_verification_id = 5;
+}
+
+message Account {
+  string id = 1;
+  string tenant_id = 2;
+  string account_number = 3;
+  AccountType type = 4;
+  AccountStatus status = 5;
+  string currency = 6;
+  AccountHolder holder = 7;
+  string ledger_account_code = 8;
+  bib.common.v1.AuditInfo audit = 9;
+}
+
+message OpenAccountRequest {
+  string tenant_id = 1;
+  AccountType type = 2;
+  string currency = 3;
+  AccountHolder holder = 4;
+}
+
+message OpenAccountResponse {
+  Account account = 1;
+}
+
+message GetAccountRequest {
+  string id = 1;
+}
+
+message GetAccountResponse {
+  Account account = 1;
+}
+
+message FreezeAccountRequest {
+  string id = 1;
+  string reason = 2;
+}
+
+message FreezeAccountResponse {
+  Account account = 1;
+}
+
+message CloseAccountRequest {
+  string id = 1;
+  string reason = 2;
+}
+
+message CloseAccountResponse {
+  Account account = 1;
+}
+
+message ListAccountsRequest {
+  string tenant_id = 1;
+  string holder_id = 2;
+  bib.common.v1.Pagination pagination = 3;
+}
+
+message ListAccountsResponse {
+  repeated Account accounts = 1;
+  bib.common.v1.PaginationResponse pagination = 2;
+}
+
+service AccountService {
+  rpc OpenAccount(OpenAccountRequest) returns (OpenAccountResponse);
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
+  rpc FreezeAccount(FreezeAccountRequest) returns (FreezeAccountResponse);
+  rpc CloseAccount(CloseAccountRequest) returns (CloseAccountResponse);
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
+}

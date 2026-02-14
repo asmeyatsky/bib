@@ -1,0 +1,55 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/bibbank/identity-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  httpPort: 8085
+  grpcPort: 9085
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+env:
+  DB_HOST: bib-postgres
+  DB_PORT: "5432"
+  DB_USER: bib
+  DB_NAME: bib_identity
+  DB_SSLMODE: disable
+  DB_MAX_CONNS: "20"
+  DB_MIN_CONNS: "5"
+  KAFKA_BROKERS: bib-kafka:9092
+  OTEL_EXPORTER_OTLP_ENDPOINT: bib-otel-collector:4317
+  LOG_LEVEL: info
+  LOG_FORMAT: json
+
+envSecrets:
+  DB_PASSWORD:
+    secretName: bib-identity-db
+    secretKey: password
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

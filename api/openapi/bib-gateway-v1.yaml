@@ -1,0 +1,1067 @@
+openapi: 3.0.3
+info:
+  title: BIB Gateway API
+  description: Bank-in-a-Box platform REST gateway API providing access to ledger, accounts, payments, FX, identity, and deposit services.
+  version: 1.0.0
+  contact:
+    name: BIB Platform Team
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: https://api.bib.example.com
+    description: Production
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Health
+    description: Health and readiness probes
+  - name: Ledger
+    description: Double-entry ledger operations
+  - name: Accounts
+    description: Account lifecycle management
+  - name: Payments
+    description: Payment initiation and tracking
+  - name: FX
+    description: Foreign exchange rates and conversion
+  - name: Identity
+    description: Identity verification (KYC/KYB)
+  - name: Deposits
+    description: Deposit products and positions
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      summary: Liveness probe
+      tags: [Health]
+      security: []
+      responses:
+        "200":
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /readyz:
+    get:
+      operationId: readinessCheck
+      summary: Readiness probe
+      tags: [Health]
+      security: []
+      responses:
+        "200":
+          description: Service is ready to accept traffic
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ready
+        "503":
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ---------------------------------------------------------------------------
+  # Ledger
+  # ---------------------------------------------------------------------------
+  /api/v1/ledger/entries:
+    post:
+      operationId: createLedgerEntry
+      summary: Post a double-entry ledger transaction
+      tags: [Ledger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLedgerEntryRequest"
+      responses:
+        "200":
+          description: Ledger entry created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LedgerEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/v1/ledger/entries/{id}:
+    get:
+      operationId: getLedgerEntry
+      summary: Retrieve a ledger entry by ID
+      tags: [Ledger]
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      responses:
+        "200":
+          description: Ledger entry found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LedgerEntry"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/v1/ledger/balances/{account_code}:
+    get:
+      operationId: getLedgerBalance
+      summary: Get balance for a ledger account code
+      tags: [Ledger]
+      parameters:
+        - name: account_code
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ledger account code
+        - name: as_of
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Point-in-time balance query
+      responses:
+        "200":
+          description: Balance retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LedgerBalance"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ---------------------------------------------------------------------------
+  # Accounts
+  # ---------------------------------------------------------------------------
+  /api/v1/accounts:
+    post:
+      operationId: createAccount
+      summary: Open a new account
+      tags: [Accounts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountRequest"
+      responses:
+        "200":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/v1/accounts/{id}:
+    get:
+      operationId: getAccount
+      summary: Retrieve account details
+      tags: [Accounts]
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      responses:
+        "200":
+          description: Account found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/v1/accounts/{id}/freeze:
+    post:
+      operationId: freezeAccount
+      summary: Freeze an account (block debits and credits)
+      tags: [Accounts]
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  description: Reason for freezing the account
+      responses:
+        "200":
+          description: Account frozen
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/v1/accounts/{id}/close:
+    post:
+      operationId: closeAccount
+      summary: Close an account
+      tags: [Accounts]
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Reason for closing the account
+      responses:
+        "200":
+          description: Account closed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ---------------------------------------------------------------------------
+  # Payments
+  # ---------------------------------------------------------------------------
+  /api/v1/payments:
+    post:
+      operationId: createPayment
+      summary: Initiate a payment
+      tags: [Payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentRequest"
+      responses:
+        "200":
+          description: Payment initiated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/v1/payments/{id}:
+    get:
+      operationId: getPayment
+      summary: Retrieve payment details
+      tags: [Payments]
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      responses:
+        "200":
+          description: Payment found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ---------------------------------------------------------------------------
+  # FX
+  # ---------------------------------------------------------------------------
+  /api/v1/fx/rates/{pair}:
+    get:
+      operationId: getFxRate
+      summary: Get current exchange rate for a currency pair
+      tags: [FX]
+      parameters:
+        - name: pair
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^[A-Z]{3}_[A-Z]{3}$"
+          description: "Currency pair in FORMAT_BASE_QUOTE, e.g. USD_EUR"
+          example: USD_EUR
+      responses:
+        "200":
+          description: Exchange rate retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FxRate"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/v1/fx/convert:
+    post:
+      operationId: convertCurrency
+      summary: Convert an amount between currencies
+      tags: [FX]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FxConvertRequest"
+      responses:
+        "200":
+          description: Conversion result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FxConvertResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ---------------------------------------------------------------------------
+  # Identity
+  # ---------------------------------------------------------------------------
+  /api/v1/identity/verifications:
+    post:
+      operationId: createIdentityVerification
+      summary: Initiate an identity verification (KYC/KYB)
+      tags: [Identity]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVerificationRequest"
+      responses:
+        "200":
+          description: Verification initiated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Verification"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/v1/identity/verifications/{id}:
+    get:
+      operationId: getIdentityVerification
+      summary: Get identity verification status
+      tags: [Identity]
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      responses:
+        "200":
+          description: Verification found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Verification"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ---------------------------------------------------------------------------
+  # Deposits
+  # ---------------------------------------------------------------------------
+  /api/v1/deposits/products:
+    post:
+      operationId: createDepositProduct
+      summary: Create a deposit product definition
+      tags: [Deposits]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDepositProductRequest"
+      responses:
+        "200":
+          description: Deposit product created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DepositProduct"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/v1/deposits/positions:
+    post:
+      operationId: createDepositPosition
+      summary: Open a deposit position for a customer
+      tags: [Deposits]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDepositPositionRequest"
+      responses:
+        "200":
+          description: Deposit position created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DepositPosition"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/v1/deposits/positions/{id}:
+    get:
+      operationId: getDepositPosition
+      summary: Retrieve a deposit position
+      tags: [Deposits]
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      responses:
+        "200":
+          description: Deposit position found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DepositPosition"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+# =============================================================================
+# Components
+# =============================================================================
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token issued by the BIB auth service
+
+  parameters:
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Resource unique identifier
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Resource conflict (duplicate idempotency key or state conflict)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    # ---- Common ----
+    Money:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: string
+          description: Decimal amount as a string to avoid floating-point issues
+          example: "100.00"
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          description: ISO 4217 currency code
+          example: USD
+
+    Pagination:
+      type: object
+      properties:
+        page_token:
+          type: string
+          description: Opaque token for the next page
+        page_size:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 50
+          description: Number of results per page
+        total_count:
+          type: integer
+          description: Total number of results (when available)
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code
+          example: INVALID_ARGUMENT
+        message:
+          type: string
+          description: Human-readable error description
+          example: "Field 'amount' must be a positive decimal"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              reason:
+                type: string
+          description: Optional field-level error details
+
+    # ---- Ledger ----
+    CreateLedgerEntryRequest:
+      type: object
+      required: [tenant_id, idempotency_key, lines]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        idempotency_key:
+          type: string
+          format: uuid
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        lines:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            required: [account_code, direction, amount]
+            properties:
+              account_code:
+                type: string
+              direction:
+                type: string
+                enum: [DEBIT, CREDIT]
+              amount:
+                $ref: "#/components/schemas/Money"
+
+    LedgerEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        idempotency_key:
+          type: string
+          format: uuid
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              account_code:
+                type: string
+              direction:
+                type: string
+                enum: [DEBIT, CREDIT]
+              amount:
+                $ref: "#/components/schemas/Money"
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+
+    LedgerBalance:
+      type: object
+      properties:
+        account_code:
+          type: string
+        balance:
+          $ref: "#/components/schemas/Money"
+        pending_debits:
+          $ref: "#/components/schemas/Money"
+        pending_credits:
+          $ref: "#/components/schemas/Money"
+        as_of:
+          type: string
+          format: date-time
+
+    # ---- Accounts ----
+    CreateAccountRequest:
+      type: object
+      required: [tenant_id, type, currency, holder]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [CHECKING, SAVINGS, LOAN, VIRTUAL]
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        holder:
+          type: object
+          required: [first_name, last_name, email]
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+            email:
+              type: string
+              format: email
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [CHECKING, SAVINGS, LOAN, VIRTUAL]
+        status:
+          type: string
+          enum: [ACTIVE, FROZEN, CLOSED]
+        currency:
+          type: string
+        holder:
+          type: object
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+            email:
+              type: string
+              format: email
+        balance:
+          $ref: "#/components/schemas/Money"
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # ---- Payments ----
+    CreatePaymentRequest:
+      type: object
+      required: [tenant_id, source_account_id, amount, rail]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        idempotency_key:
+          type: string
+          format: uuid
+        source_account_id:
+          type: string
+          format: uuid
+        destination_account_id:
+          type: string
+          format: uuid
+          description: Internal destination account (for book transfers)
+        amount:
+          $ref: "#/components/schemas/Money"
+        rail:
+          type: string
+          enum: [BOOK, ACH, WIRE, RTP, SWIFT]
+        routing_number:
+          type: string
+          description: Required for ACH and WIRE rails
+        external_account:
+          type: string
+          description: External account number for outgoing payments
+        description:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        idempotency_key:
+          type: string
+          format: uuid
+        source_account_id:
+          type: string
+          format: uuid
+        destination_account_id:
+          type: string
+          format: uuid
+        amount:
+          $ref: "#/components/schemas/Money"
+        rail:
+          type: string
+          enum: [BOOK, ACH, WIRE, RTP, SWIFT]
+        status:
+          type: string
+          enum: [PENDING, PROCESSING, COMPLETED, FAILED, REVERSED]
+        description:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # ---- FX ----
+    FxRate:
+      type: object
+      properties:
+        base_currency:
+          type: string
+          example: USD
+        quote_currency:
+          type: string
+          example: EUR
+        rate:
+          type: string
+          description: Exchange rate as decimal string
+          example: "0.92150"
+        timestamp:
+          type: string
+          format: date-time
+
+    FxConvertRequest:
+      type: object
+      required: [from_currency, to_currency, amount]
+      properties:
+        from_currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        to_currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        amount:
+          type: string
+          description: Decimal amount to convert
+          example: "1000.00"
+
+    FxConvertResponse:
+      type: object
+      properties:
+        from:
+          $ref: "#/components/schemas/Money"
+        to:
+          $ref: "#/components/schemas/Money"
+        rate:
+          type: string
+          example: "0.92150"
+        timestamp:
+          type: string
+          format: date-time
+
+    # ---- Identity ----
+    CreateVerificationRequest:
+      type: object
+      required: [tenant_id, first_name, last_name, email, date_of_birth, country]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        date_of_birth:
+          type: string
+          format: date
+        country:
+          type: string
+          minLength: 2
+          maxLength: 2
+          description: ISO 3166-1 alpha-2 country code
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+
+    Verification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [PENDING, IN_REVIEW, APPROVED, REJECTED]
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        date_of_birth:
+          type: string
+          format: date
+        country:
+          type: string
+        risk_score:
+          type: number
+          format: float
+          description: Risk score from 0.0 (low) to 1.0 (high)
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # ---- Deposits ----
+    CreateDepositProductRequest:
+      type: object
+      required: [tenant_id, name, currency, interest_rate_bps, term_days]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Human-readable product name
+          example: "12-Month Fixed Deposit"
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        interest_rate_bps:
+          type: integer
+          description: Annual interest rate in basis points (e.g. 450 = 4.50%)
+          example: 450
+        term_days:
+          type: integer
+          description: Term length in days (0 for demand deposits)
+          example: 365
+        min_amount:
+          $ref: "#/components/schemas/Money"
+        max_amount:
+          $ref: "#/components/schemas/Money"
+
+    DepositProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        currency:
+          type: string
+        interest_rate_bps:
+          type: integer
+        term_days:
+          type: integer
+        min_amount:
+          $ref: "#/components/schemas/Money"
+        max_amount:
+          $ref: "#/components/schemas/Money"
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+        created_at:
+          type: string
+          format: date-time
+
+    CreateDepositPositionRequest:
+      type: object
+      required: [tenant_id, product_id, account_id, amount]
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+          format: uuid
+          description: Funding account
+        amount:
+          $ref: "#/components/schemas/Money"
+
+    DepositPosition:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+          format: uuid
+        amount:
+          $ref: "#/components/schemas/Money"
+        accrued_interest:
+          $ref: "#/components/schemas/Money"
+        status:
+          type: string
+          enum: [ACTIVE, MATURED, WITHDRAWN, CANCELLED]
+        maturity_date:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time

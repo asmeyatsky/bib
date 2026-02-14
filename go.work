@@ -1,0 +1,25 @@
+go 1.23
+
+use (
+	./pkg/money
+	./pkg/events
+	./pkg/postgres
+	./pkg/kafka
+	./pkg/auth
+	./pkg/observability
+	./pkg/iso20022
+	./pkg/testutil
+
+	./services/ledger-service
+	./services/account-service
+	./services/fx-service
+	./services/deposit-service
+	./services/identity-service
+	./services/payment-service
+	./services/lending-service
+	./services/fraud-service
+	./services/card-service
+	./services/reporting-service
+
+	./gateway
+)

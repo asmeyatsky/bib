@@ -1,0 +1,67 @@
+syntax = "proto3";
+package bib.fx.v1;
+option go_package = "github.com/bibbank/bib/api/gen/go/bib/fx/v1;fxv1";
+
+import "bib/common/v1/money.proto";
+import "bib/common/v1/audit.proto";
+import "google/protobuf/timestamp.proto";
+
+message ExchangeRate {
+  string id = 1;
+  string tenant_id = 2;
+  string base_currency = 3;
+  string quote_currency = 4;
+  string rate = 5;
+  string inverse_rate = 6;
+  google.protobuf.Timestamp effective_at = 7;
+  google.protobuf.Timestamp expires_at = 8;
+  string provider = 9;
+  bib.common.v1.AuditInfo audit = 10;
+}
+
+message GetExchangeRateRequest {
+  string base_currency = 1;
+  string quote_currency = 2;
+}
+
+message GetExchangeRateResponse {
+  ExchangeRate rate = 1;
+}
+
+message ConvertAmountRequest {
+  bib.common.v1.Money amount = 1;
+  string target_currency = 2;
+}
+
+message ConvertAmountResponse {
+  bib.common.v1.Money converted_amount = 1;
+  ExchangeRate rate_used = 2;
+}
+
+message ListExchangeRatesRequest {
+  string base_currency = 1;
+  bib.common.v1.Pagination pagination = 2;
+}
+
+message ListExchangeRatesResponse {
+  repeated ExchangeRate rates = 1;
+  bib.common.v1.PaginationResponse pagination = 2;
+}
+
+message RevaluateRequest {
+  string tenant_id = 1;
+  string as_of_date = 2;
+  string functional_currency = 3;
+}
+
+message RevaluateResponse {
+  int32 accounts_processed = 1;
+  bib.common.v1.Money total_gain_loss = 2;
+}
+
+service FXService {
+  rpc GetExchangeRate(GetExchangeRateRequest) returns (GetExchangeRateResponse);
+  rpc ConvertAmount(ConvertAmountRequest) returns (ConvertAmountResponse);
+  rpc ListExchangeRates(ListExchangeRatesRequest) returns (ListExchangeRatesResponse);
+  rpc Revaluate(RevaluateRequest) returns (RevaluateResponse);
+}

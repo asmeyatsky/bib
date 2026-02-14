@@ -1,0 +1,84 @@
+syntax = "proto3";
+package bib.ledger.v1;
+option go_package = "github.com/bibbank/bib/api/gen/go/bib/ledger/v1;ledgerv1";
+
+import "bib/common/v1/money.proto";
+import "bib/common/v1/audit.proto";
+import "google/protobuf/timestamp.proto";
+
+enum EntryStatus {
+  ENTRY_STATUS_UNSPECIFIED = 0;
+  ENTRY_STATUS_PENDING = 1;
+  ENTRY_STATUS_POSTED = 2;
+  ENTRY_STATUS_REVERSED = 3;
+}
+
+message PostingPair {
+  string debit_account = 1;
+  string credit_account = 2;
+  bib.common.v1.Money amount = 3;
+  string description = 4;
+}
+
+message JournalEntry {
+  string id = 1;
+  string tenant_id = 2;
+  string effective_date = 3;
+  repeated PostingPair postings = 4;
+  EntryStatus status = 5;
+  string description = 6;
+  string reference = 7;
+  bib.common.v1.AuditInfo audit = 8;
+}
+
+message PostJournalEntryRequest {
+  string tenant_id = 1;
+  string effective_date = 2;
+  repeated PostingPair postings = 3;
+  string description = 4;
+  string reference = 5;
+}
+
+message PostJournalEntryResponse {
+  JournalEntry entry = 1;
+}
+
+message GetJournalEntryRequest {
+  string id = 1;
+}
+
+message GetJournalEntryResponse {
+  JournalEntry entry = 1;
+}
+
+message GetBalanceRequest {
+  string account_code = 1;
+  string as_of = 2;
+  string currency = 3;
+}
+
+message GetBalanceResponse {
+  string account_code = 1;
+  bib.common.v1.Money balance = 2;
+  string as_of = 3;
+}
+
+message ListJournalEntriesRequest {
+  string tenant_id = 1;
+  string account_code = 2;
+  string from_date = 3;
+  string to_date = 4;
+  bib.common.v1.Pagination pagination = 5;
+}
+
+message ListJournalEntriesResponse {
+  repeated JournalEntry entries = 1;
+  bib.common.v1.PaginationResponse pagination = 2;
+}
+
+service LedgerService {
+  rpc PostJournalEntry(PostJournalEntryRequest) returns (PostJournalEntryResponse);
+  rpc GetJournalEntry(GetJournalEntryRequest) returns (GetJournalEntryResponse);
+  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
+  rpc ListJournalEntries(ListJournalEntriesRequest) returns (ListJournalEntriesResponse);
+}

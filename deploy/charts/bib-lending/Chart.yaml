@@ -1,0 +1,6 @@
+apiVersion: v2
+name: bib-lending
+description: BIB Lending Service - Loan origination and servicing
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

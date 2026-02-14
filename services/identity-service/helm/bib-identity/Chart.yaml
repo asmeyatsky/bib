@@ -1,0 +1,13 @@
+apiVersion: v2
+name: bib-identity
+description: Bank in a Box - Identity Service (KYC/AML Verification)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - identity
+  - kyc
+  - aml
+  - verification
+maintainers:
+  - name: BIB Team

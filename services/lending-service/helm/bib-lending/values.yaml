@@ -1,0 +1,55 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/bibbank/lending-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  grpc:
+    port: 8087
+    targetPort: 8087
+  http:
+    port: 9087
+    targetPort: 9087
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  GRPC_PORT: "8087"
+  HTTP_PORT: "9087"
+  DATABASE_URL: "postgres://bib:bib@bib-postgres:5432/bib_lending?sslmode=disable"
+  KAFKA_BROKER: "bib-kafka:9092"
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 9087
+  initialDelaySeconds: 10
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 9087
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+serviceAccount:
+  create: true
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9087"
+  prometheus.io/path: "/metrics"

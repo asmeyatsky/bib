@@ -1,0 +1,6 @@
+apiVersion: v2
+name: bib-deposit
+description: Bank in a Box - Deposit Service
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

@@ -1,0 +1,14 @@
+apiVersion: v2
+name: bib-lending
+description: BIB Lending Service - Loan Origination & Servicing System
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - lending
+  - loans
+  - origination
+  - servicing
+  - banking
+maintainers:
+  - name: BIB Platform Team

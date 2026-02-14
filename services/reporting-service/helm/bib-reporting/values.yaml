@@ -1,0 +1,55 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/bibbank/reporting-service
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  grpc:
+    port: 8090
+    targetPort: 8090
+  http:
+    port: 9090
+    targetPort: 9090
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  GRPC_PORT: "8090"
+  HTTP_PORT: "9090"
+  DATABASE_URL: "postgres://bib:bib@bib-reporting-db:5432/bib_reporting?sslmode=disable"
+  KAFKA_BROKER: "kafka:9092"
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 9090
+  initialDelaySeconds: 10
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 9090
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+serviceAccount:
+  create: true
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9090"
+  prometheus.io/path: "/metrics"
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

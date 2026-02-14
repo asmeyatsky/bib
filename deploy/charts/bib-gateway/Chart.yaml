@@ -1,0 +1,6 @@
+apiVersion: v2
+name: bib-gateway
+description: BIB API Gateway - REST-to-gRPC fanout with auth and rate limiting
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

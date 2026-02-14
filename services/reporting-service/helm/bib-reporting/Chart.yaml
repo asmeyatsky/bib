@@ -1,0 +1,15 @@
+apiVersion: v2
+name: bib-reporting
+description: BIB Reporting Service - COREP/FINREP/MREL regulatory reporting with XBRL generation
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - reporting
+  - regulatory
+  - corep
+  - finrep
+  - mrel
+  - xbrl
+maintainers:
+  - name: BIB Platform Team

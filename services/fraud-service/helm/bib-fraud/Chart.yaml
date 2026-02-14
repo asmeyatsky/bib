@@ -1,0 +1,12 @@
+apiVersion: v2
+name: bib-fraud
+description: BIB Fraud Service - AI-powered real-time risk scoring and transaction monitoring
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - fraud-detection
+  - risk-scoring
+  - transaction-monitoring
+maintainers:
+  - name: BIB Platform Team

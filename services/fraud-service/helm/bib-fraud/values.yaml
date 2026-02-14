@@ -1,0 +1,68 @@
+replicaCount: 2
+
+image:
+  repository: bib/fraud-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  grpc:
+    port: 8088
+    targetPort: 8088
+  http:
+    port: 9088
+    targetPort: 9088
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  GRPC_PORT: "8088"
+  HTTP_PORT: "9088"
+  DATABASE_URL: "postgres://bib:bib@bib-postgres:5432/bib_fraud?sslmode=disable"
+  KAFKA_BROKER: "bib-kafka:9092"
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "info"
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 9088
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 9088
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+serviceAccount:
+  create: true
+  name: ""
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL

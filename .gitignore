@@ -1,0 +1,47 @@
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Vendor
+vendor/
+
+# Environment
+.env
+.env.*
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# Coverage outputs
+coverage.out
+coverage.html
+*.coverprofile
+
+# Generated proto files
+gen/
+
+# Temporary files
+tmp/
+
+# macOS
+.DS_Store
+
+# Go build cache
+*.test
+*.prof
+
+# Debug binaries
+__debug_bin*
+
+# Go workspace sum
+go.work.sum

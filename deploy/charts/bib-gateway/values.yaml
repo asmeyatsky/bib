@@ -1,0 +1,47 @@
+replicaCount: 2
+
+image:
+  repository: bib-gateway
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  httpPort: 8080
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  LEDGER_ADDR: bib-ledger:9081
+  ACCOUNT_ADDR: bib-account:9082
+  FX_ADDR: bib-fx:9083
+  DEPOSIT_ADDR: bib-deposit:9084
+  IDENTITY_ADDR: bib-identity:9085
+  PAYMENT_ADDR: bib-payment:9086
+  LENDING_ADDR: bib-lending:9087
+  FRAUD_ADDR: bib-fraud:9088
+  CARD_ADDR: bib-card:9089
+  REPORTING_ADDR: bib-reporting:9090
+  RATE_LIMIT: "100"
+  LOG_LEVEL: info
+  LOG_FORMAT: json
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10

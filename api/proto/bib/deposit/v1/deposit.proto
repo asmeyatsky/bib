@@ -1,0 +1,91 @@
+syntax = "proto3";
+package bib.deposit.v1;
+option go_package = "github.com/bibbank/bib/api/gen/go/bib/deposit/v1;depositv1";
+
+import "bib/common/v1/money.proto";
+import "bib/common/v1/audit.proto";
+import "google/protobuf/timestamp.proto";
+
+enum DepositPositionStatus {
+  DEPOSIT_POSITION_STATUS_UNSPECIFIED = 0;
+  DEPOSIT_POSITION_STATUS_ACTIVE = 1;
+  DEPOSIT_POSITION_STATUS_MATURED = 2;
+  DEPOSIT_POSITION_STATUS_CLOSED = 3;
+}
+
+message InterestTier {
+  bib.common.v1.Money min_balance = 1;
+  bib.common.v1.Money max_balance = 2;
+  string rate_bps = 3;  // basis points as string
+}
+
+message DepositProduct {
+  string id = 1;
+  string tenant_id = 2;
+  string name = 3;
+  string currency = 4;
+  repeated InterestTier tiers = 5;
+  int32 term_days = 6;
+  bib.common.v1.AuditInfo audit = 7;
+}
+
+message DepositPosition {
+  string id = 1;
+  string tenant_id = 2;
+  string account_id = 3;
+  string product_id = 4;
+  bib.common.v1.Money principal = 5;
+  bib.common.v1.Money accrued_interest = 6;
+  DepositPositionStatus status = 7;
+  google.protobuf.Timestamp opened_at = 8;
+  google.protobuf.Timestamp maturity_date = 9;
+  bib.common.v1.AuditInfo audit = 10;
+}
+
+message CreateDepositProductRequest {
+  string tenant_id = 1;
+  string name = 2;
+  string currency = 3;
+  repeated InterestTier tiers = 4;
+  int32 term_days = 5;
+}
+
+message CreateDepositProductResponse {
+  DepositProduct product = 1;
+}
+
+message OpenDepositPositionRequest {
+  string tenant_id = 1;
+  string account_id = 2;
+  string product_id = 3;
+  bib.common.v1.Money principal = 4;
+}
+
+message OpenDepositPositionResponse {
+  DepositPosition position = 1;
+}
+
+message GetDepositPositionRequest {
+  string id = 1;
+}
+
+message GetDepositPositionResponse {
+  DepositPosition position = 1;
+}
+
+message AccrueInterestRequest {
+  string tenant_id = 1;
+  string as_of_date = 2;
+}
+
+message AccrueInterestResponse {
+  int32 positions_processed = 1;
+  bib.common.v1.Money total_accrued = 2;
+}
+
+service DepositService {
+  rpc CreateDepositProduct(CreateDepositProductRequest) returns (CreateDepositProductResponse);
+  rpc OpenDepositPosition(OpenDepositPositionRequest) returns (OpenDepositPositionResponse);
+  rpc GetDepositPosition(GetDepositPositionRequest) returns (GetDepositPositionResponse);
+  rpc AccrueInterest(AccrueInterestRequest) returns (AccrueInterestResponse);
+}

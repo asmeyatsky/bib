@@ -1,0 +1,85 @@
+syntax = "proto3";
+package bib.payment.v1;
+option go_package = "github.com/bibbank/bib/api/gen/go/bib/payment/v1;paymentv1";
+
+import "bib/common/v1/money.proto";
+import "bib/common/v1/audit.proto";
+import "google/protobuf/timestamp.proto";
+
+enum PaymentStatus {
+  PAYMENT_STATUS_UNSPECIFIED = 0;
+  PAYMENT_STATUS_INITIATED = 1;
+  PAYMENT_STATUS_PROCESSING = 2;
+  PAYMENT_STATUS_SETTLED = 3;
+  PAYMENT_STATUS_FAILED = 4;
+  PAYMENT_STATUS_REVERSED = 5;
+}
+
+enum PaymentRail {
+  PAYMENT_RAIL_UNSPECIFIED = 0;
+  PAYMENT_RAIL_ACH = 1;
+  PAYMENT_RAIL_FEDNOW = 2;
+  PAYMENT_RAIL_SWIFT = 3;
+  PAYMENT_RAIL_SEPA = 4;
+  PAYMENT_RAIL_CHIPS = 5;
+  PAYMENT_RAIL_INTERNAL = 6;
+}
+
+message PaymentOrder {
+  string id = 1;
+  string tenant_id = 2;
+  string source_account_id = 3;
+  string destination_account_id = 4;
+  bib.common.v1.Money amount = 5;
+  PaymentRail rail = 6;
+  PaymentStatus status = 7;
+  string reference = 8;
+  string description = 9;
+  string routing_number = 10;
+  string external_account_number = 11;
+  google.protobuf.Timestamp initiated_at = 12;
+  google.protobuf.Timestamp settled_at = 13;
+  string failure_reason = 14;
+  bib.common.v1.AuditInfo audit = 15;
+}
+
+message InitiatePaymentRequest {
+  string tenant_id = 1;
+  string source_account_id = 2;
+  string destination_account_id = 3;
+  bib.common.v1.Money amount = 4;
+  PaymentRail rail = 5;
+  string reference = 6;
+  string description = 7;
+  string routing_number = 8;
+  string external_account_number = 9;
+}
+
+message InitiatePaymentResponse {
+  PaymentOrder order = 1;
+}
+
+message GetPaymentRequest {
+  string id = 1;
+}
+
+message GetPaymentResponse {
+  PaymentOrder order = 1;
+}
+
+message ListPaymentsRequest {
+  string tenant_id = 1;
+  string account_id = 2;
+  bib.common.v1.Pagination pagination = 3;
+}
+
+message ListPaymentsResponse {
+  repeated PaymentOrder orders = 1;
+  bib.common.v1.PaginationResponse pagination = 2;
+}
+
+service PaymentService {
+  rpc InitiatePayment(InitiatePaymentRequest) returns (InitiatePaymentResponse);
+  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
+  rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse);
+}

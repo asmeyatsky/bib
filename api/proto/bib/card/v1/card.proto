@@ -1,0 +1,75 @@
+syntax = "proto3";
+package bib.card.v1;
+option go_package = "github.com/bibbank/bib/api/gen/go/bib/card/v1;cardv1";
+
+import "bib/common/v1/money.proto";
+import "bib/common/v1/audit.proto";
+import "google/protobuf/timestamp.proto";
+
+enum CardStatus {
+  CARD_STATUS_UNSPECIFIED = 0;
+  CARD_STATUS_PENDING = 1;
+  CARD_STATUS_ACTIVE = 2;
+  CARD_STATUS_FROZEN = 3;
+  CARD_STATUS_CANCELLED = 4;
+  CARD_STATUS_EXPIRED = 5;
+}
+
+enum CardType {
+  CARD_TYPE_UNSPECIFIED = 0;
+  CARD_TYPE_VIRTUAL = 1;
+  CARD_TYPE_PHYSICAL = 2;
+}
+
+message Card {
+  string id = 1;
+  string tenant_id = 2;
+  string account_id = 3;
+  CardType type = 4;
+  CardStatus status = 5;
+  string last_four = 6;
+  string expiry_month = 7;
+  string expiry_year = 8;
+  bib.common.v1.Money daily_limit = 9;
+  bib.common.v1.Money monthly_limit = 10;
+  bib.common.v1.AuditInfo audit = 11;
+}
+
+message IssueCardRequest {
+  string tenant_id = 1;
+  string account_id = 2;
+  CardType type = 3;
+  bib.common.v1.Money daily_limit = 4;
+  bib.common.v1.Money monthly_limit = 5;
+}
+
+message IssueCardResponse {
+  Card card = 1;
+}
+
+message AuthorizeTransactionRequest {
+  string card_id = 1;
+  bib.common.v1.Money amount = 2;
+  string merchant_name = 3;
+  string merchant_category = 4;
+}
+
+message AuthorizeTransactionResponse {
+  bool approved = 1;
+  string decline_reason = 2;
+  string authorization_code = 3;
+}
+
+message GetCardRequest {
+  string id = 1;
+}
+
+message GetCardResponse {
+  Card card = 1;
+}
+
+service CardService {
+  rpc IssueCard(IssueCardRequest) returns (IssueCardResponse);
+  rpc AuthorizeTransaction(AuthorizeTransactionRequest) returns (AuthorizeTransactionResponse);
+  rpc GetCard(GetCardRequest) returns (GetCardResponse);
+}

@@ -1,0 +1,68 @@
+syntax = "proto3";
+package bib.reporting.v1;
+option go_package = "github.com/bibbank/bib/api/gen/go/bib/reporting/v1;reportingv1";
+
+import "bib/common/v1/audit.proto";
+import "google/protobuf/timestamp.proto";
+
+enum ReportType {
+  REPORT_TYPE_UNSPECIFIED = 0;
+  REPORT_TYPE_COREP = 1;
+  REPORT_TYPE_FINREP = 2;
+  REPORT_TYPE_MREL = 3;
+  REPORT_TYPE_CUSTOM = 4;
+}
+
+enum SubmissionStatus {
+  SUBMISSION_STATUS_UNSPECIFIED = 0;
+  SUBMISSION_STATUS_DRAFT = 1;
+  SUBMISSION_STATUS_GENERATING = 2;
+  SUBMISSION_STATUS_READY = 3;
+  SUBMISSION_STATUS_SUBMITTED = 4;
+  SUBMISSION_STATUS_ACCEPTED = 5;
+  SUBMISSION_STATUS_REJECTED = 6;
+}
+
+message ReportSubmission {
+  string id = 1;
+  string tenant_id = 2;
+  ReportType type = 3;
+  string reporting_period = 4;
+  SubmissionStatus status = 5;
+  string xbrl_content = 6;
+  google.protobuf.Timestamp generated_at = 7;
+  google.protobuf.Timestamp submitted_at = 8;
+  bib.common.v1.AuditInfo audit = 9;
+}
+
+message GenerateReportRequest {
+  string tenant_id = 1;
+  ReportType type = 2;
+  string reporting_period = 3;
+}
+
+message GenerateReportResponse {
+  ReportSubmission submission = 1;
+}
+
+message GetReportRequest {
+  string id = 1;
+}
+
+message GetReportResponse {
+  ReportSubmission submission = 1;
+}
+
+message SubmitReportRequest {
+  string id = 1;
+}
+
+message SubmitReportResponse {
+  ReportSubmission submission = 1;
+}
+
+service ReportingService {
+  rpc GenerateReport(GenerateReportRequest) returns (GenerateReportResponse);
+  rpc GetReport(GetReportRequest) returns (GetReportResponse);
+  rpc SubmitReport(SubmitReportRequest) returns (SubmitReportResponse);
+}

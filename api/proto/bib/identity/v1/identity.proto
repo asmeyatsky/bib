@@ -1,0 +1,84 @@
+syntax = "proto3";
+package bib.identity.v1;
+option go_package = "github.com/bibbank/bib/api/gen/go/bib/identity/v1;identityv1";
+
+import "bib/common/v1/audit.proto";
+import "google/protobuf/timestamp.proto";
+
+enum VerificationStatus {
+  VERIFICATION_STATUS_UNSPECIFIED = 0;
+  VERIFICATION_STATUS_PENDING = 1;
+  VERIFICATION_STATUS_IN_PROGRESS = 2;
+  VERIFICATION_STATUS_APPROVED = 3;
+  VERIFICATION_STATUS_REJECTED = 4;
+  VERIFICATION_STATUS_EXPIRED = 5;
+}
+
+enum CheckType {
+  CHECK_TYPE_UNSPECIFIED = 0;
+  CHECK_TYPE_DOCUMENT = 1;
+  CHECK_TYPE_SELFIE = 2;
+  CHECK_TYPE_WATCHLIST = 3;
+  CHECK_TYPE_ADDRESS = 4;
+}
+
+message VerificationCheck {
+  string id = 1;
+  CheckType type = 2;
+  VerificationStatus status = 3;
+  string provider = 4;
+  string provider_reference = 5;
+  google.protobuf.Timestamp completed_at = 6;
+  string failure_reason = 7;
+}
+
+message IdentityVerification {
+  string id = 1;
+  string tenant_id = 2;
+  string applicant_first_name = 3;
+  string applicant_last_name = 4;
+  string applicant_email = 5;
+  string applicant_date_of_birth = 6;
+  string applicant_country = 7;
+  VerificationStatus status = 8;
+  repeated VerificationCheck checks = 9;
+  bib.common.v1.AuditInfo audit = 10;
+}
+
+message InitiateVerificationRequest {
+  string tenant_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string date_of_birth = 5;
+  string country = 6;
+}
+
+message InitiateVerificationResponse {
+  IdentityVerification verification = 1;
+}
+
+message GetVerificationRequest {
+  string id = 1;
+}
+
+message GetVerificationResponse {
+  IdentityVerification verification = 1;
+}
+
+message CompleteCheckRequest {
+  string verification_id = 1;
+  string check_id = 2;
+  VerificationStatus status = 3;
+  string failure_reason = 4;
+}
+
+message CompleteCheckResponse {
+  IdentityVerification verification = 1;
+}
+
+service IdentityService {
+  rpc InitiateVerification(InitiateVerificationRequest) returns (InitiateVerificationResponse);
+  rpc GetVerification(GetVerificationRequest) returns (GetVerificationResponse);
+  rpc CompleteCheck(CompleteCheckRequest) returns (CompleteCheckResponse);
+}

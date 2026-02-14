@@ -1,0 +1,63 @@
+syntax = "proto3";
+package bib.fraud.v1;
+option go_package = "github.com/bibbank/bib/api/gen/go/bib/fraud/v1;fraudv1";
+
+import "bib/common/v1/money.proto";
+import "bib/common/v1/audit.proto";
+import "google/protobuf/timestamp.proto";
+
+enum RiskLevel {
+  RISK_LEVEL_UNSPECIFIED = 0;
+  RISK_LEVEL_LOW = 1;
+  RISK_LEVEL_MEDIUM = 2;
+  RISK_LEVEL_HIGH = 3;
+  RISK_LEVEL_CRITICAL = 4;
+}
+
+enum AssessmentDecision {
+  ASSESSMENT_DECISION_UNSPECIFIED = 0;
+  ASSESSMENT_DECISION_APPROVE = 1;
+  ASSESSMENT_DECISION_REVIEW = 2;
+  ASSESSMENT_DECISION_DECLINE = 3;
+}
+
+message TransactionAssessment {
+  string id = 1;
+  string tenant_id = 2;
+  string transaction_id = 3;
+  string account_id = 4;
+  bib.common.v1.Money amount = 5;
+  string transaction_type = 6;
+  RiskLevel risk_level = 7;
+  int32 risk_score = 8;
+  AssessmentDecision decision = 9;
+  repeated string risk_signals = 10;
+  google.protobuf.Timestamp assessed_at = 11;
+  bib.common.v1.AuditInfo audit = 12;
+}
+
+message AssessTransactionRequest {
+  string tenant_id = 1;
+  string transaction_id = 2;
+  string account_id = 3;
+  bib.common.v1.Money amount = 4;
+  string transaction_type = 5;
+  map<string, string> metadata = 6;
+}
+
+message AssessTransactionResponse {
+  TransactionAssessment assessment = 1;
+}
+
+message GetAssessmentRequest {
+  string id = 1;
+}
+
+message GetAssessmentResponse {
+  TransactionAssessment assessment = 1;
+}
+
+service FraudService {
+  rpc AssessTransaction(AssessTransactionRequest) returns (AssessTransactionResponse);
+  rpc GetAssessment(GetAssessmentRequest) returns (GetAssessmentResponse);
+}
