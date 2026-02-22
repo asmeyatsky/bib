@@ -88,3 +88,57 @@ func TestRateLimitMiddleware_Rejects(t *testing.T) {
 		t.Fatalf("expected 429, got %d", rec.Code)
 	}
 }
+
+func TestPerClientRateLimiter_IsolatesClients(t *testing.T) {
+	pcrl := NewPerClientRateLimiter(2)
+
+	// Client A should get 2 requests.
+	for i := 0; i < 2; i++ {
+		if !pcrl.Allow("client-a") {
+			t.Fatalf("client-a request %d should have been allowed", i+1)
+		}
+	}
+
+	// Client A's 3rd request should be denied.
+	if pcrl.Allow("client-a") {
+		t.Fatal("client-a 3rd request should have been denied")
+	}
+
+	// Client B should still be allowed (separate bucket).
+	if !pcrl.Allow("client-b") {
+		t.Fatal("client-b should have been allowed (separate bucket)")
+	}
+}
+
+func TestPerClientRateLimitMiddleware_KeysByIP(t *testing.T) {
+	pcrl := NewPerClientRateLimiter(1)
+
+	handler := PerClientRateLimitMiddleware(pcrl)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	// First request from 10.0.0.1 should succeed.
+	req1 := httptest.NewRequest(http.MethodGet, "/", nil)
+	req1.RemoteAddr = "10.0.0.1:12345"
+	rec1 := httptest.NewRecorder()
+	handler.ServeHTTP(rec1, req1)
+	if rec1.Code != http.StatusOK {
+		t.Fatalf("expected 200 for first request from 10.0.0.1, got %d", rec1.Code)
+	}
+
+	// Second request from 10.0.0.1 should be rate limited.
+	rec2 := httptest.NewRecorder()
+	handler.ServeHTTP(rec2, req1)
+	if rec2.Code != http.StatusTooManyRequests {
+		t.Fatalf("expected 429 for second request from 10.0.0.1, got %d", rec2.Code)
+	}
+
+	// First request from 10.0.0.2 should succeed (different client).
+	req3 := httptest.NewRequest(http.MethodGet, "/", nil)
+	req3.RemoteAddr = "10.0.0.2:12345"
+	rec3 := httptest.NewRecorder()
+	handler.ServeHTTP(rec3, req3)
+	if rec3.Code != http.StatusOK {
+		t.Fatalf("expected 200 for first request from 10.0.0.2, got %d", rec3.Code)
+	}
+}

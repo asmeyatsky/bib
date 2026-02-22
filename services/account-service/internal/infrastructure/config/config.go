@@ -43,6 +43,13 @@ type KafkaConfig struct {
 	Brokers []string
 }
 
+// Validate checks required configuration values.
+func (c Config) Validate() {
+	if c.Database.Password == "" {
+		panic("DB_PASSWORD environment variable is required")
+	}
+}
+
 // Load reads configuration from environment variables with defaults.
 func Load() Config {
 	return Config{
@@ -53,9 +60,9 @@ func Load() Config {
 			Host:     getEnv("DB_HOST", "localhost"),
 			Port:     getEnvInt("DB_PORT", 5432),
 			User:     getEnv("DB_USER", "bib"),
-			Password: getEnv("DB_PASSWORD", "bib"),
+			Password: getEnv("DB_PASSWORD", ""),
 			Database: getEnv("DB_NAME", "bib_account"),
-			SSLMode:  getEnv("DB_SSL_MODE", "disable"),
+			SSLMode:  getEnv("DB_SSLMODE", "require"),
 		},
 		Kafka: KafkaConfig{
 			Brokers: []string{getEnv("KAFKA_BROKERS", "localhost:9092")},

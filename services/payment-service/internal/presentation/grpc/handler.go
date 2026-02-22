@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -9,9 +10,35 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/bibbank/bib/pkg/auth"
 	"github.com/bibbank/bib/services/payment-service/internal/application/dto"
 	"github.com/bibbank/bib/services/payment-service/internal/application/usecase"
 )
+
+var currencyCodeRE = regexp.MustCompile(`^[A-Z]{3}$`)
+
+// requireRole checks that the caller has at least one of the given roles.
+func requireRole(ctx context.Context, roles ...string) error {
+	claims, ok := auth.ClaimsFromContext(ctx)
+	if !ok {
+		return status.Error(codes.Unauthenticated, "authentication required")
+	}
+	for _, role := range roles {
+		if claims.HasRole(role) {
+			return nil
+		}
+	}
+	return status.Error(codes.PermissionDenied, "insufficient permissions")
+}
+
+// tenantIDFromContext extracts the tenant ID from JWT claims in the context.
+func tenantIDFromContext(ctx context.Context) (uuid.UUID, error) {
+	claims, ok := auth.ClaimsFromContext(ctx)
+	if !ok {
+		return uuid.Nil, status.Error(codes.Unauthenticated, "authentication required")
+	}
+	return claims.TenantID, nil
+}
 
 // PaymentHandler implements the gRPC PaymentService server.
 type PaymentHandler struct {
@@ -96,9 +123,17 @@ type ListPaymentsResponseMsg struct {
 }
 
 func (h *PaymentHandler) HandleInitiatePayment(ctx context.Context, req *InitiatePaymentRequest) (*InitiatePaymentResponse, error) {
-	tenantID, err := uuid.Parse(req.TenantID)
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAPIClient); err != nil {
+		return nil, err
+	}
+
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
+	tenantID, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid tenant_id: %v", err)
+		return nil, err
 	}
 
 	sourceAcctID, err := uuid.Parse(req.SourceAccountID)
@@ -118,6 +153,16 @@ func (h *PaymentHandler) HandleInitiatePayment(ctx context.Context, req *Initiat
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid amount: %v", err)
 	}
+	if !amount.IsPositive() {
+		return nil, status.Error(codes.InvalidArgument, "amount must be positive")
+	}
+
+	if req.Currency == "" {
+		return nil, status.Error(codes.InvalidArgument, "currency is required")
+	}
+	if !currencyCodeRE.MatchString(req.Currency) {
+		return nil, status.Error(codes.InvalidArgument, "currency must be a 3-letter uppercase ISO code")
+	}
 
 	result, err := h.initiatePayment.Execute(ctx, dto.InitiatePaymentRequest{
 		TenantID:              tenantID,
@@ -132,7 +177,8 @@ func (h *PaymentHandler) HandleInitiatePayment(ctx context.Context, req *Initiat
 		Description:           req.Description,
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to initiate payment: %v", err)
+		// TODO: log original error server-side: err
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &InitiatePaymentResponse{
@@ -144,6 +190,14 @@ func (h *PaymentHandler) HandleInitiatePayment(ctx context.Context, req *Initiat
 }
 
 func (h *PaymentHandler) HandleGetPayment(ctx context.Context, req *GetPaymentRequestMsg) (*GetPaymentResponseMsg, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAuditor, auth.RoleCustomer, auth.RoleAPIClient); err != nil {
+		return nil, err
+	}
+
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
 	paymentID, err := uuid.Parse(req.PaymentID)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid payment_id: %v", err)
@@ -153,7 +207,8 @@ func (h *PaymentHandler) HandleGetPayment(ctx context.Context, req *GetPaymentRe
 		PaymentID: paymentID,
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to get payment: %v", err)
+		// TODO: log original error server-side: err
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &GetPaymentResponseMsg{
@@ -162,9 +217,28 @@ func (h *PaymentHandler) HandleGetPayment(ctx context.Context, req *GetPaymentRe
 }
 
 func (h *PaymentHandler) HandleListPayments(ctx context.Context, req *ListPaymentsRequestMsg) (*ListPaymentsResponseMsg, error) {
-	tenantID, err := uuid.Parse(req.TenantID)
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAuditor, auth.RoleCustomer, auth.RoleAPIClient); err != nil {
+		return nil, err
+	}
+
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
+	pageSize := req.PageSize
+	if pageSize == 0 {
+		pageSize = 20
+	}
+	if pageSize < 0 || pageSize > 100 {
+		return nil, status.Error(codes.InvalidArgument, "page_size must be between 1 and 100")
+	}
+	if req.Offset < 0 {
+		return nil, status.Error(codes.InvalidArgument, "offset must be >= 0")
+	}
+
+	tenantID, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid tenant_id: %v", err)
+		return nil, err
 	}
 
 	var accountID uuid.UUID
@@ -178,11 +252,12 @@ func (h *PaymentHandler) HandleListPayments(ctx context.Context, req *ListPaymen
 	result, err := h.listPayments.Execute(ctx, dto.ListPaymentsRequest{
 		TenantID:  tenantID,
 		AccountID: accountID,
-		PageSize:  int(req.PageSize),
+		PageSize:  int(pageSize),
 		Offset:    int(req.Offset),
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to list payments: %v", err)
+		// TODO: log original error server-side: err
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	var payments []*PaymentOrderMsg

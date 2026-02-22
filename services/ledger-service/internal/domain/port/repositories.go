@@ -44,3 +44,19 @@ type FiscalPeriodRepository interface {
 type EventPublisher interface {
 	Publish(ctx context.Context, topic string, events ...events.DomainEvent) error
 }
+
+// ExternalStatementProvider fetches external bank statements for reconciliation.
+type ExternalStatementProvider interface {
+	// FetchStatement retrieves the external statement entries for an account
+	// on a given date. Implementations may parse MT950 messages or call APIs.
+	FetchStatement(ctx context.Context, accountID string, date time.Time) ([]ExternalStatementEntry, error)
+}
+
+// ExternalStatementEntry represents a single line from an external bank statement.
+type ExternalStatementEntry struct {
+	Reference   string
+	ValueDate   time.Time
+	DebitCredit string // "D" or "C"
+	Amount      decimal.Decimal
+	Details     string
+}

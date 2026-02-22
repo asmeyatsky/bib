@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"regexp"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,9 +11,35 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/bibbank/bib/pkg/auth"
 	"github.com/bibbank/bib/services/ledger-service/internal/application/dto"
 	"github.com/bibbank/bib/services/ledger-service/internal/application/usecase"
 )
+
+// requireRole checks that the caller has at least one of the given roles.
+func requireRole(ctx context.Context, roles ...string) error {
+	claims, ok := auth.ClaimsFromContext(ctx)
+	if !ok {
+		return status.Error(codes.Unauthenticated, "authentication required")
+	}
+	for _, role := range roles {
+		if claims.HasRole(role) {
+			return nil
+		}
+	}
+	return status.Error(codes.PermissionDenied, "insufficient permissions")
+}
+
+var currencyCodeRE = regexp.MustCompile(`^[A-Z]{3}$`)
+
+// tenantIDFromContext extracts the tenant ID from JWT claims in the context.
+func tenantIDFromContext(ctx context.Context) (uuid.UUID, error) {
+	claims, ok := auth.ClaimsFromContext(ctx)
+	if !ok {
+		return uuid.Nil, status.Error(codes.Unauthenticated, "authentication required")
+	}
+	return claims.TenantID, nil
+}
 
 // LedgerHandler implements the gRPC LedgerService server.
 type LedgerHandler struct {
@@ -81,9 +108,17 @@ type PostJournalEntryResponse struct {
 }
 
 func (h *LedgerHandler) HandlePostJournalEntry(ctx context.Context, req *PostJournalEntryRequest) (*PostJournalEntryResponse, error) {
-	tenantID, err := uuid.Parse(req.TenantID)
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAPIClient); err != nil {
+		return nil, err
+	}
+
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
+	tenantID, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid tenant_id: %v", err)
+		return nil, err
 	}
 
 	effectiveDate, err := time.Parse("2006-01-02", req.EffectiveDate)
@@ -91,11 +126,30 @@ func (h *LedgerHandler) HandlePostJournalEntry(ctx context.Context, req *PostJou
 		return nil, status.Errorf(codes.InvalidArgument, "invalid effective_date: %v", err)
 	}
 
+	if len(req.Postings) == 0 {
+		return nil, status.Error(codes.InvalidArgument, "at least one posting is required")
+	}
+
 	var postings []dto.PostingPairDTO
-	for _, p := range req.Postings {
+	for i, p := range req.Postings {
+		if p.DebitAccount == "" {
+			return nil, status.Errorf(codes.InvalidArgument, "posting[%d]: debit_account is required", i)
+		}
+		if p.CreditAccount == "" {
+			return nil, status.Errorf(codes.InvalidArgument, "posting[%d]: credit_account is required", i)
+		}
 		amount, err := decimal.NewFromString(p.Amount)
 		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid amount: %v", err)
+			return nil, status.Errorf(codes.InvalidArgument, "posting[%d]: invalid amount: %v", i, err)
+		}
+		if !amount.IsPositive() {
+			return nil, status.Errorf(codes.InvalidArgument, "posting[%d]: amount must be positive", i)
+		}
+		if p.Currency == "" {
+			return nil, status.Errorf(codes.InvalidArgument, "posting[%d]: currency is required", i)
+		}
+		if !currencyCodeRE.MatchString(p.Currency) {
+			return nil, status.Errorf(codes.InvalidArgument, "posting[%d]: currency must be a 3-letter uppercase ISO code", i)
 		}
 		postings = append(postings, dto.PostingPairDTO{
 			DebitAccount:  p.DebitAccount,
@@ -114,7 +168,8 @@ func (h *LedgerHandler) HandlePostJournalEntry(ctx context.Context, req *PostJou
 		Reference:     req.Reference,
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to post journal entry: %v", err)
+		// TODO: log original error server-side: err
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &PostJournalEntryResponse{
@@ -136,6 +191,21 @@ type GetBalanceResponse struct {
 }
 
 func (h *LedgerHandler) HandleGetBalance(ctx context.Context, req *GetBalanceRequest) (*GetBalanceResponse, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAuditor, auth.RoleCustomer, auth.RoleAPIClient); err != nil {
+		return nil, err
+	}
+
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
+	if req.AccountCode == "" {
+		return nil, status.Error(codes.InvalidArgument, "account_code is required")
+	}
+	if req.Currency != "" && !currencyCodeRE.MatchString(req.Currency) {
+		return nil, status.Error(codes.InvalidArgument, "currency must be a 3-letter uppercase ISO code")
+	}
+
 	var asOf time.Time
 	if req.AsOf != "" {
 		var err error
@@ -151,7 +221,8 @@ func (h *LedgerHandler) HandleGetBalance(ctx context.Context, req *GetBalanceReq
 		AsOf:        asOf,
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to get balance: %v", err)
+		// TODO: log original error server-side: err
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &GetBalanceResponse{

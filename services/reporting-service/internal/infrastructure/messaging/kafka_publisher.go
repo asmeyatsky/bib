@@ -6,20 +6,21 @@ import (
 	"fmt"
 	"log/slog"
 
+	pkgkafka "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/services/reporting-service/internal/domain/event"
 )
 
 // KafkaPublisher publishes domain events to Kafka topics.
 type KafkaPublisher struct {
-	broker string
-	logger *slog.Logger
+	producer *pkgkafka.Producer
+	logger   *slog.Logger
 }
 
 // NewKafkaPublisher creates a new KafkaPublisher.
-func NewKafkaPublisher(broker string, logger *slog.Logger) *KafkaPublisher {
+func NewKafkaPublisher(producer *pkgkafka.Producer, logger *slog.Logger) *KafkaPublisher {
 	return &KafkaPublisher{
-		broker: broker,
-		logger: logger,
+		producer: producer,
+		logger:   logger,
 	}
 }
 
@@ -33,21 +34,23 @@ func (p *KafkaPublisher) Publish(ctx context.Context, events ...event.DomainEven
 
 		topic := topicForEvent(evt)
 
-		p.logger.Info("publishing event to Kafka",
+		p.logger.DebugContext(ctx, "publishing event to Kafka",
 			"event_type", evt.EventType(),
-			"aggregate_id", evt.AggregateID().String(),
+			"aggregate_id", evt.AggregateID(),
 			"topic", topic,
 		)
 
-		// In production, this would use a real Kafka producer.
-		// For now, we log the event for development/testing.
-		_ = payload
-		_ = topic
+		msg := pkgkafka.Message{
+			Key:   []byte(evt.AggregateID()),
+			Value: payload,
+			Headers: map[string]string{
+				"event_type": evt.EventType(),
+			},
+		}
 
-		p.logger.Debug("event published successfully",
-			"event_type", evt.EventType(),
-			"topic", topic,
-		)
+		if err := p.producer.Publish(ctx, topic, msg); err != nil {
+			return fmt.Errorf("failed to publish event %s to topic %s: %w", evt.EventType(), topic, err)
+		}
 	}
 
 	return nil

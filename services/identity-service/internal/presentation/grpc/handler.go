@@ -8,9 +8,33 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/bibbank/bib/pkg/auth"
 	"github.com/bibbank/bib/services/identity-service/internal/application/dto"
 	"github.com/bibbank/bib/services/identity-service/internal/application/usecase"
 )
+
+// requireRole checks that the caller has at least one of the given roles.
+func requireRole(ctx context.Context, roles ...string) error {
+	claims, ok := auth.ClaimsFromContext(ctx)
+	if !ok {
+		return status.Error(codes.Unauthenticated, "authentication required")
+	}
+	for _, role := range roles {
+		if claims.HasRole(role) {
+			return nil
+		}
+	}
+	return status.Error(codes.PermissionDenied, "insufficient permissions")
+}
+
+// tenantIDFromContext extracts the tenant ID from JWT claims in the context.
+func tenantIDFromContext(ctx context.Context) (uuid.UUID, error) {
+	claims, ok := auth.ClaimsFromContext(ctx)
+	if !ok {
+		return uuid.Nil, status.Error(codes.Unauthenticated, "authentication required")
+	}
+	return claims.TenantID, nil
+}
 
 // IdentityHandler implements the gRPC IdentityService server.
 type IdentityHandler struct {
@@ -94,9 +118,17 @@ type CheckMsg struct {
 }
 
 func (h *IdentityHandler) HandleInitiateVerification(ctx context.Context, req *InitiateVerificationRequest) (*InitiateVerificationResponse, error) {
-	tenantID, err := uuid.Parse(req.TenantID)
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAPIClient); err != nil {
+		return nil, err
+	}
+
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
+	tenantID, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid tenant_id: %v", err)
+		return nil, err
 	}
 
 	result, err := h.initiateVerification.Execute(ctx, dto.InitiateVerificationRequest{
@@ -108,7 +140,8 @@ func (h *IdentityHandler) HandleInitiateVerification(ctx context.Context, req *I
 		Country:     req.Country,
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to initiate verification: %v", err)
+		// TODO: log original error server-side: err
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &InitiateVerificationResponse{
@@ -117,6 +150,14 @@ func (h *IdentityHandler) HandleInitiateVerification(ctx context.Context, req *I
 }
 
 func (h *IdentityHandler) HandleGetVerification(ctx context.Context, req *GetVerificationRequest) (*GetVerificationResponse, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAuditor, auth.RoleCustomer, auth.RoleAPIClient); err != nil {
+		return nil, err
+	}
+
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
 	id, err := uuid.Parse(req.ID)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid id: %v", err)
@@ -126,7 +167,8 @@ func (h *IdentityHandler) HandleGetVerification(ctx context.Context, req *GetVer
 		ID: id,
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to get verification: %v", err)
+		// TODO: log original error server-side: err
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &GetVerificationResponse{
@@ -135,6 +177,14 @@ func (h *IdentityHandler) HandleGetVerification(ctx context.Context, req *GetVer
 }
 
 func (h *IdentityHandler) HandleCompleteCheck(ctx context.Context, req *CompleteCheckRequest) (*CompleteCheckResponse, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator); err != nil {
+		return nil, err
+	}
+
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
 	verificationID, err := uuid.Parse(req.VerificationID)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid verification_id: %v", err)
@@ -152,7 +202,8 @@ func (h *IdentityHandler) HandleCompleteCheck(ctx context.Context, req *Complete
 		FailureReason:  req.FailureReason,
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to complete check: %v", err)
+		// TODO: log original error server-side: err
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &CompleteCheckResponse{

@@ -15,12 +15,19 @@ type Config struct {
 	LogLevel    string
 }
 
+// Validate checks required configuration values.
+func (c *Config) Validate() {
+	if c.DatabaseURL == "" {
+		panic("DATABASE_URL environment variable is required")
+	}
+}
+
 // Load reads configuration from environment variables with sensible defaults.
 func Load() *Config {
 	return &Config{
 		GRPCPort:    getEnv("GRPC_PORT", "8088"),
 		HTTPPort:    getEnv("HTTP_PORT", "9088"),
-		DatabaseURL: getEnv("DATABASE_URL", "postgres://bib:bib@localhost:5432/bib_fraud?sslmode=disable"),
+		DatabaseURL: getEnv("DATABASE_URL", ""),
 		KafkaBroker: getEnv("KAFKA_BROKER", "localhost:9092"),
 		Environment: getEnv("ENVIRONMENT", "development"),
 		LogLevel:    getEnv("LOG_LEVEL", "info"),

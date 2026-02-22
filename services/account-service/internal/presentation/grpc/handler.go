@@ -3,22 +3,53 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/bibbank/bib/pkg/auth"
 	"github.com/bibbank/bib/services/account-service/internal/application/dto"
 	"github.com/bibbank/bib/services/account-service/internal/application/usecase"
 )
 
-// AccountHandler implements the gRPC account service handler.
+var currencyCodeRE = regexp.MustCompile(`^[A-Z]{3}$`)
+
+// requireRole checks that the caller has at least one of the given roles.
+func requireRole(ctx context.Context, roles ...string) error {
+	claims, ok := auth.ClaimsFromContext(ctx)
+	if !ok {
+		return status.Error(codes.Unauthenticated, "authentication required")
+	}
+	for _, role := range roles {
+		if claims.HasRole(role) {
+			return nil
+		}
+	}
+	return status.Error(codes.PermissionDenied, "insufficient permissions")
+}
+
+// tenantIDFromContext extracts the tenant ID from JWT claims in the context.
+func tenantIDFromContext(ctx context.Context) (uuid.UUID, error) {
+	claims, ok := auth.ClaimsFromContext(ctx)
+	if !ok {
+		return uuid.Nil, status.Error(codes.Unauthenticated, "authentication required")
+	}
+	return claims.TenantID, nil
+}
+
+// Compile-time assertion that AccountHandler implements AccountServiceServer.
+var _ AccountServiceServer = (*AccountHandler)(nil)
+
+// AccountHandler implements the gRPC AccountServiceServer interface.
 type AccountHandler struct {
-	openAccount  *usecase.OpenAccountUseCase
-	getAccount   *usecase.GetAccountUseCase
+	UnimplementedAccountServiceServer
+	openAccount   *usecase.OpenAccountUseCase
+	getAccount    *usecase.GetAccountUseCase
 	freezeAccount *usecase.FreezeAccountUseCase
-	closeAccount *usecase.CloseAccountUseCase
-	listAccounts *usecase.ListAccountsUseCase
+	closeAccount  *usecase.CloseAccountUseCase
+	listAccounts  *usecase.ListAccountsUseCase
 }
 
 // NewAccountHandler creates a new gRPC account handler.
@@ -38,7 +69,7 @@ func NewAccountHandler(
 	}
 }
 
-// OpenAccountRequest represents the gRPC request for opening an account.
+// OpenAccountRequest represents the proto OpenAccountRequest message.
 type OpenAccountRequest struct {
 	TenantID               string `json:"tenant_id"`
 	AccountType            string `json:"account_type"`
@@ -49,7 +80,7 @@ type OpenAccountRequest struct {
 	IdentityVerificationID string `json:"identity_verification_id"`
 }
 
-// OpenAccountResponse represents the gRPC response for opening an account.
+// OpenAccountResponse represents the proto OpenAccountResponse message.
 type OpenAccountResponse struct {
 	AccountID         string `json:"account_id"`
 	AccountNumber     string `json:"account_number"`
@@ -57,34 +88,55 @@ type OpenAccountResponse struct {
 	LedgerAccountCode string `json:"ledger_account_code"`
 }
 
-// GetAccountRequest represents the gRPC request for getting an account.
+// GetAccountRequest represents the proto GetAccountRequest message.
 type GetAccountRequest struct {
-	AccountID string `json:"account_id"`
+	ID string `json:"id"`
 }
 
-// FreezeAccountRequest represents the gRPC request for freezing an account.
+// GetAccountResponse represents the proto GetAccountResponse message.
+type GetAccountResponse struct {
+	Account *AccountMsg `json:"account"`
+}
+
+// FreezeAccountRequest represents the proto FreezeAccountRequest message.
 type FreezeAccountRequest struct {
-	AccountID string `json:"account_id"`
-	Reason    string `json:"reason"`
+	ID     string `json:"id"`
+	Reason string `json:"reason"`
 }
 
-// CloseAccountRequest represents the gRPC request for closing an account.
+// FreezeAccountResponse represents the proto FreezeAccountResponse message.
+type FreezeAccountResponse struct {
+	Account *AccountMsg `json:"account"`
+}
+
+// CloseAccountRequest represents the proto CloseAccountRequest message.
 type CloseAccountRequest struct {
-	AccountID string `json:"account_id"`
-	Reason    string `json:"reason"`
+	ID     string `json:"id"`
+	Reason string `json:"reason"`
 }
 
-// ListAccountsRequest represents the gRPC request for listing accounts.
+// CloseAccountResponse represents the proto CloseAccountResponse message.
+type CloseAccountResponse struct {
+	Account *AccountMsg `json:"account"`
+}
+
+// ListAccountsRequest represents the proto ListAccountsRequest message.
 type ListAccountsRequest struct {
-	TenantID string `json:"tenant_id"`
-	HolderID string `json:"holder_id"`
-	Limit    int32  `json:"limit"`
-	Offset   int32  `json:"offset"`
+	TenantID  string `json:"tenant_id"`
+	HolderID  string `json:"holder_id"`
+	PageSize  int32  `json:"page_size"`
+	PageToken string `json:"page_token"`
 }
 
-// AccountResponse represents the gRPC response for an account.
-type AccountResponse struct {
-	AccountID         string `json:"account_id"`
+// ListAccountsResponse represents the proto ListAccountsResponse message.
+type ListAccountsResponse struct {
+	Accounts   []*AccountMsg `json:"accounts"`
+	TotalCount int32         `json:"total_count"`
+}
+
+// AccountMsg represents the proto Account message.
+type AccountMsg struct {
+	ID                string `json:"id"`
 	TenantID          string `json:"tenant_id"`
 	AccountNumber     string `json:"account_number"`
 	AccountType       string `json:"account_type"`
@@ -97,21 +149,35 @@ type AccountResponse struct {
 	Version           int32  `json:"version"`
 }
 
-// ListAccountsResponse represents the gRPC response for listing accounts.
-type ListAccountsResponse struct {
-	Accounts   []*AccountResponse `json:"accounts"`
-	TotalCount int32              `json:"total_count"`
-}
-
 // OpenAccount handles the gRPC OpenAccount request.
 func (h *AccountHandler) OpenAccount(ctx context.Context, req *OpenAccountRequest) (*OpenAccountResponse, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAPIClient); err != nil {
+		return nil, err
+	}
+
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request is required")
 	}
 
-	tenantID, err := uuid.Parse(req.TenantID)
+	tenantID, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid tenant_id: %v", err))
+		return nil, err
+	}
+
+	if req.Currency == "" {
+		return nil, status.Error(codes.InvalidArgument, "currency is required")
+	}
+	if !currencyCodeRE.MatchString(req.Currency) {
+		return nil, status.Error(codes.InvalidArgument, "currency must be a 3-letter uppercase ISO code")
+	}
+	if req.HolderFirstName == "" {
+		return nil, status.Error(codes.InvalidArgument, "holder_first_name is required")
+	}
+	if req.HolderLastName == "" {
+		return nil, status.Error(codes.InvalidArgument, "holder_last_name is required")
+	}
+	if req.AccountType == "" {
+		return nil, status.Error(codes.InvalidArgument, "account_type is required")
 	}
 
 	var identityVerificationID uuid.UUID
@@ -132,7 +198,7 @@ func (h *AccountHandler) OpenAccount(ctx context.Context, req *OpenAccountReques
 		IdentityVerificationID: identityVerificationID,
 	})
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &OpenAccountResponse{
@@ -144,14 +210,18 @@ func (h *AccountHandler) OpenAccount(ctx context.Context, req *OpenAccountReques
 }
 
 // GetAccount handles the gRPC GetAccount request.
-func (h *AccountHandler) GetAccount(ctx context.Context, req *GetAccountRequest) (*AccountResponse, error) {
+func (h *AccountHandler) GetAccount(ctx context.Context, req *GetAccountRequest) (*GetAccountResponse, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAuditor, auth.RoleCustomer, auth.RoleAPIClient); err != nil {
+		return nil, err
+	}
+
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request is required")
 	}
 
-	accountID, err := uuid.Parse(req.AccountID)
+	accountID, err := uuid.Parse(req.ID)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid account_id: %v", err))
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid id: %v", err))
 	}
 
 	result, err := h.getAccount.Execute(ctx, dto.GetAccountRequest{
@@ -161,18 +231,24 @@ func (h *AccountHandler) GetAccount(ctx context.Context, req *GetAccountRequest)
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	return toAccountResponse(result), nil
+	return &GetAccountResponse{
+		Account: toAccountMsg(result),
+	}, nil
 }
 
 // FreezeAccount handles the gRPC FreezeAccount request.
-func (h *AccountHandler) FreezeAccount(ctx context.Context, req *FreezeAccountRequest) (*AccountResponse, error) {
+func (h *AccountHandler) FreezeAccount(ctx context.Context, req *FreezeAccountRequest) (*FreezeAccountResponse, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator); err != nil {
+		return nil, err
+	}
+
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request is required")
 	}
 
-	accountID, err := uuid.Parse(req.AccountID)
+	accountID, err := uuid.Parse(req.ID)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid account_id: %v", err))
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid id: %v", err))
 	}
 
 	result, err := h.freezeAccount.Execute(ctx, dto.FreezeAccountRequest{
@@ -180,21 +256,27 @@ func (h *AccountHandler) FreezeAccount(ctx context.Context, req *FreezeAccountRe
 		Reason:    req.Reason,
 	})
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return toAccountResponse(result), nil
+	return &FreezeAccountResponse{
+		Account: toAccountMsg(result),
+	}, nil
 }
 
 // CloseAccount handles the gRPC CloseAccount request.
-func (h *AccountHandler) CloseAccount(ctx context.Context, req *CloseAccountRequest) (*AccountResponse, error) {
+func (h *AccountHandler) CloseAccount(ctx context.Context, req *CloseAccountRequest) (*CloseAccountResponse, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator); err != nil {
+		return nil, err
+	}
+
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request is required")
 	}
 
-	accountID, err := uuid.Parse(req.AccountID)
+	accountID, err := uuid.Parse(req.ID)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid account_id: %v", err))
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid id: %v", err))
 	}
 
 	result, err := h.closeAccount.Execute(ctx, dto.CloseAccountRequest{
@@ -202,28 +284,38 @@ func (h *AccountHandler) CloseAccount(ctx context.Context, req *CloseAccountRequ
 		Reason:    req.Reason,
 	})
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return toAccountResponse(result), nil
+	return &CloseAccountResponse{
+		Account: toAccountMsg(result),
+	}, nil
 }
 
 // ListAccounts handles the gRPC ListAccounts request.
 func (h *AccountHandler) ListAccounts(ctx context.Context, req *ListAccountsRequest) (*ListAccountsResponse, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAuditor, auth.RoleCustomer, auth.RoleAPIClient); err != nil {
+		return nil, err
+	}
+
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request is required")
 	}
 
-	var tenantID, holderID uuid.UUID
-	var err error
-
-	if req.TenantID != "" {
-		tenantID, err = uuid.Parse(req.TenantID)
-		if err != nil {
-			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid tenant_id: %v", err))
-		}
+	pageSize := req.PageSize
+	if pageSize == 0 {
+		pageSize = 20
+	}
+	if pageSize < 0 || pageSize > 100 {
+		return nil, status.Error(codes.InvalidArgument, "page_size must be between 1 and 100")
 	}
 
+	tenantID, err := tenantIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var holderID uuid.UUID
 	if req.HolderID != "" {
 		holderID, err = uuid.Parse(req.HolderID)
 		if err != nil {
@@ -234,16 +326,16 @@ func (h *AccountHandler) ListAccounts(ctx context.Context, req *ListAccountsRequ
 	result, err := h.listAccounts.Execute(ctx, dto.ListAccountsRequest{
 		TenantID: tenantID,
 		HolderID: holderID,
-		Limit:    int(req.Limit),
-		Offset:   int(req.Offset),
+		Limit:    int(pageSize),
+		Offset:   0,
 	})
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	accounts := make([]*AccountResponse, 0, len(result.Accounts))
+	accounts := make([]*AccountMsg, 0, len(result.Accounts))
 	for _, a := range result.Accounts {
-		accounts = append(accounts, toAccountResponse(a))
+		accounts = append(accounts, toAccountMsg(a))
 	}
 
 	return &ListAccountsResponse{
@@ -252,9 +344,9 @@ func (h *AccountHandler) ListAccounts(ctx context.Context, req *ListAccountsRequ
 	}, nil
 }
 
-func toAccountResponse(a dto.AccountResponse) *AccountResponse {
-	return &AccountResponse{
-		AccountID:         a.AccountID.String(),
+func toAccountMsg(a dto.AccountResponse) *AccountMsg {
+	return &AccountMsg{
+		ID:                a.AccountID.String(),
 		TenantID:          a.TenantID.String(),
 		AccountNumber:     a.AccountNumber,
 		AccountType:       a.AccountType,

@@ -131,7 +131,7 @@ func TestJournalEntry_Post_GeneratesDomainEvent(t *testing.T) {
 	events := posted.DomainEvents()
 	require.Len(t, events, 1)
 	assert.Equal(t, "ledger.entry.posted", events[0].EventType())
-	assert.Equal(t, entry.ID(), events[0].AggregateID())
+	assert.Equal(t, entry.ID().String(), events[0].AggregateID())
 }
 
 func TestJournalEntry_Post_FromPosted_Error(t *testing.T) {
@@ -367,9 +367,10 @@ func TestJournalEntry_ClearDomainEvents(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, posted.DomainEvents(), 1)
 
-	cleared := posted.ClearDomainEvents()
+	cleared, updated := posted.ClearDomainEvents()
 	assert.Len(t, cleared, 1)
 	assert.Equal(t, "ledger.entry.posted", cleared[0].EventType())
+	assert.Empty(t, updated.DomainEvents())
 }
 
 func TestJournalEntry_Immutability_PostDoesNotMutateOriginal(t *testing.T) {

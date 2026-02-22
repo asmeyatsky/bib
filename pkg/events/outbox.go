@@ -2,15 +2,14 @@ package events
 
 import (
 	"context"
+	"encoding/json"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // OutboxEntry represents a domain event stored in the outbox table.
 type OutboxEntry struct {
-	ID            uuid.UUID
-	AggregateID   uuid.UUID
+	ID            string
+	AggregateID   string
 	AggregateType string
 	EventType     string
 	Payload       []byte
@@ -19,13 +18,15 @@ type OutboxEntry struct {
 }
 
 // NewOutboxEntry creates an OutboxEntry from a DomainEvent.
+// The payload is produced by JSON-marshalling the event itself.
 func NewOutboxEntry(event DomainEvent) OutboxEntry {
+	payload, _ := json.Marshal(event)
 	return OutboxEntry{
 		ID:            event.EventID(),
 		AggregateID:   event.AggregateID(),
 		AggregateType: event.AggregateType(),
 		EventType:     event.EventType(),
-		Payload:       event.Payload(),
+		Payload:       payload,
 		CreatedAt:     event.OccurredAt(),
 		PublishedAt:   nil,
 	}
@@ -35,7 +36,7 @@ func NewOutboxEntry(event DomainEvent) OutboxEntry {
 type OutboxRepository interface {
 	Store(ctx context.Context, entries []OutboxEntry) error
 	FetchUnpublished(ctx context.Context, batchSize int) ([]OutboxEntry, error)
-	MarkPublished(ctx context.Context, ids []uuid.UUID) error
+	MarkPublished(ctx context.Context, ids []string) error
 }
 
 // EventPublisher publishes domain events to a message broker.

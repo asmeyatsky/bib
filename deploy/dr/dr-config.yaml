@@ -1,0 +1,123 @@
+# Bank-in-a-Box Disaster Recovery Configuration
+# Defines RTO/RPO targets, replication policies, and failover parameters
+# for each service tier.
+
+dr:
+  # Global settings
+  primary_region: us-east-1
+  dr_region: us-west-2
+  failover_mode: manual  # manual or automatic
+  health_check_interval_seconds: 30
+  failover_threshold_failures: 3
+
+  # Service tiers define different RTO/RPO targets based on criticality.
+  tiers:
+    # Tier 1: Mission-critical services (zero data loss, minimal downtime)
+    tier1:
+      rto_minutes: 15
+      rpo_minutes: 0
+      replication_mode: synchronous
+      services:
+        - name: ledger-service
+          database: bib-ledger
+          replication: cross-region-sync
+          backup_schedule: "*/15 * * * *"  # every 15 minutes
+          priority: 1
+        - name: payment-service
+          database: bib-payment
+          replication: cross-region-sync
+          backup_schedule: "*/15 * * * *"
+          priority: 2
+
+    # Tier 2: High-priority services (near-zero data loss)
+    tier2:
+      rto_minutes: 30
+      rpo_minutes: 5
+      replication_mode: asynchronous
+      services:
+        - name: account-service
+          database: bib-account
+          replication: cross-region-async
+          backup_schedule: "*/30 * * * *"  # every 30 minutes
+          priority: 3
+        - name: lending-service
+          database: bib-lending
+          replication: cross-region-async
+          backup_schedule: "*/30 * * * *"
+          priority: 4
+        - name: deposit-service
+          database: bib-deposit
+          replication: cross-region-async
+          backup_schedule: "*/30 * * * *"
+          priority: 5
+        - name: card-service
+          database: bib-card
+          replication: cross-region-async
+          backup_schedule: "*/30 * * * *"
+          priority: 6
+
+    # Tier 3: Supporting services (tolerable data loss)
+    tier3:
+      rto_minutes: 60
+      rpo_minutes: 30
+      replication_mode: backup-restore
+      services:
+        - name: identity-service
+          database: bib-identity
+          replication: backup-restore
+          backup_schedule: "0 * * * *"  # every hour
+          priority: 7
+        - name: fraud-service
+          database: bib-fraud
+          replication: backup-restore
+          backup_schedule: "0 * * * *"
+          priority: 8
+        - name: fx-service
+          database: bib-fx
+          replication: backup-restore
+          backup_schedule: "0 * * * *"
+          priority: 9
+        - name: reporting-service
+          database: bib-reporting
+          replication: backup-restore
+          backup_schedule: "0 */4 * * *"  # every 4 hours
+          priority: 10
+
+  # Kafka / event streaming DR configuration
+  kafka:
+    replication_factor: 3
+    min_insync_replicas: 2
+    mirror_maker:
+      enabled: true
+      source_cluster: primary
+      target_cluster: dr
+      topics:
+        - "ledger.*"
+        - "payment.*"
+        - "account.*"
+        - "lending.*"
+        - "deposit.*"
+        - "card.*"
+        - "fraud.*"
+      replication_lag_alert_ms: 30000
+
+  # DNS failover configuration
+  dns:
+    provider: route53
+    health_check_path: /healthz
+    failover_routing: weighted  # or latency-based
+    primary_weight: 100
+    dr_weight: 0  # set to 100 during failover
+
+  # Monitoring and alerting
+  monitoring:
+    replication_lag_warning_ms: 5000
+    replication_lag_critical_ms: 30000
+    backup_age_warning_minutes: 60
+    backup_age_critical_minutes: 240
+    alert_channels:
+      - type: pagerduty
+        severity: critical
+      - type: slack
+        channel: "#dr-alerts"
+        severity: warning

@@ -2,11 +2,15 @@ package kafka
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"sync"
 	"time"
 
 	kafkago "github.com/segmentio/kafka-go"
+	"github.com/segmentio/kafka-go/sasl"
+	"github.com/segmentio/kafka-go/sasl/plain"
+	"github.com/segmentio/kafka-go/sasl/scram"
 )
 
 // Message represents a Kafka message.
@@ -18,16 +22,58 @@ type Message struct {
 
 // Producer wraps kafka-go writer for publishing messages.
 type Producer struct {
-	mu      sync.Mutex
-	writers map[string]*kafkago.Writer
-	brokers []string
+	mu        sync.Mutex
+	writers   map[string]*kafkago.Writer
+	brokers   []string
+	transport *kafkago.Transport
 }
 
 // NewProducer creates a new Producer with the given configuration.
 func NewProducer(cfg Config) *Producer {
+	transport := &kafkago.Transport{}
+
+	if cfg.TLS {
+		transport.TLS = &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
+	}
+
+	if cfg.SASLEnabled {
+		mechanism := resolveSASLMechanism(cfg)
+		if mechanism != nil {
+			transport.SASL = mechanism
+		}
+	}
+
 	return &Producer{
-		writers: make(map[string]*kafkago.Writer),
-		brokers: cfg.Brokers,
+		writers:   make(map[string]*kafkago.Writer),
+		brokers:   cfg.Brokers,
+		transport: transport,
+	}
+}
+
+// resolveSASLMechanism returns the appropriate SASL mechanism based on config.
+func resolveSASLMechanism(cfg Config) sasl.Mechanism {
+	switch cfg.SASLMechanism {
+	case "SCRAM-SHA-256":
+		m, err := scram.Mechanism(scram.SHA256, cfg.SASLUsername, cfg.SASLPassword)
+		if err != nil {
+			return nil
+		}
+		return m
+	case "SCRAM-SHA-512":
+		m, err := scram.Mechanism(scram.SHA512, cfg.SASLUsername, cfg.SASLPassword)
+		if err != nil {
+			return nil
+		}
+		return m
+	case "PLAIN", "":
+		return &plain.Mechanism{
+			Username: cfg.SASLUsername,
+			Password: cfg.SASLPassword,
+		}
+	default:
+		return nil
 	}
 }
 
@@ -86,6 +132,7 @@ func (p *Producer) getOrCreateWriter(topic string) *kafkago.Writer {
 		Balancer:     &kafkago.LeastBytes{},
 		BatchTimeout: 10 * time.Millisecond,
 		RequiredAcks: kafkago.RequireAll,
+		Transport:    p.transport,
 	}
 	p.writers[topic] = w
 	return w

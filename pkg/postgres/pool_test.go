@@ -23,7 +23,7 @@ func TestConfig_DSN(t *testing.T) {
 			want: "postgres://admin:secret@localhost:5432/bankdb?sslmode=require",
 		},
 		{
-			name: "sslmode defaults to disable when empty",
+			name: "sslmode defaults to require when empty",
 			cfg: Config{
 				Host:     "localhost",
 				Port:     5432,
@@ -31,7 +31,7 @@ func TestConfig_DSN(t *testing.T) {
 				Password: "secret",
 				Database: "bankdb",
 			},
-			want: "postgres://admin:secret@localhost:5432/bankdb?sslmode=disable",
+			want: "postgres://admin:secret@localhost:5432/bankdb?sslmode=require",
 		},
 		{
 			name: "custom port and host",
@@ -66,7 +66,7 @@ func TestConfig_DSN(t *testing.T) {
 				Password: "pass",
 				Database: "testdb",
 			},
-			want: "postgres://user:pass@localhost:0/testdb?sslmode=disable",
+			want: "postgres://user:pass@localhost:0/testdb?sslmode=require",
 		},
 	}
 

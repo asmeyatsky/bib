@@ -1,7 +1,6 @@
 package event
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -16,7 +15,6 @@ const AggregateTypeDepositPosition = "DepositPosition"
 type DepositOpened struct {
 	events.BaseEvent
 	PositionID uuid.UUID `json:"position_id"`
-	TenantID   uuid.UUID `json:"tenant_id"`
 	AccountID  uuid.UUID `json:"account_id"`
 	ProductID  uuid.UUID `json:"product_id"`
 	Principal  string    `json:"principal"`
@@ -24,19 +22,9 @@ type DepositOpened struct {
 }
 
 func NewDepositOpened(positionID, tenantID, accountID, productID uuid.UUID, principal decimal.Decimal, currency string) DepositOpened {
-	payload, _ := json.Marshal(struct {
-		PositionID uuid.UUID `json:"position_id"`
-		TenantID   uuid.UUID `json:"tenant_id"`
-		AccountID  uuid.UUID `json:"account_id"`
-		ProductID  uuid.UUID `json:"product_id"`
-		Principal  string    `json:"principal"`
-		Currency   string    `json:"currency"`
-	}{positionID, tenantID, accountID, productID, principal.String(), currency})
-
 	return DepositOpened{
-		BaseEvent:  events.NewBaseEvent("deposit.position.opened", positionID, AggregateTypeDepositPosition, payload),
+		BaseEvent:  events.NewBaseEvent("deposit.position.opened", positionID.String(), AggregateTypeDepositPosition, tenantID.String()),
 		PositionID: positionID,
-		TenantID:   tenantID,
 		AccountID:  accountID,
 		ProductID:  productID,
 		Principal:  principal.String(),
@@ -48,7 +36,6 @@ func NewDepositOpened(positionID, tenantID, accountID, productID uuid.UUID, prin
 type InterestAccrued struct {
 	events.BaseEvent
 	PositionID uuid.UUID `json:"position_id"`
-	TenantID   uuid.UUID `json:"tenant_id"`
 	AccountID  uuid.UUID `json:"account_id"`
 	Amount     string    `json:"amount"`
 	Currency   string    `json:"currency"`
@@ -56,19 +43,9 @@ type InterestAccrued struct {
 }
 
 func NewInterestAccrued(positionID, tenantID, accountID uuid.UUID, amount decimal.Decimal, currency string, asOf time.Time) InterestAccrued {
-	payload, _ := json.Marshal(struct {
-		PositionID uuid.UUID `json:"position_id"`
-		TenantID   uuid.UUID `json:"tenant_id"`
-		AccountID  uuid.UUID `json:"account_id"`
-		Amount     string    `json:"amount"`
-		Currency   string    `json:"currency"`
-		AsOf       time.Time `json:"as_of"`
-	}{positionID, tenantID, accountID, amount.String(), currency, asOf})
-
 	return InterestAccrued{
-		BaseEvent:  events.NewBaseEvent("deposit.interest.accrued", positionID, AggregateTypeDepositPosition, payload),
+		BaseEvent:  events.NewBaseEvent("deposit.interest.accrued", positionID.String(), AggregateTypeDepositPosition, tenantID.String()),
 		PositionID: positionID,
-		TenantID:   tenantID,
 		AccountID:  accountID,
 		Amount:     amount.String(),
 		Currency:   currency,
@@ -80,21 +57,13 @@ func NewInterestAccrued(positionID, tenantID, accountID uuid.UUID, amount decima
 type DepositMatured struct {
 	events.BaseEvent
 	PositionID uuid.UUID `json:"position_id"`
-	TenantID   uuid.UUID `json:"tenant_id"`
 	AccountID  uuid.UUID `json:"account_id"`
 }
 
 func NewDepositMatured(positionID, tenantID, accountID uuid.UUID) DepositMatured {
-	payload, _ := json.Marshal(struct {
-		PositionID uuid.UUID `json:"position_id"`
-		TenantID   uuid.UUID `json:"tenant_id"`
-		AccountID  uuid.UUID `json:"account_id"`
-	}{positionID, tenantID, accountID})
-
 	return DepositMatured{
-		BaseEvent:  events.NewBaseEvent("deposit.position.matured", positionID, AggregateTypeDepositPosition, payload),
+		BaseEvent:  events.NewBaseEvent("deposit.position.matured", positionID.String(), AggregateTypeDepositPosition, tenantID.String()),
 		PositionID: positionID,
-		TenantID:   tenantID,
 		AccountID:  accountID,
 	}
 }
@@ -103,21 +72,13 @@ func NewDepositMatured(positionID, tenantID, accountID uuid.UUID) DepositMatured
 type DepositClosed struct {
 	events.BaseEvent
 	PositionID uuid.UUID `json:"position_id"`
-	TenantID   uuid.UUID `json:"tenant_id"`
 	AccountID  uuid.UUID `json:"account_id"`
 }
 
 func NewDepositClosed(positionID, tenantID, accountID uuid.UUID) DepositClosed {
-	payload, _ := json.Marshal(struct {
-		PositionID uuid.UUID `json:"position_id"`
-		TenantID   uuid.UUID `json:"tenant_id"`
-		AccountID  uuid.UUID `json:"account_id"`
-	}{positionID, tenantID, accountID})
-
 	return DepositClosed{
-		BaseEvent:  events.NewBaseEvent("deposit.position.closed", positionID, AggregateTypeDepositPosition, payload),
+		BaseEvent:  events.NewBaseEvent("deposit.position.closed", positionID.String(), AggregateTypeDepositPosition, tenantID.String()),
 		PositionID: positionID,
-		TenantID:   tenantID,
 		AccountID:  accountID,
 	}
 }

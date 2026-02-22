@@ -12,6 +12,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/bibbank/bib/pkg/auth"
+	pkgkafka "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/pkg/observability"
 	"github.com/bibbank/bib/services/reporting-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/reporting-service/internal/domain/service"
@@ -73,7 +75,11 @@ func main() {
 
 	// Wire infrastructure adapters.
 	reportRepo := pgRepo.NewReportSubmissionRepo(pool)
-	eventPublisher := messaging.NewKafkaPublisher(cfg.KafkaBroker, logger)
+	kafkaProducer := pkgkafka.NewProducer(pkgkafka.Config{
+		Brokers: []string{cfg.KafkaBroker},
+	})
+	defer kafkaProducer.Close()
+	eventPublisher := messaging.NewKafkaPublisher(kafkaProducer, logger)
 	ledgerClient := client.NewStubLedgerDataClient()
 	xbrlGenerator := service.NewXBRLGenerator()
 
@@ -82,9 +88,19 @@ func main() {
 	getReportUC := usecase.NewGetReportUseCase(reportRepo)
 	submitReportUC := usecase.NewSubmitReportUseCase(reportRepo, eventPublisher)
 
+	// JWT service.
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "dev-secret-change-in-prod" // development only
+	}
+	jwtSvc := auth.NewJWTService(auth.JWTConfig{
+		Secret: jwtSecret,
+		Issuer: "bib-reporting",
+	})
+
 	// gRPC server.
 	handler := grpcpresentation.NewReportingHandler(generateReportUC, getReportUC, submitReportUC)
-	grpcServer := grpcpresentation.NewServer(handler, logger)
+	grpcServer := grpcpresentation.NewServer(handler, logger, jwtSvc)
 
 	// HTTP server (health checks).
 	httpMux := http.NewServeMux()

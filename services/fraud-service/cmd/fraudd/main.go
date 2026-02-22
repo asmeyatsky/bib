@@ -12,6 +12,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/bibbank/bib/pkg/auth"
+	pkgkafka "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/pkg/observability"
 	"github.com/bibbank/bib/services/fraud-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/fraud-service/internal/domain/service"
@@ -72,9 +74,13 @@ func main() {
 
 	// Wire infrastructure adapters.
 	assessmentRepo := postgres.NewAssessmentRepository(pool)
+	kafkaProducer := pkgkafka.NewProducer(pkgkafka.Config{
+		Brokers: []string{cfg.KafkaBroker},
+	})
+	defer kafkaProducer.Close()
 	eventPublisher := messaging.NewKafkaPublisher(
-		[]string{cfg.KafkaBroker},
-		"fraud.events",
+		kafkaProducer,
+		"fraud-events",
 		logger,
 	)
 
@@ -85,9 +91,19 @@ func main() {
 	assessTransactionUC := usecase.NewAssessTransaction(assessmentRepo, eventPublisher, riskScorer)
 	getAssessmentUC := usecase.NewGetAssessment(assessmentRepo)
 
+	// JWT service.
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "dev-secret-change-in-prod" // development only
+	}
+	jwtSvc := auth.NewJWTService(auth.JWTConfig{
+		Secret: jwtSecret,
+		Issuer: "bib-fraud",
+	})
+
 	// gRPC server.
 	grpcHandler := grpcpresentation.NewFraudServiceHandler(assessTransactionUC, getAssessmentUC, logger)
-	grpcServer := grpcpresentation.NewServer(grpcHandler, cfg.GRPCAddress(), logger)
+	grpcServer := grpcpresentation.NewServer(grpcHandler, cfg.GRPCAddress(), logger, jwtSvc)
 
 	// HTTP server (health checks).
 	healthHandler := rest.NewHealthHandler(logger)

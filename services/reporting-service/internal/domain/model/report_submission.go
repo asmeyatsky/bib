@@ -111,13 +111,9 @@ func (r ReportSubmission) SetGenerated(xbrlContent string, now time.Time) (Repor
 	r.xbrlContent = xbrlContent
 	r.generatedAt = &now
 	r.updatedAt = now
-	r.domainEvents = append(r.domainEvents, event.ReportGenerated{
-		ID:              r.id,
-		TenantID:        r.tenantID,
-		ReportType:      r.reportType.String(),
-		ReportingPeriod: r.reportingPeriod,
-		Timestamp:       now,
-	})
+	r.domainEvents = append(r.domainEvents, event.NewReportGenerated(
+		r.id, r.tenantID, r.reportType.String(), r.reportingPeriod, now,
+	))
 	return r, nil
 }
 
@@ -162,13 +158,9 @@ func (r ReportSubmission) Submit(now time.Time) (ReportSubmission, error) {
 	r.status = valueobject.SubmissionStatusSubmitted
 	r.submittedAt = &now
 	r.updatedAt = now
-	r.domainEvents = append(r.domainEvents, event.ReportSubmitted{
-		ID:              r.id,
-		TenantID:        r.tenantID,
-		ReportType:      r.reportType.String(),
-		ReportingPeriod: r.reportingPeriod,
-		Timestamp:       now,
-	})
+	r.domainEvents = append(r.domainEvents, event.NewReportSubmitted(
+		r.id, r.tenantID, r.reportType.String(), r.reportingPeriod, now,
+	))
 	return r, nil
 }
 
@@ -179,13 +171,9 @@ func (r ReportSubmission) Accept(now time.Time) (ReportSubmission, error) {
 	}
 	r.status = valueobject.SubmissionStatusAccepted
 	r.updatedAt = now
-	r.domainEvents = append(r.domainEvents, event.ReportAccepted{
-		ID:              r.id,
-		TenantID:        r.tenantID,
-		ReportType:      r.reportType.String(),
-		ReportingPeriod: r.reportingPeriod,
-		Timestamp:       now,
-	})
+	r.domainEvents = append(r.domainEvents, event.NewReportAccepted(
+		r.id, r.tenantID, r.reportType.String(), r.reportingPeriod, now,
+	))
 	return r, nil
 }
 
@@ -200,14 +188,9 @@ func (r ReportSubmission) Reject(errors []string, now time.Time) (ReportSubmissi
 	r.status = valueobject.SubmissionStatusRejected
 	r.validationErrors = errors
 	r.updatedAt = now
-	r.domainEvents = append(r.domainEvents, event.ReportRejected{
-		ID:               r.id,
-		TenantID:         r.tenantID,
-		ReportType:       r.reportType.String(),
-		ReportingPeriod:  r.reportingPeriod,
-		ValidationErrors: errors,
-		Timestamp:        now,
-	})
+	r.domainEvents = append(r.domainEvents, event.NewReportRejected(
+		r.id, r.tenantID, r.reportType.String(), r.reportingPeriod, errors, now,
+	))
 	return r, nil
 }
 

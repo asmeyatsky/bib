@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"os"
 
+	"github.com/bibbank/bib/pkg/auth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -20,16 +22,28 @@ type Server struct {
 	logger  *slog.Logger
 }
 
-func NewServer(handler *DepositHandler, port int, logger *slog.Logger, opts ...grpc.ServerOption) *Server {
+func NewServer(handler *DepositHandler, port int, logger *slog.Logger, jwtService *auth.JWTService, opts ...grpc.ServerOption) *Server {
+	// Add auth interceptor, skipping health check methods.
+	authInterceptor := auth.UnaryAuthInterceptor(jwtService, []string{
+		"/grpc.health.v1.Health/Check",
+		"/grpc.health.v1.Health/Watch",
+	})
+	opts = append(opts, grpc.UnaryInterceptor(authInterceptor))
+
 	srv := grpc.NewServer(opts...)
 
-	// Register health check
+	// Register health check.
 	healthSrv := health.NewServer()
 	grpc_health_v1.RegisterHealthServer(srv, healthSrv)
 	healthSrv.SetServingStatus("deposit-service", grpc_health_v1.HealthCheckResponse_SERVING)
 
-	// Enable reflection for development
-	reflection.Register(srv)
+	// Register the DepositService handler.
+	RegisterDepositServiceServer(srv, handler)
+
+	// Only enable reflection when GRPC_REFLECTION=true.
+	if os.Getenv("GRPC_REFLECTION") == "true" {
+		reflection.Register(srv)
+	}
 
 	return &Server{
 		server:  srv,

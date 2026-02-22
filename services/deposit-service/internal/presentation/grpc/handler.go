@@ -8,16 +8,45 @@ import (
 	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/bibbank/bib/pkg/auth"
 	"github.com/bibbank/bib/services/deposit-service/internal/application/dto"
 	"github.com/bibbank/bib/services/deposit-service/internal/application/usecase"
 )
 
-// DepositHandler implements the gRPC DepositService server.
+// requireRole checks that the caller has at least one of the given roles.
+func requireRole(ctx context.Context, roles ...string) error {
+	claims, ok := auth.ClaimsFromContext(ctx)
+	if !ok {
+		return status.Error(codes.Unauthenticated, "authentication required")
+	}
+	for _, role := range roles {
+		if claims.HasRole(role) {
+			return nil
+		}
+	}
+	return status.Error(codes.PermissionDenied, "insufficient permissions")
+}
+
+// tenantIDFromContext extracts the tenant ID from JWT claims in the context.
+func tenantIDFromContext(ctx context.Context) (uuid.UUID, error) {
+	claims, ok := auth.ClaimsFromContext(ctx)
+	if !ok {
+		return uuid.Nil, status.Error(codes.Unauthenticated, "authentication required")
+	}
+	return claims.TenantID, nil
+}
+
+// Compile-time assertion that DepositHandler implements DepositServiceServer.
+var _ DepositServiceServer = (*DepositHandler)(nil)
+
+// DepositHandler implements the gRPC DepositServiceServer interface.
 type DepositHandler struct {
-	createProduct *usecase.CreateDepositProduct
-	openPosition  *usecase.OpenDepositPosition
-	getPosition   *usecase.GetDepositPosition
+	UnimplementedDepositServiceServer
+	createProduct  *usecase.CreateDepositProduct
+	openPosition   *usecase.OpenDepositPosition
+	getPosition    *usecase.GetDepositPosition
 	accrueInterest *usecase.AccrueInterest
 }
 
@@ -35,7 +64,7 @@ func NewDepositHandler(
 	}
 }
 
-// --- Temporary request/response types until proto generation is wired ---
+// Proto-aligned request/response message types.
 
 type CreateDepositProductRequest struct {
 	TenantID string
@@ -48,20 +77,16 @@ type CreateDepositProductRequest struct {
 type InterestTierMsg struct {
 	MinBalance string
 	MaxBalance string
-	RateBps    int32
+	RateBps    string
 }
 
 type DepositProductMsg struct {
-	ID        string
-	TenantID  string
-	Name      string
-	Currency  string
-	Tiers     []*InterestTierMsg
-	TermDays  int32
-	IsActive  bool
-	Version   int32
-	CreatedAt string
-	UpdatedAt string
+	ID       string
+	TenantID string
+	Name     string
+	Currency string
+	Tiers    []*InterestTierMsg
+	TermDays int32
 }
 
 type CreateDepositProductResponse struct {
@@ -84,12 +109,8 @@ type DepositPositionMsg struct {
 	Currency        string
 	AccruedInterest string
 	Status          string
-	OpenedAt        string
-	MaturityDate    string
-	LastAccrualDate string
-	Version         int32
-	CreatedAt       string
-	UpdatedAt       string
+	OpenedAt        *timestamppb.Timestamp
+	MaturityDate    *timestamppb.Timestamp
 }
 
 type OpenDepositPositionResponse struct {
@@ -106,7 +127,7 @@ type GetDepositPositionResponse struct {
 
 type AccrueInterestRequest struct {
 	TenantID string
-	AsOfDate string
+	AsOfDate *timestamppb.Timestamp
 }
 
 type AccrueInterestResponse struct {
@@ -114,11 +135,19 @@ type AccrueInterestResponse struct {
 	TotalAccrued       string
 }
 
-// HandleCreateDepositProduct processes product creation requests.
-func (h *DepositHandler) HandleCreateDepositProduct(ctx context.Context, req *CreateDepositProductRequest) (*CreateDepositProductResponse, error) {
-	tenantID, err := uuid.Parse(req.TenantID)
+// CreateDepositProduct processes product creation requests.
+func (h *DepositHandler) CreateDepositProduct(ctx context.Context, req *CreateDepositProductRequest) (*CreateDepositProductResponse, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAPIClient); err != nil {
+		return nil, err
+	}
+
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
+	tenantID, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid tenant_id: %v", err)
+		return nil, err
 	}
 
 	var tiers []dto.InterestTierDTO
@@ -131,10 +160,18 @@ func (h *DepositHandler) HandleCreateDepositProduct(ctx context.Context, req *Cr
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid max_balance: %v", err)
 		}
+		rateBps := 0
+		if t.RateBps != "" {
+			d, err := decimal.NewFromString(t.RateBps)
+			if err != nil {
+				return nil, status.Errorf(codes.InvalidArgument, "invalid rate_bps: %v", err)
+			}
+			rateBps = int(d.IntPart())
+		}
 		tiers = append(tiers, dto.InterestTierDTO{
 			MinBalance: minBal,
 			MaxBalance: maxBal,
-			RateBps:    int(t.RateBps),
+			RateBps:    rateBps,
 		})
 	}
 
@@ -146,7 +183,7 @@ func (h *DepositHandler) HandleCreateDepositProduct(ctx context.Context, req *Cr
 		TermDays: int(req.TermDays),
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to create deposit product: %v", err)
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &CreateDepositProductResponse{
@@ -154,12 +191,21 @@ func (h *DepositHandler) HandleCreateDepositProduct(ctx context.Context, req *Cr
 	}, nil
 }
 
-// HandleOpenDepositPosition processes position opening requests.
-func (h *DepositHandler) HandleOpenDepositPosition(ctx context.Context, req *OpenDepositPositionRequest) (*OpenDepositPositionResponse, error) {
-	tenantID, err := uuid.Parse(req.TenantID)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid tenant_id: %v", err)
+// OpenDepositPosition processes position opening requests.
+func (h *DepositHandler) OpenDepositPosition(ctx context.Context, req *OpenDepositPositionRequest) (*OpenDepositPositionResponse, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAPIClient); err != nil {
+		return nil, err
 	}
+
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
+	tenantID, err := tenantIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	accountID, err := uuid.Parse(req.AccountID)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid account_id: %v", err)
@@ -180,7 +226,7 @@ func (h *DepositHandler) HandleOpenDepositPosition(ctx context.Context, req *Ope
 		Principal: principal,
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to open deposit position: %v", err)
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &OpenDepositPositionResponse{
@@ -188,8 +234,16 @@ func (h *DepositHandler) HandleOpenDepositPosition(ctx context.Context, req *Ope
 	}, nil
 }
 
-// HandleGetDepositPosition processes position retrieval requests.
-func (h *DepositHandler) HandleGetDepositPosition(ctx context.Context, req *GetDepositPositionRequest) (*GetDepositPositionResponse, error) {
+// GetDepositPosition processes position retrieval requests.
+func (h *DepositHandler) GetDepositPosition(ctx context.Context, req *GetDepositPositionRequest) (*GetDepositPositionResponse, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAuditor, auth.RoleCustomer, auth.RoleAPIClient); err != nil {
+		return nil, err
+	}
+
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
 	positionID, err := uuid.Parse(req.ID)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid id: %v", err)
@@ -207,16 +261,26 @@ func (h *DepositHandler) HandleGetDepositPosition(ctx context.Context, req *GetD
 	}, nil
 }
 
-// HandleAccrueInterest processes batch interest accrual requests.
-func (h *DepositHandler) HandleAccrueInterest(ctx context.Context, req *AccrueInterestRequest) (*AccrueInterestResponse, error) {
-	tenantID, err := uuid.Parse(req.TenantID)
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid tenant_id: %v", err)
+// AccrueInterest processes batch interest accrual requests.
+func (h *DepositHandler) AccrueInterest(ctx context.Context, req *AccrueInterestRequest) (*AccrueInterestResponse, error) {
+	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator); err != nil {
+		return nil, err
 	}
 
-	asOf, err := time.Parse("2006-01-02", req.AsOfDate)
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
+	tenantID, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid as_of_date: %v", err)
+		return nil, err
+	}
+
+	var asOf time.Time
+	if req.AsOfDate != nil {
+		asOf = req.AsOfDate.AsTime()
+	} else {
+		asOf = time.Now()
 	}
 
 	result, err := h.accrueInterest.Execute(ctx, dto.AccrueInterestRequest{
@@ -224,7 +288,7 @@ func (h *DepositHandler) HandleAccrueInterest(ctx context.Context, req *AccrueIn
 		AsOf:     asOf,
 	})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to accrue interest: %v", err)
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &AccrueInterestResponse{
@@ -239,29 +303,21 @@ func toDepositProductMsg(r dto.DepositProductResponse) *DepositProductMsg {
 		tiers = append(tiers, &InterestTierMsg{
 			MinBalance: t.MinBalance.String(),
 			MaxBalance: t.MaxBalance.String(),
-			RateBps:    int32(t.RateBps),
+			RateBps:    decimal.NewFromInt(int64(t.RateBps)).String(),
 		})
 	}
 	return &DepositProductMsg{
-		ID:        r.ID.String(),
-		TenantID:  r.TenantID.String(),
-		Name:      r.Name,
-		Currency:  r.Currency,
-		Tiers:     tiers,
-		TermDays:  int32(r.TermDays),
-		IsActive:  r.IsActive,
-		Version:   int32(r.Version),
-		CreatedAt: r.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: r.UpdatedAt.Format(time.RFC3339),
+		ID:       r.ID.String(),
+		TenantID: r.TenantID.String(),
+		Name:     r.Name,
+		Currency: r.Currency,
+		Tiers:    tiers,
+		TermDays: int32(r.TermDays),
 	}
 }
 
 func toPositionMsg(r dto.DepositPositionResponse) *DepositPositionMsg {
-	var maturityDate string
-	if r.MaturityDate != nil {
-		maturityDate = r.MaturityDate.Format(time.RFC3339)
-	}
-	return &DepositPositionMsg{
+	msg := &DepositPositionMsg{
 		ID:              r.ID.String(),
 		TenantID:        r.TenantID.String(),
 		AccountID:       r.AccountID.String(),
@@ -270,11 +326,10 @@ func toPositionMsg(r dto.DepositPositionResponse) *DepositPositionMsg {
 		Currency:        r.Currency,
 		AccruedInterest: r.AccruedInterest.String(),
 		Status:          r.Status,
-		OpenedAt:        r.OpenedAt.Format(time.RFC3339),
-		MaturityDate:    maturityDate,
-		LastAccrualDate: r.LastAccrualDate.Format(time.RFC3339),
-		Version:         int32(r.Version),
-		CreatedAt:       r.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:       r.UpdatedAt.Format(time.RFC3339),
+		OpenedAt:        timestamppb.New(r.OpenedAt),
 	}
+	if r.MaturityDate != nil {
+		msg.MaturityDate = timestamppb.New(*r.MaturityDate)
+	}
+	return msg
 }

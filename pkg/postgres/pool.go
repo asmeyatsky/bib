@@ -24,7 +24,7 @@ type Config struct {
 func (c Config) DSN() string {
 	sslMode := c.SSLMode
 	if sslMode == "" {
-		sslMode = "disable"
+		sslMode = "require"
 	}
 	return fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=%s",

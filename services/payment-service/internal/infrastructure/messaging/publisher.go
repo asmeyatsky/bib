@@ -2,6 +2,7 @@ package messaging
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/bibbank/bib/pkg/events"
@@ -23,13 +24,17 @@ func NewPublisher(producer *pkgkafka.Producer) *Publisher {
 func (p *Publisher) Publish(ctx context.Context, topic string, domainEvents ...events.DomainEvent) error {
 	var messages []pkgkafka.Message
 	for _, evt := range domainEvents {
+		payload, err := json.Marshal(evt)
+		if err != nil {
+			return fmt.Errorf("marshal event %s: %w", evt.EventType(), err)
+		}
 		messages = append(messages, pkgkafka.Message{
-			Key:   []byte(evt.AggregateID().String()),
-			Value: evt.Payload(),
+			Key:   []byte(evt.AggregateID()),
+			Value: payload,
 			Headers: map[string]string{
 				"event_type":     evt.EventType(),
 				"aggregate_type": evt.AggregateType(),
-				"event_id":       evt.EventID().String(),
+				"event_id":       evt.EventID(),
 			},
 		})
 	}

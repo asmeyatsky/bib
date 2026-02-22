@@ -27,6 +27,12 @@ func NewPostgresCardRepository(pool *pgxpool.Pool) *PostgresCardRepository {
 
 // Save persists a new card aggregate.
 func (r *PostgresCardRepository) Save(ctx context.Context, card model.Card) error {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	query := `
 		INSERT INTO cards (
 			id, tenant_id, account_id, card_type, status,
@@ -36,7 +42,7 @@ func (r *PostgresCardRepository) Save(ctx context.Context, card model.Card) erro
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 	`
 
-	_, err := r.pool.Exec(ctx, query,
+	_, err = tx.Exec(ctx, query,
 		card.ID(),
 		card.TenantID(),
 		card.AccountID(),
@@ -58,9 +64,13 @@ func (r *PostgresCardRepository) Save(ctx context.Context, card model.Card) erro
 		return fmt.Errorf("failed to insert card: %w", err)
 	}
 
-	// Write domain events to the outbox.
-	if err := r.writeOutbox(ctx, card); err != nil {
+	// Write domain events to the outbox within the same transaction.
+	if err := r.writeOutbox(ctx, tx, card); err != nil {
 		return fmt.Errorf("failed to write outbox: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return nil
@@ -68,6 +78,12 @@ func (r *PostgresCardRepository) Save(ctx context.Context, card model.Card) erro
 
 // Update persists changes to an existing card aggregate with optimistic locking.
 func (r *PostgresCardRepository) Update(ctx context.Context, card model.Card) error {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	query := `
 		UPDATE cards SET
 			status = $1,
@@ -78,7 +94,7 @@ func (r *PostgresCardRepository) Update(ctx context.Context, card model.Card) er
 		WHERE id = $6 AND version = $7
 	`
 
-	result, err := r.pool.Exec(ctx, query,
+	result, err := tx.Exec(ctx, query,
 		card.Status().String(),
 		card.DailySpent(),
 		card.MonthlySpent(),
@@ -95,9 +111,13 @@ func (r *PostgresCardRepository) Update(ctx context.Context, card model.Card) er
 		return fmt.Errorf("optimistic locking failure: card %s has been modified by another process", card.ID())
 	}
 
-	// Write domain events to the outbox.
-	if err := r.writeOutbox(ctx, card); err != nil {
+	// Write domain events to the outbox within the same transaction.
+	if err := r.writeOutbox(ctx, tx, card); err != nil {
 		return fmt.Errorf("failed to write outbox: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return nil
@@ -247,8 +267,8 @@ func (r *PostgresCardRepository) scanCards(rows pgx.Rows) ([]model.Card, error) 
 	return cards, nil
 }
 
-// writeOutbox writes domain events to the transactional outbox table.
-func (r *PostgresCardRepository) writeOutbox(ctx context.Context, card model.Card) error {
+// writeOutbox writes domain events to the transactional outbox table within the given transaction.
+func (r *PostgresCardRepository) writeOutbox(ctx context.Context, tx pgx.Tx, card model.Card) error {
 	for _, evt := range card.DomainEvents() {
 		payload, err := json.Marshal(evt)
 		if err != nil {
@@ -260,7 +280,7 @@ func (r *PostgresCardRepository) writeOutbox(ctx context.Context, card model.Car
 			VALUES ($1, $2, $3, $4)
 		`
 
-		_, err = r.pool.Exec(ctx, query, card.ID(), "Card", evt.EventType(), payload)
+		_, err = tx.Exec(ctx, query, card.ID(), "Card", evt.EventType(), payload)
 		if err != nil {
 			return fmt.Errorf("failed to insert outbox event: %w", err)
 		}

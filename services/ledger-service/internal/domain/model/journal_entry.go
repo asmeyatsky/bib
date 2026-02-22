@@ -190,8 +190,9 @@ func (je JournalEntry) Version() int                           { return je.versi
 func (je JournalEntry) CreatedAt() time.Time                   { return je.createdAt }
 func (je JournalEntry) UpdatedAt() time.Time                   { return je.updatedAt }
 func (je JournalEntry) DomainEvents() []events.DomainEvent     { return je.domainEvents }
-func (je JournalEntry) ClearDomainEvents() []events.DomainEvent {
+// ClearDomainEvents returns the collected domain events and a new JournalEntry with events cleared.
+func (je JournalEntry) ClearDomainEvents() ([]events.DomainEvent, JournalEntry) {
 	evts := je.domainEvents
 	je.domainEvents = nil
-	return evts
+	return evts, je
 }

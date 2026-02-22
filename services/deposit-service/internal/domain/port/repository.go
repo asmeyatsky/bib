@@ -31,6 +31,18 @@ type DepositPositionRepository interface {
 	FindByAccount(ctx context.Context, accountID uuid.UUID) ([]model.DepositPosition, error)
 }
 
+// CampaignRepository defines persistence operations for deposit campaigns.
+type CampaignRepository interface {
+	// Save persists a campaign (insert or update).
+	Save(ctx context.Context, campaign model.Campaign) error
+	// FindByID retrieves a campaign by its unique identifier.
+	FindByID(ctx context.Context, id uuid.UUID) (model.Campaign, error)
+	// FindActiveByProduct returns active campaigns for a given product.
+	FindActiveByProduct(ctx context.Context, productID uuid.UUID) ([]model.Campaign, error)
+	// ListByTenant returns all campaigns for a given tenant.
+	ListByTenant(ctx context.Context, tenantID uuid.UUID) ([]model.Campaign, error)
+}
+
 // EventPublisher publishes domain events to a message broker.
 type EventPublisher interface {
 	Publish(ctx context.Context, topic string, events ...events.DomainEvent) error

@@ -6,34 +6,37 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/bibbank/bib/services/fraud-service/internal/domain/event"
+	pkgkafka "github.com/bibbank/bib/pkg/kafka"
 )
 
 // KafkaPublisher implements port.EventPublisher using Kafka.
 type KafkaPublisher struct {
-	brokers []string
-	topic   string
-	logger  *slog.Logger
+	producer *pkgkafka.Producer
+	topic    string
+	logger   *slog.Logger
 }
 
 // NewKafkaPublisher creates a new Kafka event publisher.
-func NewKafkaPublisher(brokers []string, topic string, logger *slog.Logger) *KafkaPublisher {
+func NewKafkaPublisher(producer *pkgkafka.Producer, topic string, logger *slog.Logger) *KafkaPublisher {
 	return &KafkaPublisher{
-		brokers: brokers,
-		topic:   topic,
-		logger:  logger,
+		producer: producer,
+		topic:    topic,
+		logger:   logger,
 	}
+}
+
+// eventDescriptor extracts the event type from known domain event types.
+type eventDescriptor interface {
+	EventType() string
 }
 
 // Publish sends domain events to Kafka.
 func (p *KafkaPublisher) Publish(ctx context.Context, events ...interface{}) error {
+	messages := make([]pkgkafka.Message, 0, len(events))
 	for _, evt := range events {
 		eventType := "unknown"
-		switch e := evt.(type) {
-		case event.AssessmentCompleted:
-			eventType = e.EventType()
-		case event.HighRiskDetected:
-			eventType = e.EventType()
+		if ed, ok := evt.(eventDescriptor); ok {
+			eventType = ed.EventType()
 		}
 
 		payload, err := json.Marshal(evt)
@@ -41,18 +44,26 @@ func (p *KafkaPublisher) Publish(ctx context.Context, events ...interface{}) err
 			return fmt.Errorf("failed to marshal event %s: %w", eventType, err)
 		}
 
-		p.logger.Info("publishing event",
+		p.logger.DebugContext(ctx, "publishing event",
 			slog.String("event_type", eventType),
 			slog.String("topic", p.topic),
 			slog.Int("payload_size", len(payload)),
 		)
 
-		// TODO: Integrate with actual Kafka producer from pkg/kafka.
-		// For now, log the event for development.
-		p.logger.Debug("event payload",
-			slog.String("event_type", eventType),
-			slog.String("payload", string(payload)),
-		)
+		messages = append(messages, pkgkafka.Message{
+			Value: payload,
+			Headers: map[string]string{
+				"event_type": eventType,
+			},
+		})
+	}
+
+	if len(messages) == 0 {
+		return nil
+	}
+
+	if err := p.producer.Publish(ctx, p.topic, messages...); err != nil {
+		return fmt.Errorf("failed to publish events to topic %s: %w", p.topic, err)
 	}
 
 	return nil

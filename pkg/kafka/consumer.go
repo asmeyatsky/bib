@@ -2,11 +2,15 @@ package kafka
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"log/slog"
 
 	kafkago "github.com/segmentio/kafka-go"
+	"github.com/segmentio/kafka-go/sasl"
+	"github.com/segmentio/kafka-go/sasl/plain"
+	"github.com/segmentio/kafka-go/sasl/scram"
 )
 
 // Handler processes a consumed Kafka message.
@@ -21,18 +25,62 @@ type Consumer struct {
 
 // NewConsumer creates a new Consumer for the given topic with the provided handler.
 func NewConsumer(cfg Config, topic string, handler Handler, logger *slog.Logger) *Consumer {
-	r := kafkago.NewReader(kafkago.ReaderConfig{
+	readerCfg := kafkago.ReaderConfig{
 		Brokers:  cfg.Brokers,
 		Topic:    topic,
 		GroupID:  cfg.ConsumerGroup,
 		MinBytes: 1,
 		MaxBytes: 10 * 1024 * 1024, // 10 MB
-	})
+	}
+
+	// Configure dialer for TLS and SASL authentication.
+	if cfg.TLS || cfg.SASLEnabled {
+		dialer := &kafkago.Dialer{}
+
+		if cfg.TLS {
+			dialer.TLS = &tls.Config{
+				MinVersion: tls.VersionTLS12,
+			}
+		}
+
+		if cfg.SASLEnabled {
+			dialer.SASLMechanism = resolveConsumerSASL(cfg)
+		}
+
+		readerCfg.Dialer = dialer
+	}
+
+	r := kafkago.NewReader(readerCfg)
 
 	return &Consumer{
 		reader:  r,
 		handler: handler,
 		logger:  logger,
+	}
+}
+
+// resolveConsumerSASL returns the appropriate SASL mechanism for the consumer.
+func resolveConsumerSASL(cfg Config) sasl.Mechanism {
+	switch cfg.SASLMechanism {
+	case "SCRAM-SHA-256":
+		m, err := scram.Mechanism(scram.SHA256, cfg.SASLUsername, cfg.SASLPassword)
+		if err != nil {
+			return nil
+		}
+		return m
+	case "SCRAM-SHA-512":
+		m, err := scram.Mechanism(scram.SHA512, cfg.SASLUsername, cfg.SASLPassword)
+		if err != nil {
+			return nil
+		}
+		return m
+	case "PLAIN", "":
+		return &plain.Mechanism{
+			Username: cfg.SASLUsername,
+			Password: cfg.SASLPassword,
+		}
+	default:
+		return nil
 	}
 }
 

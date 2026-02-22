@@ -96,29 +96,18 @@ func (a *TransactionAssessment) Assess(riskScore int, signals []string) error {
 	a.version++
 
 	// Emit AssessmentCompleted event.
-	a.domainEvents = append(a.domainEvents, event.AssessmentCompleted{
-		AssessmentID:  a.id,
-		TenantID:      a.tenantID,
-		TransactionID: a.transactionID,
-		AccountID:     a.accountID,
-		RiskScore:     a.riskScore,
-		RiskLevel:     a.riskLevel.String(),
-		Decision:      a.decision.String(),
-		Signals:       a.riskSignals,
-		AssessedAt:    a.assessedAt,
-	})
+	a.domainEvents = append(a.domainEvents, event.NewAssessmentCompleted(
+		a.id, a.tenantID, a.transactionID, a.accountID,
+		a.riskScore, a.riskLevel.String(), a.decision.String(),
+		a.riskSignals, a.assessedAt,
+	))
 
 	// Emit HighRiskDetected if the risk level is CRITICAL.
 	if a.riskLevel.Equal(valueobject.RiskLevelCritical) {
-		a.domainEvents = append(a.domainEvents, event.HighRiskDetected{
-			AssessmentID:  a.id,
-			TenantID:      a.tenantID,
-			TransactionID: a.transactionID,
-			AccountID:     a.accountID,
-			RiskScore:     a.riskScore,
-			Signals:       a.riskSignals,
-			DetectedAt:    a.assessedAt,
-		})
+		a.domainEvents = append(a.domainEvents, event.NewHighRiskDetected(
+			a.id, a.tenantID, a.transactionID, a.accountID,
+			a.riskScore, a.riskSignals, a.assessedAt,
+		))
 	}
 
 	return nil

@@ -8,6 +8,8 @@ use (
 	./pkg/auth
 	./pkg/observability
 	./pkg/iso20022
+	./pkg/residency
+	./pkg/openbanking
 	./pkg/testutil
 
 	./services/ledger-service

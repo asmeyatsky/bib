@@ -65,5 +65,13 @@ func (s *JWTService) ValidateToken(tokenString string) (*Claims, error) {
 	if !token.Valid {
 		return nil, fmt.Errorf("invalid token")
 	}
+
+	// Validate issuer if configured.
+	if s.config.Issuer != "" {
+		if claims.Issuer != s.config.Issuer {
+			return nil, fmt.Errorf("invalid issuer: got %q, want %q", claims.Issuer, s.config.Issuer)
+		}
+	}
+
 	return claims, nil
 }

@@ -93,15 +93,9 @@ func NewCard(
 		updatedAt:    now,
 	}
 
-	c.addEvent(event.CardIssued{
-		CardID:    id,
-		TenantID:  tenantID,
-		AccountID: accountID,
-		CardType:  cardType.String(),
-		Currency:  currency,
-		LastFour:  lastFour,
-		IssuedAt:  now,
-	})
+	c.domainEvents = append(c.domainEvents, event.NewCardIssued(
+		id, tenantID, accountID, cardType.String(), currency, lastFour, now,
+	))
 
 	return c, nil
 }
@@ -147,12 +141,9 @@ func (c Card) Activate(now time.Time) (Card, error) {
 	c.updatedAt = now.UTC()
 	c.version++
 
-	c.addEvent(event.CardActivated{
-		CardID:      c.id,
-		TenantID:    c.tenantID,
-		AccountID:   c.accountID,
-		ActivatedAt: now.UTC(),
-	})
+	c.domainEvents = append(c.domainEvents, event.NewCardActivated(
+		c.id, c.tenantID, c.accountID, now.UTC(),
+	))
 
 	return c, nil
 }
@@ -167,11 +158,9 @@ func (c Card) Freeze(now time.Time) (Card, error) {
 	c.updatedAt = now.UTC()
 	c.version++
 
-	c.addEvent(event.CardFrozen{
-		CardID:   c.id,
-		TenantID: c.tenantID,
-		FrozenAt: now.UTC(),
-	})
+	c.domainEvents = append(c.domainEvents, event.NewCardFrozen(
+		c.id, c.tenantID, now.UTC(),
+	))
 
 	return c, nil
 }
@@ -199,11 +188,9 @@ func (c Card) Cancel(now time.Time) (Card, error) {
 	c.updatedAt = now.UTC()
 	c.version++
 
-	c.addEvent(event.CardCancelled{
-		CardID:      c.id,
-		TenantID:    c.tenantID,
-		CancelledAt: now.UTC(),
-	})
+	c.domainEvents = append(c.domainEvents, event.NewCardCancelled(
+		c.id, c.tenantID, now.UTC(),
+	))
 
 	return c, nil
 }
@@ -217,28 +204,18 @@ func (c Card) AuthorizeTransaction(
 	now time.Time,
 ) (Card, string, error) {
 	if !c.status.IsUsable() {
-		c.addEvent(event.TransactionDeclined{
-			CardID:       c.id,
-			TenantID:     c.tenantID,
-			Amount:       amount,
-			Currency:     c.currency,
-			MerchantName: merchantName,
-			Reason:       fmt.Sprintf("card is in %s status", c.status),
-			DeclinedAt:   now.UTC(),
-		})
+		c.domainEvents = append(c.domainEvents, event.NewTransactionDeclined(
+			c.id, c.tenantID, amount, c.currency, merchantName,
+			fmt.Sprintf("card is in %s status", c.status), now.UTC(),
+		))
 		return c, "", fmt.Errorf("card is not usable, current status: %s", c.status)
 	}
 
 	if c.cardNumber.IsExpired(now) {
-		c.addEvent(event.TransactionDeclined{
-			CardID:       c.id,
-			TenantID:     c.tenantID,
-			Amount:       amount,
-			Currency:     c.currency,
-			MerchantName: merchantName,
-			Reason:       "card is expired",
-			DeclinedAt:   now.UTC(),
-		})
+		c.domainEvents = append(c.domainEvents, event.NewTransactionDeclined(
+			c.id, c.tenantID, amount, c.currency, merchantName,
+			"card is expired", now.UTC(),
+		))
 		return c, "", fmt.Errorf("card is expired")
 	}
 
@@ -248,30 +225,20 @@ func (c Card) AuthorizeTransaction(
 
 	newDailySpent := c.dailySpent.Add(amount)
 	if newDailySpent.GreaterThan(c.dailyLimit) {
-		c.addEvent(event.TransactionDeclined{
-			CardID:       c.id,
-			TenantID:     c.tenantID,
-			Amount:       amount,
-			Currency:     c.currency,
-			MerchantName: merchantName,
-			Reason:       "daily spending limit exceeded",
-			DeclinedAt:   now.UTC(),
-		})
+		c.domainEvents = append(c.domainEvents, event.NewTransactionDeclined(
+			c.id, c.tenantID, amount, c.currency, merchantName,
+			"daily spending limit exceeded", now.UTC(),
+		))
 		return c, "", fmt.Errorf("daily spending limit exceeded: spent %s + %s > limit %s",
 			c.dailySpent.String(), amount.String(), c.dailyLimit.String())
 	}
 
 	newMonthlySpent := c.monthlySpent.Add(amount)
 	if newMonthlySpent.GreaterThan(c.monthlyLimit) {
-		c.addEvent(event.TransactionDeclined{
-			CardID:       c.id,
-			TenantID:     c.tenantID,
-			Amount:       amount,
-			Currency:     c.currency,
-			MerchantName: merchantName,
-			Reason:       "monthly spending limit exceeded",
-			DeclinedAt:   now.UTC(),
-		})
+		c.domainEvents = append(c.domainEvents, event.NewTransactionDeclined(
+			c.id, c.tenantID, amount, c.currency, merchantName,
+			"monthly spending limit exceeded", now.UTC(),
+		))
 		return c, "", fmt.Errorf("monthly spending limit exceeded: spent %s + %s > limit %s",
 			c.monthlySpent.String(), amount.String(), c.monthlyLimit.String())
 	}
@@ -283,17 +250,10 @@ func (c Card) AuthorizeTransaction(
 
 	authCode := generateAuthCode()
 
-	c.addEvent(event.TransactionAuthorized{
-		CardID:           c.id,
-		TenantID:         c.tenantID,
-		AccountID:        c.accountID,
-		Amount:           amount,
-		Currency:         c.currency,
-		MerchantName:     merchantName,
-		MerchantCategory: merchantCategory,
-		AuthCode:         authCode,
-		AuthorizedAt:     now.UTC(),
-	})
+	c.domainEvents = append(c.domainEvents, event.NewTransactionAuthorized(
+		c.id, c.tenantID, c.accountID, amount, c.currency,
+		merchantName, merchantCategory, authCode, now.UTC(),
+	))
 
 	return c, authCode, nil
 }
@@ -343,10 +303,6 @@ func (c Card) ClearEvents() Card {
 }
 
 // --- Private helpers ---
-
-func (c *Card) addEvent(e event.DomainEvent) {
-	c.domainEvents = append(c.domainEvents, e)
-}
 
 func generateRandomLastFour() string {
 	n, err := rand.Int(rand.Reader, big.NewInt(10000))

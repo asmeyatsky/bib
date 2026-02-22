@@ -23,7 +23,7 @@ message PostingPair {
 message JournalEntry {
   string id = 1;
   string tenant_id = 2;
-  string effective_date = 3;
+  google.protobuf.Timestamp effective_date = 3;
   repeated PostingPair postings = 4;
   EntryStatus status = 5;
   string description = 6;
@@ -33,7 +33,7 @@ message JournalEntry {
 
 message PostJournalEntryRequest {
   string tenant_id = 1;
-  string effective_date = 2;
+  google.protobuf.Timestamp effective_date = 2;
   repeated PostingPair postings = 3;
   string description = 4;
   string reference = 5;
@@ -53,21 +53,21 @@ message GetJournalEntryResponse {
 
 message GetBalanceRequest {
   string account_code = 1;
-  string as_of = 2;
+  google.protobuf.Timestamp as_of = 2;
   string currency = 3;
 }
 
 message GetBalanceResponse {
   string account_code = 1;
   bib.common.v1.Money balance = 2;
-  string as_of = 3;
+  google.protobuf.Timestamp as_of = 3;
 }
 
 message ListJournalEntriesRequest {
   string tenant_id = 1;
   string account_code = 2;
-  string from_date = 3;
-  string to_date = 4;
+  google.protobuf.Timestamp from_date = 3;
+  google.protobuf.Timestamp to_date = 4;
   bib.common.v1.Pagination pagination = 5;
 }
 

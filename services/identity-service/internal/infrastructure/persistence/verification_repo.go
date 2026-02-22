@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -70,10 +71,14 @@ func (r *VerificationRepo) Save(ctx context.Context, v model.IdentityVerificatio
 
 	// Write domain events to outbox
 	for _, evt := range v.DomainEvents() {
+		payload, merr := json.Marshal(evt)
+		if merr != nil {
+			return fmt.Errorf("marshal outbox event: %w", merr)
+		}
 		_, err = tx.Exec(ctx, `
 			INSERT INTO outbox (id, aggregate_id, aggregate_type, event_type, payload, created_at)
 			VALUES ($1, $2, $3, $4, $5, $6)
-		`, evt.EventID(), evt.AggregateID(), evt.AggregateType(), evt.EventType(), evt.Payload(), evt.OccurredAt())
+		`, evt.EventID(), evt.AggregateID(), evt.AggregateType(), evt.EventType(), payload, evt.OccurredAt())
 		if err != nil {
 			return fmt.Errorf("insert outbox event: %w", err)
 		}

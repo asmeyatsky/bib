@@ -8,62 +8,62 @@ import (
 
 // DomainEvent is the interface all domain events must implement.
 type DomainEvent interface {
-	EventID() uuid.UUID
+	EventID() string
 	EventType() string
-	AggregateID() uuid.UUID
+	AggregateID() string
 	AggregateType() string
+	TenantID() string
 	OccurredAt() time.Time
-	Payload() []byte
 }
 
 // BaseEvent provides a default implementation of DomainEvent.
 type BaseEvent struct {
-	id            uuid.UUID
-	eventType     string
-	aggregateID   uuid.UUID
-	aggregateType string
-	occurredAt    time.Time
-	payload       []byte
+	ID            string    `json:"event_id"`
+	Type          string    `json:"event_type"`
+	AggregateIDV  string    `json:"aggregate_id"`
+	AggregateTypeV string   `json:"aggregate_type"`
+	Tenant        string    `json:"tenant_id"`
+	Timestamp     time.Time `json:"occurred_at"`
 }
 
 // NewBaseEvent creates a new BaseEvent with a generated UUID and the current time.
-func NewBaseEvent(eventType string, aggregateID uuid.UUID, aggregateType string, payload []byte) BaseEvent {
+func NewBaseEvent(eventType string, aggregateID string, aggregateType string, tenantID string) BaseEvent {
 	return BaseEvent{
-		id:            uuid.New(),
-		eventType:     eventType,
-		aggregateID:   aggregateID,
-		aggregateType: aggregateType,
-		occurredAt:    time.Now().UTC(),
-		payload:       payload,
+		ID:             uuid.New().String(),
+		Type:           eventType,
+		AggregateIDV:   aggregateID,
+		AggregateTypeV: aggregateType,
+		Tenant:         tenantID,
+		Timestamp:      time.Now().UTC(),
 	}
 }
 
 // EventID returns the unique identifier for this event.
-func (e BaseEvent) EventID() uuid.UUID {
-	return e.id
+func (e BaseEvent) EventID() string {
+	return e.ID
 }
 
 // EventType returns the type name of this event.
 func (e BaseEvent) EventType() string {
-	return e.eventType
+	return e.Type
 }
 
 // AggregateID returns the identifier of the aggregate that produced this event.
-func (e BaseEvent) AggregateID() uuid.UUID {
-	return e.aggregateID
+func (e BaseEvent) AggregateID() string {
+	return e.AggregateIDV
 }
 
 // AggregateType returns the type name of the aggregate that produced this event.
 func (e BaseEvent) AggregateType() string {
-	return e.aggregateType
+	return e.AggregateTypeV
+}
+
+// TenantID returns the tenant identifier for this event.
+func (e BaseEvent) TenantID() string {
+	return e.Tenant
 }
 
 // OccurredAt returns the time at which this event occurred.
 func (e BaseEvent) OccurredAt() time.Time {
-	return e.occurredAt
-}
-
-// Payload returns the serialized event payload.
-func (e BaseEvent) Payload() []byte {
-	return e.payload
+	return e.Timestamp
 }

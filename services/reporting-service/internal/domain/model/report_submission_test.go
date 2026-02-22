@@ -93,7 +93,7 @@ func TestReportSubmission_FullLifecycle_Accept(t *testing.T) {
 	require.Len(t, events, 1)
 	genEvent, ok := events[0].(event.ReportGenerated)
 	require.True(t, ok)
-	assert.Equal(t, sub.ID(), genEvent.ID)
+	assert.Equal(t, sub.ID().String(), genEvent.AggregateID())
 	assert.Equal(t, "report.generated", genEvent.EventType())
 
 	// Step 4: Validate.
@@ -113,7 +113,7 @@ func TestReportSubmission_FullLifecycle_Accept(t *testing.T) {
 	require.Len(t, events, 2)
 	subEvent, ok := events[1].(event.ReportSubmitted)
 	require.True(t, ok)
-	assert.Equal(t, sub.ID(), subEvent.ID)
+	assert.Equal(t, sub.ID().String(), subEvent.AggregateID())
 
 	// Step 6: Accept.
 	acceptTime := now.Add(60 * time.Second)
@@ -126,7 +126,7 @@ func TestReportSubmission_FullLifecycle_Accept(t *testing.T) {
 	require.Len(t, events, 3)
 	accEvent, ok := events[2].(event.ReportAccepted)
 	require.True(t, ok)
-	assert.Equal(t, sub.ID(), accEvent.ID)
+	assert.Equal(t, sub.ID().String(), accEvent.AggregateID())
 }
 
 func TestReportSubmission_FullLifecycle_Reject(t *testing.T) {

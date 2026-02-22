@@ -43,7 +43,7 @@ func TestLoanApplication_FullLifecycle_Approved(t *testing.T) {
 	assert.True(t, app.Status().Equal(valueobject.LoanApplicationStatusApproved))
 	assert.Equal(t, "good credit tier", app.DecisionReason())
 	assert.Equal(t, "720", app.CreditScore())
-	assert.Len(t, app.DomainEvents(), 3, "should have submitted + approved events")
+	assert.Len(t, app.DomainEvents(), 2, "should have submitted + approved events")
 
 	// 4. Mark disbursed.
 	app, err = app.MarkDisbursed(now)

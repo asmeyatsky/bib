@@ -4,64 +4,71 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/bibbank/bib/pkg/events"
 )
 
-// DomainEvent is the interface that all domain events must implement.
-type DomainEvent interface {
-	EventType() string
-	OccurredAt() time.Time
-	AggregateID() uuid.UUID
-}
+// DomainEvent is an alias for the shared pkg/events.DomainEvent interface.
+type DomainEvent = events.DomainEvent
 
 // ReportGenerated is emitted when a report's XBRL content has been generated.
 type ReportGenerated struct {
-	ID              uuid.UUID `json:"id"`
-	TenantID        uuid.UUID `json:"tenant_id"`
-	ReportType      string    `json:"report_type"`
-	ReportingPeriod string    `json:"reporting_period"`
-	Timestamp       time.Time `json:"timestamp"`
+	events.BaseEvent
+	ReportType      string `json:"report_type"`
+	ReportingPeriod string `json:"reporting_period"`
 }
 
-func (e ReportGenerated) EventType() string      { return "report.generated" }
-func (e ReportGenerated) OccurredAt() time.Time   { return e.Timestamp }
-func (e ReportGenerated) AggregateID() uuid.UUID  { return e.ID }
+func NewReportGenerated(id, tenantID uuid.UUID, reportType, reportingPeriod string, now time.Time) ReportGenerated {
+	return ReportGenerated{
+		BaseEvent:       events.NewBaseEvent("report.generated", id.String(), "ReportSubmission", tenantID.String()),
+		ReportType:      reportType,
+		ReportingPeriod: reportingPeriod,
+	}
+}
 
 // ReportSubmitted is emitted when a report has been submitted to a regulatory authority.
 type ReportSubmitted struct {
-	ID              uuid.UUID `json:"id"`
-	TenantID        uuid.UUID `json:"tenant_id"`
-	ReportType      string    `json:"report_type"`
-	ReportingPeriod string    `json:"reporting_period"`
-	Timestamp       time.Time `json:"timestamp"`
+	events.BaseEvent
+	ReportType      string `json:"report_type"`
+	ReportingPeriod string `json:"reporting_period"`
 }
 
-func (e ReportSubmitted) EventType() string      { return "report.submitted" }
-func (e ReportSubmitted) OccurredAt() time.Time   { return e.Timestamp }
-func (e ReportSubmitted) AggregateID() uuid.UUID  { return e.ID }
+func NewReportSubmitted(id, tenantID uuid.UUID, reportType, reportingPeriod string, now time.Time) ReportSubmitted {
+	return ReportSubmitted{
+		BaseEvent:       events.NewBaseEvent("report.submitted", id.String(), "ReportSubmission", tenantID.String()),
+		ReportType:      reportType,
+		ReportingPeriod: reportingPeriod,
+	}
+}
 
 // ReportAccepted is emitted when a submitted report has been accepted by the regulator.
 type ReportAccepted struct {
-	ID              uuid.UUID `json:"id"`
-	TenantID        uuid.UUID `json:"tenant_id"`
-	ReportType      string    `json:"report_type"`
-	ReportingPeriod string    `json:"reporting_period"`
-	Timestamp       time.Time `json:"timestamp"`
+	events.BaseEvent
+	ReportType      string `json:"report_type"`
+	ReportingPeriod string `json:"reporting_period"`
 }
 
-func (e ReportAccepted) EventType() string      { return "report.accepted" }
-func (e ReportAccepted) OccurredAt() time.Time   { return e.Timestamp }
-func (e ReportAccepted) AggregateID() uuid.UUID  { return e.ID }
+func NewReportAccepted(id, tenantID uuid.UUID, reportType, reportingPeriod string, now time.Time) ReportAccepted {
+	return ReportAccepted{
+		BaseEvent:       events.NewBaseEvent("report.accepted", id.String(), "ReportSubmission", tenantID.String()),
+		ReportType:      reportType,
+		ReportingPeriod: reportingPeriod,
+	}
+}
 
 // ReportRejected is emitted when a submitted report has been rejected by the regulator.
 type ReportRejected struct {
-	ID               uuid.UUID `json:"id"`
-	TenantID         uuid.UUID `json:"tenant_id"`
-	ReportType       string    `json:"report_type"`
-	ReportingPeriod  string    `json:"reporting_period"`
-	ValidationErrors []string  `json:"validation_errors"`
-	Timestamp        time.Time `json:"timestamp"`
+	events.BaseEvent
+	ReportType       string   `json:"report_type"`
+	ReportingPeriod  string   `json:"reporting_period"`
+	ValidationErrors []string `json:"validation_errors"`
 }
 
-func (e ReportRejected) EventType() string      { return "report.rejected" }
-func (e ReportRejected) OccurredAt() time.Time   { return e.Timestamp }
-func (e ReportRejected) AggregateID() uuid.UUID  { return e.ID }
+func NewReportRejected(id, tenantID uuid.UUID, reportType, reportingPeriod string, validationErrors []string, now time.Time) ReportRejected {
+	return ReportRejected{
+		BaseEvent:        events.NewBaseEvent("report.rejected", id.String(), "ReportSubmission", tenantID.String()),
+		ReportType:       reportType,
+		ReportingPeriod:  reportingPeriod,
+		ValidationErrors: validationErrors,
+	}
+}

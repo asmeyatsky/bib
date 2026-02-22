@@ -43,6 +43,25 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # -----------------------------------------------------------------------
+      # SASL/TLS Configuration (enable for staging/production)
+      # To enable SASL_SSL, change the listener config:
+      #   KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SASL_SSL:SASL_SSL,SASL_SSL_HOST:SASL_SSL
+      #   KAFKA_ADVERTISED_LISTENERS: SASL_SSL://kafka:29092,SASL_SSL_HOST://localhost:9092
+      #   KAFKA_INTER_BROKER_LISTENER_NAME: SASL_SSL
+      #   KAFKA_SASL_ENABLED_MECHANISMS: SCRAM-SHA-256
+      #   KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: SCRAM-SHA-256
+      #   KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.keystore.jks
+      #   KAFKA_SSL_KEYSTORE_PASSWORD: <keystore-password>
+      #   KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.truststore.jks
+      #   KAFKA_SSL_TRUSTSTORE_PASSWORD: <truststore-password>
+      # Then set in each service:
+      #   KAFKA_SASL_ENABLED: "true"
+      #   KAFKA_SASL_MECHANISM: SCRAM-SHA-256
+      #   KAFKA_SASL_USERNAME: <service-username>
+      #   KAFKA_SASL_PASSWORD: <service-password>
+      #   KAFKA_TLS_ENABLED: "true"
+      # -----------------------------------------------------------------------
     healthcheck:
       test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
       interval: 10s
@@ -51,10 +70,13 @@ services:
 
   redis:
     image: redis:7-alpine
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-bib_redis_secret}"]
     ports:
       - "6379:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-bib_redis_secret}
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-bib_redis_secret}", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -81,11 +103,13 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: bib
-      DB_PASSWORD: bib_dev_password
+      DB_USER: bib_ledger_user
+      DB_PASSWORD: ledger_dev_password
       DB_NAME: bib_ledger
       DB_SSLMODE: disable
       KAFKA_BROKERS: kafka:29092
+      REDIS_HOST: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-bib_redis_secret}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       HTTP_PORT: "8081"
       GRPC_PORT: "9081"
@@ -112,11 +136,13 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: bib
-      DB_PASSWORD: bib_dev_password
+      DB_USER: bib_account_user
+      DB_PASSWORD: account_dev_password
       DB_NAME: bib_account
       DB_SSLMODE: disable
       KAFKA_BROKERS: kafka:29092
+      REDIS_HOST: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-bib_redis_secret}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       HTTP_PORT: "8082"
       GRPC_PORT: "9082"
@@ -143,11 +169,13 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: bib
-      DB_PASSWORD: bib_dev_password
+      DB_USER: bib_fx_user
+      DB_PASSWORD: fx_dev_password
       DB_NAME: bib_fx
       DB_SSLMODE: disable
       KAFKA_BROKERS: kafka:29092
+      REDIS_HOST: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-bib_redis_secret}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       HTTP_PORT: "8083"
       GRPC_PORT: "9083"
@@ -174,11 +202,13 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: bib
-      DB_PASSWORD: bib_dev_password
+      DB_USER: bib_deposit_user
+      DB_PASSWORD: deposit_dev_password
       DB_NAME: bib_deposit
       DB_SSLMODE: disable
       KAFKA_BROKERS: kafka:29092
+      REDIS_HOST: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-bib_redis_secret}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       HTTP_PORT: "8084"
       GRPC_PORT: "9084"
@@ -205,11 +235,13 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: bib
-      DB_PASSWORD: bib_dev_password
+      DB_USER: bib_identity_user
+      DB_PASSWORD: identity_dev_password
       DB_NAME: bib_identity
       DB_SSLMODE: disable
       KAFKA_BROKERS: kafka:29092
+      REDIS_HOST: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-bib_redis_secret}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       HTTP_PORT: "8085"
       GRPC_PORT: "9085"
@@ -236,11 +268,13 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: bib
-      DB_PASSWORD: bib_dev_password
+      DB_USER: bib_payment_user
+      DB_PASSWORD: payment_dev_password
       DB_NAME: bib_payment
       DB_SSLMODE: disable
       KAFKA_BROKERS: kafka:29092
+      REDIS_HOST: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-bib_redis_secret}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       HTTP_PORT: "8086"
       GRPC_PORT: "9086"
@@ -267,11 +301,13 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: bib
-      DB_PASSWORD: bib_dev_password
+      DB_USER: bib_lending_user
+      DB_PASSWORD: lending_dev_password
       DB_NAME: bib_lending
       DB_SSLMODE: disable
       KAFKA_BROKERS: kafka:29092
+      REDIS_HOST: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-bib_redis_secret}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       HTTP_PORT: "8087"
       GRPC_PORT: "9087"
@@ -298,11 +334,13 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: bib
-      DB_PASSWORD: bib_dev_password
+      DB_USER: bib_fraud_user
+      DB_PASSWORD: fraud_dev_password
       DB_NAME: bib_fraud
       DB_SSLMODE: disable
       KAFKA_BROKERS: kafka:29092
+      REDIS_HOST: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-bib_redis_secret}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       HTTP_PORT: "8088"
       GRPC_PORT: "9088"
@@ -329,11 +367,13 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: bib
-      DB_PASSWORD: bib_dev_password
+      DB_USER: bib_card_user
+      DB_PASSWORD: card_dev_password
       DB_NAME: bib_card
       DB_SSLMODE: disable
       KAFKA_BROKERS: kafka:29092
+      REDIS_HOST: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-bib_redis_secret}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       HTTP_PORT: "8089"
       GRPC_PORT: "9089"
@@ -360,11 +400,13 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: bib
-      DB_PASSWORD: bib_dev_password
+      DB_USER: bib_reporting_user
+      DB_PASSWORD: reporting_dev_password
       DB_NAME: bib_reporting
       DB_SSLMODE: disable
       KAFKA_BROKERS: kafka:29092
+      REDIS_HOST: redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-bib_redis_secret}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       HTTP_PORT: "8090"
       GRPC_PORT: "9090"

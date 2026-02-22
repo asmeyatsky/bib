@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/bibbank/bib/pkg/auth"
 	"github.com/bibbank/bib/pkg/observability"
 	pgpkg "github.com/bibbank/bib/pkg/postgres"
 	kafkapkg "github.com/bibbank/bib/pkg/kafka"
@@ -101,9 +102,19 @@ func main() {
 	listPaymentsUC := usecase.NewListPayments(paymentRepo)
 	_ = usecase.NewProcessPayment(paymentRepo, achAdapter, publisher)
 
+	// JWT service.
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "dev-secret-change-in-prod" // development only
+	}
+	jwtSvc := auth.NewJWTService(auth.JWTConfig{
+		Secret: jwtSecret,
+		Issuer: "bib-payment",
+	})
+
 	// gRPC server.
 	handler := grpcPresentation.NewPaymentHandler(initiatePaymentUC, getPaymentUC, listPaymentsUC)
-	grpcServer := grpcPresentation.NewServer(handler, cfg.GRPCPort, logger)
+	grpcServer := grpcPresentation.NewServer(handler, cfg.GRPCPort, logger, jwtSvc)
 
 	// HTTP server (health checks + metrics).
 	mux := http.NewServeMux()

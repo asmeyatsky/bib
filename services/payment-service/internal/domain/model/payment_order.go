@@ -218,8 +218,9 @@ func (po PaymentOrder) CreatedAt() time.Time                  { return po.create
 func (po PaymentOrder) UpdatedAt() time.Time                  { return po.updatedAt }
 func (po PaymentOrder) DomainEvents() []events.DomainEvent    { return po.domainEvents }
 
-func (po PaymentOrder) ClearDomainEvents() []events.DomainEvent {
+// ClearDomainEvents returns the collected domain events and a new PaymentOrder with events cleared.
+func (po PaymentOrder) ClearDomainEvents() ([]events.DomainEvent, PaymentOrder) {
 	evts := po.domainEvents
 	po.domainEvents = nil
-	return evts
+	return evts, po
 }

@@ -12,6 +12,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/bibbank/bib/pkg/auth"
+	pkgkafka "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/pkg/observability"
 	"github.com/bibbank/bib/services/lending-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/lending-service/internal/domain/service"
@@ -74,7 +76,11 @@ func main() {
 	// Wire infrastructure adapters.
 	appRepo := pgRepo.NewLoanApplicationRepo(pool)
 	loanRepo := pgRepo.NewLoanRepo(pool)
-	publisher := messaging.NewKafkaEventPublisher(cfg.KafkaBroker, "lending.events", logger)
+	kafkaProducer := pkgkafka.NewProducer(pkgkafka.Config{
+		Brokers: []string{cfg.KafkaBroker},
+	})
+	defer kafkaProducer.Close()
+	publisher := messaging.NewKafkaEventPublisher(kafkaProducer, "lending-events", logger)
 	creditClient := adapter.NewStubCreditBureauClient()
 	underwriter := service.NewUnderwritingEngine()
 
@@ -85,9 +91,19 @@ func main() {
 	getLoanUC := usecase.NewGetLoanUseCase(loanRepo)
 	getAppUC := usecase.NewGetApplicationUseCase(appRepo)
 
+	// JWT service.
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "dev-secret-change-in-prod" // development only
+	}
+	jwtSvc := auth.NewJWTService(auth.JWTConfig{
+		Secret: jwtSecret,
+		Issuer: "bib-lending",
+	})
+
 	// gRPC server.
 	handler := grpcPresentation.NewLendingHandler(submitAppUC, disburseUC, paymentUC, getLoanUC, getAppUC)
-	grpcServer := grpcPresentation.NewServer(handler, logger)
+	grpcServer := grpcPresentation.NewServer(handler, logger, jwtSvc)
 
 	// HTTP server (health checks).
 	mux := http.NewServeMux()

@@ -4,51 +4,21 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/bibbank/bib/pkg/events"
 )
 
-// DomainEvent is the interface that all domain events must implement.
-type DomainEvent interface {
-	EventID() uuid.UUID
-	EventType() string
-	AggregateID() uuid.UUID
-	AggregateType() string
-	OccurredAt() time.Time
-}
-
-// BaseEvent contains the common fields for all domain events.
-type BaseEvent struct {
-	ID            uuid.UUID `json:"event_id"`
-	Type          string    `json:"event_type"`
-	AggregateIDV  uuid.UUID `json:"aggregate_id"`
-	AggregateTypeV string   `json:"aggregate_type"`
-	Timestamp     time.Time `json:"occurred_at"`
-}
-
-func (e BaseEvent) EventID() uuid.UUID      { return e.ID }
-func (e BaseEvent) EventType() string        { return e.Type }
-func (e BaseEvent) AggregateID() uuid.UUID   { return e.AggregateIDV }
-func (e BaseEvent) AggregateType() string    { return e.AggregateTypeV }
-func (e BaseEvent) OccurredAt() time.Time    { return e.Timestamp }
-
-func newBaseEvent(eventType string, aggregateID uuid.UUID) BaseEvent {
-	return BaseEvent{
-		ID:             uuid.New(),
-		Type:           eventType,
-		AggregateIDV:   aggregateID,
-		AggregateTypeV: "CustomerAccount",
-		Timestamp:      time.Now(),
-	}
-}
+// DomainEvent is an alias for the shared pkg/events.DomainEvent interface.
+type DomainEvent = events.DomainEvent
 
 // AccountOpened is emitted when a new customer account is created.
 type AccountOpened struct {
-	BaseEvent
-	TenantID      uuid.UUID `json:"tenant_id"`
-	AccountNumber string    `json:"account_number"`
-	AccountType   string    `json:"account_type"`
-	Currency      string    `json:"currency"`
-	HolderName    string    `json:"holder_name"`
-	HolderEmail   string    `json:"holder_email"`
+	events.BaseEvent
+	AccountNumber string `json:"account_number"`
+	AccountType   string `json:"account_type"`
+	Currency      string `json:"currency"`
+	HolderName    string `json:"holder_name"`
+	HolderEmail   string `json:"holder_email"`
 }
 
 // NewAccountOpened creates a new AccountOpened event.
@@ -62,8 +32,7 @@ func NewAccountOpened(
 	holderEmail string,
 ) AccountOpened {
 	return AccountOpened{
-		BaseEvent:     newBaseEvent("account.opened", accountID),
-		TenantID:      tenantID,
+		BaseEvent:     events.NewBaseEvent("account.opened", accountID.String(), "CustomerAccount", tenantID.String()),
 		AccountNumber: accountNumber,
 		AccountType:   accountType,
 		Currency:      currency,
@@ -74,8 +43,7 @@ func NewAccountOpened(
 
 // AccountActivated is emitted when an account transitions to ACTIVE status.
 type AccountActivated struct {
-	BaseEvent
-	TenantID      uuid.UUID `json:"tenant_id"`
+	events.BaseEvent
 	AccountNumber string    `json:"account_number"`
 	ActivatedAt   time.Time `json:"activated_at"`
 }
@@ -83,8 +51,7 @@ type AccountActivated struct {
 // NewAccountActivated creates a new AccountActivated event.
 func NewAccountActivated(accountID uuid.UUID, tenantID uuid.UUID, accountNumber string, activatedAt time.Time) AccountActivated {
 	return AccountActivated{
-		BaseEvent:     newBaseEvent("account.activated", accountID),
-		TenantID:      tenantID,
+		BaseEvent:     events.NewBaseEvent("account.activated", accountID.String(), "CustomerAccount", tenantID.String()),
 		AccountNumber: accountNumber,
 		ActivatedAt:   activatedAt,
 	}
@@ -92,8 +59,7 @@ func NewAccountActivated(accountID uuid.UUID, tenantID uuid.UUID, accountNumber 
 
 // AccountFrozen is emitted when an account is frozen.
 type AccountFrozen struct {
-	BaseEvent
-	TenantID      uuid.UUID `json:"tenant_id"`
+	events.BaseEvent
 	AccountNumber string    `json:"account_number"`
 	Reason        string    `json:"reason"`
 	FrozenAt      time.Time `json:"frozen_at"`
@@ -102,8 +68,7 @@ type AccountFrozen struct {
 // NewAccountFrozen creates a new AccountFrozen event.
 func NewAccountFrozen(accountID uuid.UUID, tenantID uuid.UUID, accountNumber string, reason string, frozenAt time.Time) AccountFrozen {
 	return AccountFrozen{
-		BaseEvent:     newBaseEvent("account.frozen", accountID),
-		TenantID:      tenantID,
+		BaseEvent:     events.NewBaseEvent("account.frozen", accountID.String(), "CustomerAccount", tenantID.String()),
 		AccountNumber: accountNumber,
 		Reason:        reason,
 		FrozenAt:      frozenAt,
@@ -112,8 +77,7 @@ func NewAccountFrozen(accountID uuid.UUID, tenantID uuid.UUID, accountNumber str
 
 // AccountUnfrozen is emitted when a frozen account is unfrozen.
 type AccountUnfrozen struct {
-	BaseEvent
-	TenantID      uuid.UUID `json:"tenant_id"`
+	events.BaseEvent
 	AccountNumber string    `json:"account_number"`
 	UnfrozenAt    time.Time `json:"unfrozen_at"`
 }
@@ -121,8 +85,7 @@ type AccountUnfrozen struct {
 // NewAccountUnfrozen creates a new AccountUnfrozen event.
 func NewAccountUnfrozen(accountID uuid.UUID, tenantID uuid.UUID, accountNumber string, unfrozenAt time.Time) AccountUnfrozen {
 	return AccountUnfrozen{
-		BaseEvent:     newBaseEvent("account.unfrozen", accountID),
-		TenantID:      tenantID,
+		BaseEvent:     events.NewBaseEvent("account.unfrozen", accountID.String(), "CustomerAccount", tenantID.String()),
 		AccountNumber: accountNumber,
 		UnfrozenAt:    unfrozenAt,
 	}
@@ -130,8 +93,7 @@ func NewAccountUnfrozen(accountID uuid.UUID, tenantID uuid.UUID, accountNumber s
 
 // AccountClosed is emitted when an account is closed.
 type AccountClosed struct {
-	BaseEvent
-	TenantID      uuid.UUID `json:"tenant_id"`
+	events.BaseEvent
 	AccountNumber string    `json:"account_number"`
 	Reason        string    `json:"reason"`
 	ClosedAt      time.Time `json:"closed_at"`
@@ -140,8 +102,7 @@ type AccountClosed struct {
 // NewAccountClosed creates a new AccountClosed event.
 func NewAccountClosed(accountID uuid.UUID, tenantID uuid.UUID, accountNumber string, reason string, closedAt time.Time) AccountClosed {
 	return AccountClosed{
-		BaseEvent:     newBaseEvent("account.closed", accountID),
-		TenantID:      tenantID,
+		BaseEvent:     events.NewBaseEvent("account.closed", accountID.String(), "CustomerAccount", tenantID.String()),
 		AccountNumber: accountNumber,
 		Reason:        reason,
 		ClosedAt:      closedAt,

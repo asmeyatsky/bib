@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/bibbank/bib/pkg/auth"
 	"github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/pkg/observability"
 	"github.com/bibbank/bib/pkg/postgres"
@@ -86,9 +86,19 @@ func run() error {
 	convertAmount := usecase.NewConvertAmount(rateRepo, nil)
 	revaluate := usecase.NewRevaluate(rateRepo, publisher, revalEngine)
 
+	// JWT service for gRPC auth.
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "dev-secret-change-in-prod" // development only
+	}
+	jwtSvc := auth.NewJWTService(auth.JWTConfig{
+		Secret: jwtSecret,
+		Issuer: "bib-fx",
+	})
+
 	// gRPC server.
 	handler := grpcPresentation.NewHandler(getExchangeRate, convertAmount, revaluate, logger)
-	grpcServer := grpcPresentation.NewServer(handler, logger, cfg.GRPCPort)
+	grpcServer := grpcPresentation.NewServer(handler, logger, cfg.GRPCPort, jwtSvc)
 
 	// HTTP health server.
 	healthHandler := rest.NewHealthHandler(pool, logger)

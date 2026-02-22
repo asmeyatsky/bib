@@ -90,8 +90,29 @@ message MakePaymentResponse {
   Loan loan = 1;
 }
 
+message DisburseLoanRequest {
+  string tenant_id = 1;
+  string application_id = 2;
+  string borrower_account_id = 3;
+  int32 interest_rate_bps = 4;
+}
+
+message DisburseLoanResponse {
+  Loan loan = 1;
+}
+
+message GetApplicationRequest {
+  string id = 1;
+}
+
+message GetApplicationResponse {
+  LoanApplication application = 1;
+}
+
 service LendingService {
   rpc SubmitLoanApplication(SubmitLoanApplicationRequest) returns (SubmitLoanApplicationResponse);
   rpc GetLoan(GetLoanRequest) returns (GetLoanResponse);
   rpc MakePayment(MakePaymentRequest) returns (MakePaymentResponse);
+  rpc DisburseLoan(DisburseLoanRequest) returns (DisburseLoanResponse);
+  rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse);
 }

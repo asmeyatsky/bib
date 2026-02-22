@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"os"
 
+	"github.com/bibbank/bib/pkg/auth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
@@ -20,16 +22,26 @@ type Server struct {
 }
 
 // NewServer creates a new gRPC server for the fraud service.
-func NewServer(handler *FraudServiceHandler, address string, logger *slog.Logger) *Server {
-	grpcServer := grpc.NewServer()
+func NewServer(handler *FraudServiceHandler, address string, logger *slog.Logger, jwtService *auth.JWTService) *Server {
+	// Add auth interceptor, skipping health check methods.
+	authInterceptor := auth.UnaryAuthInterceptor(jwtService, []string{
+		"/grpc.health.v1.Health/Check",
+		"/grpc.health.v1.Health/Watch",
+	})
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(authInterceptor))
 
 	// Register health check service.
 	healthServer := health.NewServer()
 	healthpb.RegisterHealthServer(grpcServer, healthServer)
 	healthServer.SetServingStatus("fraud-service", healthpb.HealthCheckResponse_SERVING)
 
-	// Enable reflection for development tooling.
-	reflection.Register(grpcServer)
+	// Register the FraudService handler.
+	RegisterFraudServiceServer(grpcServer, handler)
+
+	// Only enable reflection when GRPC_REFLECTION=true.
+	if os.Getenv("GRPC_REFLECTION") == "true" {
+		reflection.Register(grpcServer)
+	}
 
 	return &Server{
 		grpcServer: grpcServer,

@@ -13,6 +13,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 
+	"github.com/bibbank/bib/pkg/auth"
+	pkgkafka "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/pkg/observability"
 	"github.com/bibbank/bib/services/card-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/card-service/internal/domain/service"
@@ -74,7 +76,11 @@ func main() {
 
 	// Wire infrastructure adapters.
 	cardRepo := persistence.NewPostgresCardRepository(pool)
-	eventPublisher := messaging.NewKafkaEventPublisher(cfg.KafkaBroker, "card-events", logger)
+	kafkaProducer := pkgkafka.NewProducer(pkgkafka.Config{
+		Brokers: []string{cfg.KafkaBroker},
+	})
+	defer kafkaProducer.Close()
+	eventPublisher := messaging.NewKafkaEventPublisher(kafkaProducer, "card-events", logger)
 	cardProcessor := adapter.NewStubCardProcessor(logger)
 	balanceClient := adapter.NewStubAccountBalanceClient(logger, decimal.NewFromInt(100000))
 
@@ -87,9 +93,19 @@ func main() {
 	getCardUC := usecase.NewGetCardUseCase(cardRepo)
 	freezeCardUC := usecase.NewFreezeCardUseCase(cardRepo, eventPublisher)
 
+	// JWT service for gRPC auth.
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "dev-secret-change-in-prod" // development only
+	}
+	jwtSvc := auth.NewJWTService(auth.JWTConfig{
+		Secret: jwtSecret,
+		Issuer: "bib-card",
+	})
+
 	// gRPC server.
 	grpcHandler := grpcpresentation.NewCardServiceHandler(issueCardUC, authorizeUC, getCardUC, freezeCardUC)
-	grpcServer := grpcpresentation.NewServer(grpcHandler, logger)
+	grpcServer := grpcpresentation.NewServer(grpcHandler, logger, jwtSvc)
 
 	// HTTP server (health checks).
 	healthHandler := rest.NewHealthHandler(logger)

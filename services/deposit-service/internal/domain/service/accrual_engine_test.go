@@ -253,5 +253,5 @@ func TestAccrualEngine_AccrueForPosition_DomainEvents(t *testing.T) {
 	events := accrued.DomainEvents()
 	require.Len(t, events, 1)
 	assert.Equal(t, "deposit.interest.accrued", events[0].EventType())
-	assert.Equal(t, position.ID(), events[0].AggregateID())
+	assert.Equal(t, position.ID().String(), events[0].AggregateID())
 }

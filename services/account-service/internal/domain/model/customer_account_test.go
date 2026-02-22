@@ -63,7 +63,7 @@ func TestNewCustomerAccount(t *testing.T) {
 
 		require.Len(t, events, 1)
 		assert.Equal(t, "account.opened", events[0].EventType())
-		assert.Equal(t, account.ID(), events[0].AggregateID())
+		assert.Equal(t, account.ID().String(), events[0].AggregateID())
 		assert.Equal(t, "CustomerAccount", events[0].AggregateType())
 	})
 

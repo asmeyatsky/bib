@@ -14,12 +14,19 @@ type Config struct {
 	ServiceName string
 }
 
+// Validate checks required configuration values.
+func (c Config) Validate() {
+	if c.DatabaseURL == "" {
+		panic("DATABASE_URL environment variable is required")
+	}
+}
+
 // Load reads configuration from environment variables with sensible defaults.
 func Load() Config {
 	return Config{
 		GRPCPort:    getEnv("GRPC_PORT", "8089"),
 		HTTPPort:    getEnv("HTTP_PORT", "9089"),
-		DatabaseURL: getEnv("DATABASE_URL", "postgres://bib:bib@localhost:5432/bib_card?sslmode=disable"),
+		DatabaseURL: getEnv("DATABASE_URL", ""),
 		KafkaBroker: getEnv("KAFKA_BROKER", "localhost:9092"),
 		ServiceName: "card-service",
 	}

@@ -126,7 +126,7 @@ func TestGenerateReportUseCase_Execute(t *testing.T) {
 		require.Len(t, publisher.publishedEvents, 1)
 		genEvent, ok := publisher.publishedEvents[0].(event.ReportGenerated)
 		require.True(t, ok)
-		assert.Equal(t, resp.ID, genEvent.ID)
+		assert.Equal(t, resp.ID.String(), genEvent.AggregateID())
 		assert.Equal(t, "COREP", genEvent.ReportType)
 	})
 

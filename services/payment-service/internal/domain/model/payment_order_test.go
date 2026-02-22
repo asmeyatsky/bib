@@ -75,7 +75,7 @@ func TestNewPaymentOrder_Valid(t *testing.T) {
 	events := order.DomainEvents()
 	require.Len(t, events, 1)
 	assert.Equal(t, "payment.order.initiated", events[0].EventType())
-	assert.Equal(t, order.ID(), events[0].AggregateID())
+	assert.Equal(t, order.ID().String(), events[0].AggregateID())
 }
 
 func TestNewPaymentOrder_InternalTransfer(t *testing.T) {
@@ -380,9 +380,10 @@ func TestPaymentOrder_ClearDomainEvents(t *testing.T) {
 	order := newTestPaymentOrder(t)
 	require.Len(t, order.DomainEvents(), 1)
 
-	cleared := order.ClearDomainEvents()
+	cleared, updated := order.ClearDomainEvents()
 	assert.Len(t, cleared, 1)
 	assert.Equal(t, "payment.order.initiated", cleared[0].EventType())
+	assert.Empty(t, updated.DomainEvents())
 }
 
 func TestPaymentOrder_Immutability_MarkProcessingDoesNotMutateOriginal(t *testing.T) {

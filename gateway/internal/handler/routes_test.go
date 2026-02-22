@@ -2,14 +2,37 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
+
+	"github.com/bibbank/bib/gateway/internal/proxy"
 )
+
+// testProxies creates a Proxies struct with nil-connection proxies for testing.
+// The health and ledger/account routes that don't need a backend are testable.
+func testProxies() *Proxies {
+	logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError}))
+	// Create proxies with nil connections. Health routes don't use proxies.
+	return &Proxies{
+		Account:   proxy.NewAccountProxy(nil, logger),
+		Ledger:    proxy.NewLedgerProxy(nil, logger),
+		Payment:   proxy.NewPaymentProxy(nil, logger),
+		FX:        proxy.NewFXProxy(nil, logger),
+		Identity:  proxy.NewIdentityProxy(nil, logger),
+		Deposit:   proxy.NewDepositProxy(nil, logger),
+		Card:      proxy.NewCardProxy(nil, logger),
+		Lending:   proxy.NewLendingProxy(nil, logger),
+		Fraud:     proxy.NewFraudProxy(nil, logger),
+		Reporting: proxy.NewReportingProxy(nil, logger),
+	}
+}
 
 func TestHealthz(t *testing.T) {
 	mux := http.NewServeMux()
-	RegisterRoutes(mux)
+	RegisterRoutes(mux, testProxies())
 
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	rec := httptest.NewRecorder()
@@ -30,7 +53,7 @@ func TestHealthz(t *testing.T) {
 
 func TestReadyz(t *testing.T) {
 	mux := http.NewServeMux()
-	RegisterRoutes(mux)
+	RegisterRoutes(mux, testProxies())
 
 	req := httptest.NewRequest(http.MethodGet, "/readyz", nil)
 	rec := httptest.NewRecorder()
@@ -49,30 +72,9 @@ func TestReadyz(t *testing.T) {
 	}
 }
 
-func TestNotImplemented(t *testing.T) {
-	mux := http.NewServeMux()
-	RegisterRoutes(mux)
-
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/accounts", nil)
-	rec := httptest.NewRecorder()
-	mux.ServeHTTP(rec, req)
-
-	if rec.Code != http.StatusNotImplemented {
-		t.Fatalf("expected 501, got %d", rec.Code)
-	}
-
-	var body map[string]string
-	if err := json.NewDecoder(rec.Body).Decode(&body); err != nil {
-		t.Fatalf("failed to decode response: %v", err)
-	}
-	if body["error"] == "" {
-		t.Fatal("expected error message in response")
-	}
-}
-
 func TestHealthz_ContentType(t *testing.T) {
 	mux := http.NewServeMux()
-	RegisterRoutes(mux)
+	RegisterRoutes(mux, testProxies())
 
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	rec := httptest.NewRecorder()

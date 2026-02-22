@@ -237,7 +237,7 @@ func TestAssess_EmitsAssessmentCompletedEvent(t *testing.T) {
 	evt, ok := events[0].(event.AssessmentCompleted)
 	require.True(t, ok)
 	assert.Equal(t, a.ID(), evt.AssessmentID)
-	assert.Equal(t, a.TenantID(), evt.TenantID)
+	assert.Equal(t, a.TenantID().String(), evt.TenantID())
 	assert.Equal(t, 20, evt.RiskScore)
 	assert.Equal(t, "LOW", evt.RiskLevel)
 	assert.Equal(t, "APPROVE", evt.Decision)

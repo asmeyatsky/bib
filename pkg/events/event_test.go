@@ -1,22 +1,21 @@
 package events
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 func TestNewBaseEvent(t *testing.T) {
-	aggregateID := uuid.New()
-	payload := []byte(`{"amount":100}`)
+	aggregateID := "agg-123"
+	tenantID := "tenant-456"
 
 	before := time.Now().UTC()
-	event := NewBaseEvent("AccountOpened", aggregateID, "Account", payload)
+	event := NewBaseEvent("AccountOpened", aggregateID, "Account", tenantID)
 	after := time.Now().UTC()
 
-	if event.EventID() == uuid.Nil {
-		t.Error("expected non-nil event ID")
+	if event.EventID() == "" {
+		t.Error("expected non-empty event ID")
 	}
 
 	if event.EventType() != "AccountOpened" {
@@ -31,12 +30,12 @@ func TestNewBaseEvent(t *testing.T) {
 		t.Errorf("expected aggregate type %q, got %q", "Account", event.AggregateType())
 	}
 
-	if event.OccurredAt().Before(before) || event.OccurredAt().After(after) {
-		t.Errorf("expected occurredAt between %v and %v, got %v", before, after, event.OccurredAt())
+	if event.TenantID() != tenantID {
+		t.Errorf("expected tenant ID %q, got %q", tenantID, event.TenantID())
 	}
 
-	if string(event.Payload()) != string(payload) {
-		t.Errorf("expected payload %q, got %q", string(payload), string(event.Payload()))
+	if event.OccurredAt().Before(before) || event.OccurredAt().After(after) {
+		t.Errorf("expected occurredAt between %v and %v, got %v", before, after, event.OccurredAt())
 	}
 }
 
@@ -45,9 +44,9 @@ func TestBaseEventImplementsDomainEvent(t *testing.T) {
 }
 
 func TestNewOutboxEntry(t *testing.T) {
-	aggregateID := uuid.New()
-	payload := []byte(`{"currency":"USD"}`)
-	event := NewBaseEvent("FundsDeposited", aggregateID, "Account", payload)
+	aggregateID := "agg-789"
+	tenantID := "tenant-012"
+	event := NewBaseEvent("FundsDeposited", aggregateID, "Account", tenantID)
 
 	entry := NewOutboxEntry(event)
 
@@ -67,8 +66,14 @@ func TestNewOutboxEntry(t *testing.T) {
 		t.Errorf("expected event type %q, got %q", "FundsDeposited", entry.EventType)
 	}
 
-	if string(entry.Payload) != string(payload) {
-		t.Errorf("expected payload %q, got %q", string(payload), string(entry.Payload))
+	// Payload should be a valid JSON marshalling of the event.
+	if len(entry.Payload) == 0 {
+		t.Error("expected non-empty payload")
+	}
+
+	var parsed map[string]interface{}
+	if err := json.Unmarshal(entry.Payload, &parsed); err != nil {
+		t.Errorf("expected valid JSON payload, got error: %v", err)
 	}
 
 	if entry.CreatedAt != event.OccurredAt() {
@@ -82,10 +87,10 @@ func TestNewOutboxEntry(t *testing.T) {
 
 func TestEventCollectorRecord(t *testing.T) {
 	collector := &EventCollector{}
-	aggregateID := uuid.New()
+	aggregateID := "agg-test"
 
-	e1 := NewBaseEvent("Event1", aggregateID, "Aggregate", nil)
-	e2 := NewBaseEvent("Event2", aggregateID, "Aggregate", nil)
+	e1 := NewBaseEvent("Event1", aggregateID, "Aggregate", "")
+	e2 := NewBaseEvent("Event2", aggregateID, "Aggregate", "")
 
 	collector.Record(e1)
 	collector.Record(e2)
@@ -106,7 +111,7 @@ func TestEventCollectorRecord(t *testing.T) {
 
 func TestEventCollectorEventsDoesNotClear(t *testing.T) {
 	collector := &EventCollector{}
-	collector.Record(NewBaseEvent("Event1", uuid.New(), "Aggregate", nil))
+	collector.Record(NewBaseEvent("Event1", "agg", "Aggregate", ""))
 
 	_ = collector.Events()
 
@@ -117,10 +122,10 @@ func TestEventCollectorEventsDoesNotClear(t *testing.T) {
 
 func TestEventCollectorClearEvents(t *testing.T) {
 	collector := &EventCollector{}
-	aggregateID := uuid.New()
+	aggregateID := "agg-clear"
 
-	collector.Record(NewBaseEvent("Event1", aggregateID, "Aggregate", nil))
-	collector.Record(NewBaseEvent("Event2", aggregateID, "Aggregate", nil))
+	collector.Record(NewBaseEvent("Event1", aggregateID, "Aggregate", ""))
+	collector.Record(NewBaseEvent("Event2", aggregateID, "Aggregate", ""))
 
 	cleared := collector.ClearEvents()
 

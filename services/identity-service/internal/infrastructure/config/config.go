@@ -36,6 +36,13 @@ type TelemetryConfig struct {
 	ServiceName  string
 }
 
+// Validate checks required configuration values.
+func (c Config) Validate() {
+	if c.DB.Password == "" {
+		panic("DB_PASSWORD environment variable is required")
+	}
+}
+
 // Load reads configuration from environment variables with defaults.
 func Load() Config {
 	return Config{
@@ -45,9 +52,9 @@ func Load() Config {
 			Host:     getEnv("DB_HOST", "localhost"),
 			Port:     getEnvInt("DB_PORT", 5432),
 			User:     getEnv("DB_USER", "bib"),
-			Password: getEnv("DB_PASSWORD", "bib_dev_password"),
+			Password: getEnv("DB_PASSWORD", ""),
 			Name:     getEnv("DB_NAME", "bib_identity"),
-			SSLMode:  getEnv("DB_SSLMODE", "disable"),
+			SSLMode:  getEnv("DB_SSLMODE", "require"),
 			MaxConns: int32(getEnvInt("DB_MAX_CONNS", 20)),
 			MinConns: int32(getEnvInt("DB_MIN_CONNS", 5)),
 		},

@@ -4,7 +4,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/bibbank/bib/pkg/events"
 )
+
+// DomainEvent is an alias for the shared pkg/events.DomainEvent interface.
+type DomainEvent = events.DomainEvent
 
 const (
 	// EventTypeAssessmentCompleted is emitted when a transaction assessment finishes.
@@ -17,8 +22,8 @@ const (
 // AssessmentCompleted is published when a fraud assessment has been completed
 // for a transaction.
 type AssessmentCompleted struct {
+	events.BaseEvent
 	AssessmentID  uuid.UUID `json:"assessment_id"`
-	TenantID      uuid.UUID `json:"tenant_id"`
 	TransactionID uuid.UUID `json:"transaction_id"`
 	AccountID     uuid.UUID `json:"account_id"`
 	RiskScore     int       `json:"risk_score"`
@@ -28,21 +33,25 @@ type AssessmentCompleted struct {
 	AssessedAt    time.Time `json:"assessed_at"`
 }
 
-// EventType returns the event type identifier.
-func (e AssessmentCompleted) EventType() string {
-	return EventTypeAssessmentCompleted
-}
-
-// AggregateID returns the assessment ID as the aggregate identifier.
-func (e AssessmentCompleted) AggregateID() uuid.UUID {
-	return e.AssessmentID
+func NewAssessmentCompleted(assessmentID, tenantID, transactionID, accountID uuid.UUID, riskScore int, riskLevel, decision string, signals []string, assessedAt time.Time) AssessmentCompleted {
+	return AssessmentCompleted{
+		BaseEvent:     events.NewBaseEvent(EventTypeAssessmentCompleted, assessmentID.String(), "FraudAssessment", tenantID.String()),
+		AssessmentID:  assessmentID,
+		TransactionID: transactionID,
+		AccountID:     accountID,
+		RiskScore:     riskScore,
+		RiskLevel:     riskLevel,
+		Decision:      decision,
+		Signals:       signals,
+		AssessedAt:    assessedAt,
+	}
 }
 
 // HighRiskDetected is published when a transaction is assessed with CRITICAL
 // risk level, triggering alerts and potential account freezes.
 type HighRiskDetected struct {
+	events.BaseEvent
 	AssessmentID  uuid.UUID `json:"assessment_id"`
-	TenantID      uuid.UUID `json:"tenant_id"`
 	TransactionID uuid.UUID `json:"transaction_id"`
 	AccountID     uuid.UUID `json:"account_id"`
 	RiskScore     int       `json:"risk_score"`
@@ -50,12 +59,14 @@ type HighRiskDetected struct {
 	DetectedAt    time.Time `json:"detected_at"`
 }
 
-// EventType returns the event type identifier.
-func (e HighRiskDetected) EventType() string {
-	return EventTypeHighRiskDetected
-}
-
-// AggregateID returns the assessment ID as the aggregate identifier.
-func (e HighRiskDetected) AggregateID() uuid.UUID {
-	return e.AssessmentID
+func NewHighRiskDetected(assessmentID, tenantID, transactionID, accountID uuid.UUID, riskScore int, signals []string, detectedAt time.Time) HighRiskDetected {
+	return HighRiskDetected{
+		BaseEvent:     events.NewBaseEvent(EventTypeHighRiskDetected, assessmentID.String(), "FraudAssessment", tenantID.String()),
+		AssessmentID:  assessmentID,
+		TransactionID: transactionID,
+		AccountID:     accountID,
+		RiskScore:     riskScore,
+		Signals:       signals,
+		DetectedAt:    detectedAt,
+	}
 }

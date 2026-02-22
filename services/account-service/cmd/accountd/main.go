@@ -12,6 +12,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/bibbank/bib/pkg/auth"
+	pkgkafka "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/services/account-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/account-service/internal/infrastructure/config"
 	infraKafka "github.com/bibbank/bib/services/account-service/internal/infrastructure/kafka"
@@ -58,8 +60,11 @@ func main() {
 
 	// Initialize infrastructure adapters.
 	accountRepo := infraPostgres.NewAccountRepository(pool)
-	eventPublisher := infraKafka.NewPublisher(cfg.Kafka.Brokers, logger)
-	defer eventPublisher.Close()
+	kafkaProducer := pkgkafka.NewProducer(pkgkafka.Config{
+		Brokers: cfg.Kafka.Brokers,
+	})
+	defer kafkaProducer.Close()
+	eventPublisher := infraKafka.NewPublisher(kafkaProducer, logger)
 
 	// Initialize use cases.
 	// LedgerClient is nil for now; will be integrated when ledger service is available.
@@ -69,6 +74,16 @@ func main() {
 	closeAccountUC := usecase.NewCloseAccountUseCase(accountRepo, eventPublisher, logger)
 	listAccountsUC := usecase.NewListAccountsUseCase(accountRepo, logger)
 
+	// JWT service.
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "dev-secret-change-in-prod" // development only
+	}
+	jwtSvc := auth.NewJWTService(auth.JWTConfig{
+		Secret: jwtSecret,
+		Issuer: "bib-account",
+	})
+
 	// Initialize gRPC handler and server.
 	handler := grpcPresentation.NewAccountHandler(
 		openAccountUC,
@@ -77,7 +92,7 @@ func main() {
 		closeAccountUC,
 		listAccountsUC,
 	)
-	grpcServer := grpcPresentation.NewServer(handler, cfg.GRPCPort, logger)
+	grpcServer := grpcPresentation.NewServer(handler, cfg.GRPCPort, logger, jwtSvc)
 
 	// Initialize HTTP health server.
 	healthHandler := rest.NewHealthHandler(cfg.ServiceName, logger)
