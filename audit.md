@@ -245,59 +245,122 @@ Enterprise-grade, microservices-based banking platform in Go: 10 services, 1 gat
 
 ---
 
-## 6. Top Recommendations (Priority Order)
+## 6. Top Recommendations — Implementation Status
 
-### P0 — Production Blockers
+> Last updated: 2026-02-22. Commit `a330380`.
+> All modules build clean. All tests pass.
 
-1. **Wire gRPC services to proto-generated interfaces.** Without this, no service can receive business RPC calls. This is the #1 functional blocker.
-2. **Implement gateway gRPC proxying.** The gateway returns 501 on every route. The platform has no functional API entry point.
-3. **Connect Kafka publishers to `pkg/kafka`.** All event-driven flows are broken. Replace stub publishers with actual Kafka integration.
-4. **Wire auth interceptor to all gRPC servers.** Register `UnaryAuthInterceptor` in every service's `grpc.NewServer()` call.
-5. **Fix tenant isolation.** Extract tenant ID from JWT claims, not from client request parameters.
+### P0 — Production Blockers (5/5 DONE)
 
-### P1 — Security Hardening
+1. ~~**Wire gRPC services to proto-generated interfaces.**~~ DONE — handlers registered with gRPC servers, TODO comments removed.
+2. ~~**Implement gateway gRPC proxying.**~~ DONE — 34 REST routes proxy to backend gRPC via JSON codec. Added missing routes for card, lending, fraud, reporting.
+3. ~~**Connect Kafka publishers to `pkg/kafka`.**~~ DONE — replaced 5 stub publishers (account, fraud, card, lending, reporting) with real implementations. Updated main.go wiring.
+4. ~~**Wire auth interceptor to all gRPC servers.**~~ DONE — `UnaryAuthInterceptor` registered in all 10 services with health check bypass.
+5. ~~**Fix tenant isolation.**~~ DONE — all handlers extract tenant ID from JWT claims via `tenantIDFromContext(ctx)`, not from request params.
 
-6. **Remove hardcoded secrets.** Fail-fast on missing `JWT_SECRET` and `DB_PASSWORD` in production. Use Kubernetes Secrets or Vault.
-7. **Switch to asymmetric JWT signing** (RSA/ECDSA). Distribute public key to validators, keep private key only on issuer.
-8. **Enable TLS on all gRPC communication.** Add TLS credentials to `grpc.NewServer()` and `grpc.Dial()`.
-9. **Disable gRPC reflection in production.** Gate behind environment variable or build tag.
-10. **Enforce RBAC.** Wire `RequireRole` interceptor to handlers. Map operations to required roles.
-11. **Sanitize error messages.** Log full errors server-side, return generic messages to clients.
-12. **Enable DB SSL.** Default `SSLMode` to `"require"` in code. Fix account-service env var to `DB_SSLMODE`.
+### P1 — Security Hardening (5/7 DONE)
 
-### P2 — Bug Fixes
+6. ~~**Remove hardcoded secrets.**~~ DONE — defaults changed to empty string, `Validate()` panics on missing `JWT_SECRET`/`DB_PASSWORD`.
+7. **Switch to asymmetric JWT signing** (RSA/ECDSA). **OUTSTANDING** — requires generating RSA/ECDSA keypair, updating `pkg/auth/jwt.go` to use `SigningMethodRS256` or `SigningMethodES256`, distributing public key to all validators, updating all `JWTConfig` structs. Currently still HMAC-SHA256.
+8. **Enable TLS on all gRPC communication.** **OUTSTANDING** — requires certificate management (self-signed or CA-issued), adding `credentials.NewTLS()` to all `grpc.NewServer()` calls and `grpc.WithTransportCredentials()` to all `grpc.Dial()` calls. Affects all 10 services + gateway proxy connections.
+9. ~~**Disable gRPC reflection in production.**~~ DONE — gated behind `GRPC_REFLECTION=true` env var.
+10. ~~**Enforce RBAC.**~~ DONE — `requireRole()` helper in all 10 handlers with role mappings: read (all roles), write (admin/operator/api_client), sensitive (admin/operator), admin-only (admin).
+11. ~~**Sanitize error messages.**~~ DONE — all `codes.Internal` responses return `"internal error"`. Validation errors keep specific messages.
+12. ~~**Enable DB SSL.**~~ DONE — default `SSLMode` changed to `"require"` in all configs and `pkg/postgres/pool.go`. Fixed `DB_SSL_MODE` → `DB_SSLMODE` in account-service.
 
-13. **Fix Card aggregate `addEvent` bug.** Change value receiver methods to use direct slice append (like CustomerAccount's `clone()` pattern) instead of calling pointer-receiver `addEvent`.
-14. **Fix `ClearDomainEvents`** on PaymentOrder and JournalEntry. Return new instance (like CustomerAccount) or use pointer receiver.
-15. **Implement missing payment saga steps.** Add RESERVE_FUNDS and POST_TO_LEDGER execution in `payment_saga.go`.
-16. **Fix card-service transactional outbox.** Wrap state update and outbox write in a single database transaction.
+### P2 — Bug Fixes (4/4 DONE)
 
-### P3 — Consistency & Cleanup
+13. ~~**Fix Card aggregate `addEvent` bug.**~~ DONE — removed pointer-receiver `addEvent`, inlined `append` in all value-receiver methods.
+14. ~~**Fix `ClearDomainEvents`.**~~ DONE — PaymentOrder and JournalEntry now return `([]events.DomainEvent, <Model>)` matching immutable pattern.
+15. ~~**Implement missing payment saga steps.**~~ DONE — RESERVE_FUNDS and POST_TO_LEDGER now execute in `payment_saga.go`.
+16. ~~**Fix card-service transactional outbox.**~~ DONE — `Save` and `Update` wrap state + outbox in a single DB transaction.
 
-17. **Unify DomainEvent interface.** Consolidate 3+ incompatible event interfaces into one shared contract in `pkg/events`.
-18. **Standardize infrastructure package naming.** Pick one convention (`infrastructure/postgres/` vs `infrastructure/persistence/`) and apply across all services.
-19. **Remove dead code.** Delete duplicate `cmd/server/main.go` in 4 services, duplicate ACH adapter, empty port files.
-20. **Fix env var naming.** Standardize on `DB_SSLMODE` across all services.
-21. **Add missing proto RPCs.** Add `DisburseLoan` and `GetApplication` to lending proto.
+### P3 — Consistency & Cleanup (4/5 DONE)
 
-### P4 — Test Coverage
+17. ~~**Unify DomainEvent interface.**~~ DONE — consolidated into `pkg/events`. All services use shared `BaseEvent` with `string` IDs and `TenantID`.
+18. **Standardize infrastructure package naming.** **OUTSTANDING (deferred)** — some services use `infrastructure/postgres/`, others `infrastructure/persistence/postgres/`. Same split for `kafka/` vs `messaging/`. Renaming would break all imports across the codebase. Recommend doing this as a dedicated refactor with IDE tooling.
+19. ~~**Remove dead code.**~~ DONE — deleted 4 duplicate `cmd/server/` dirs, duplicate ACH adapter, 2 empty port files.
+20. ~~**Fix env var naming.**~~ DONE — standardized `DB_SSLMODE` and default passwords across all services.
+21. ~~**Add missing proto RPCs.**~~ DONE — added `DisburseLoan` and `GetApplication` to lending proto. Fixed date types in ledger/deposit protos.
 
-22. **Add infrastructure layer tests.** Start with SQL repositories (parameterized query verification, transaction handling) using testcontainers.
-23. **Add presentation layer tests.** Test gRPC handlers for request validation, error mapping, response construction.
-24. **Implement integration tests.** Use `pkg/testutil` postgres/kafka helpers for real database and message broker tests.
-25. **Complete use case tests.** Priority: all deposit, fraud, and lending use cases (currently 0 tests).
-26. **Enable e2e tests.** Un-skip `TestOnboardingFlow` and `TestPaymentFlow`. Add assertions on response bodies.
-27. **Add concurrency tests.** Test concurrent balance updates, payment processing, optimistic locking.
+### P4 — Test Coverage (4/6 DONE)
 
-### P5 — PRD Feature Gaps
+22. ~~**Add infrastructure layer tests.**~~ DONE — added repo tests for account, ledger (journal + balance), payment, card, fraud services.
+23. ~~**Add presentation layer tests.**~~ DONE — added handler tests for account, ledger, payment, fraud, card services.
+24. **Implement integration tests.** **OUTSTANDING** — all `test/integration/` directories are still empty. Requires running Postgres and Kafka via testcontainers (`pkg/testutil`). Should test: SQL queries against real DB, Kafka producer/consumer round-trips, gRPC client/server communication. Start with ledger-service and payment-service as highest priority.
+25. ~~**Complete use case tests.**~~ DONE — 20 new test files covering all 24 previously untested use cases across 9 services.
+26. **Enable e2e tests.** **OUTSTANDING** — `e2e/e2e_test.go` still has `TestOnboardingFlow` and `TestPaymentFlow` behind `t.Skip()`. Requires full stack running (docker-compose up). Should add response body assertions and cover more flows (FX, deposits, lending, cards).
+27. **Add concurrency tests.** **OUTSTANDING** — no race condition or optimistic locking tests exist. Should test: concurrent balance updates in ledger, concurrent payment processing, concurrent account state transitions, version conflict detection. Use `sync.WaitGroup` + goroutines with `-race` flag.
 
-28. **Implement gateway proxying** to close the "no functional API" gap.
-29. **Implement real Kafka event publishing** to enable event-driven architecture.
-30. **Add nostro reconciliation** (MT950 parsing) to ledger service.
-31. **Implement data residency controls** (geofencing, jurisdiction-aware placement).
-32. **Add IaC** (Terraform/Pulumi) for cloud-agnostic infrastructure provisioning.
-33. **Implement disaster recovery** configuration with RTO/RPO targets.
-34. **Add Open Banking / Plaid integration** for alternative credit data.
+### P5 — PRD Feature Gaps (7/7 DONE)
+
+28. ~~**Implement gateway proxying.**~~ DONE — 34 REST routes, JSON-over-gRPC codec, per-client rate limiter.
+29. ~~**Implement real Kafka event publishing.**~~ DONE — 5 stub publishers replaced.
+30. ~~**Add nostro reconciliation.**~~ DONE — MT950 parser in `pkg/iso20022/mt950.go`, reconciliation service in ledger-service.
+31. ~~**Implement data residency controls.**~~ DONE — `pkg/residency` with jurisdiction policies (US, EU, UK, SG, IN), data classification, geofencing validation.
+32. ~~**Add IaC.**~~ DONE — `deploy/terraform/` with modules for Kubernetes, database, Kafka. Multi-cloud variables.
+33. ~~**Implement disaster recovery.**~~ DONE — `deploy/dr/dr-config.yaml` with tiered RTO/RPO, `failover-runbook.md`.
+34. ~~**Add Open Banking / Plaid integration.**~~ DONE — `pkg/openbanking` with Plaid client interface, `plaid_adapter.go` in account-service.
+
+### Additional work completed (not in original audit)
+
+- **Input validation** — pagination bounds (max 100, non-negative offset) and amount positivity checks added to all handlers.
+- **Network policy egress** — fixed `to: []` (allow-all) to proper deny-all with explicit allow rules for DNS, Postgres, Kafka, Redis, Jaeger.
+- **Redis authentication** — added `requirepass` to docker-compose, added `REDIS_PASSWORD` env var to all services.
+- **Kafka SASL/TLS support** — wired TLS and SASL (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512) into `pkg/kafka` producer and consumer.
+- **PostgreSQL Row-Level Security** — added RLS migrations for account, payment, and ledger services.
+- **Per-service DB users** — updated `scripts/init-db.sh` and docker-compose with dedicated users per service.
+- **Audit trail tables** — added `audit_log` table migrations for ledger and account services.
+- **Deposit campaign management** — campaign aggregate, promotional rates, create/apply use cases.
+- **Credit bureau adapter** — structured adapter with retry logic, simulated mode, configurable bureau selection.
+- **Alternative credit scoring** — scoring service using utility/rent/payroll data, integrated with underwriting engine.
+- **Embedded finance / partner APIs** — partner proxy in gateway with API key auth, rate limiting, webhook registration.
+
+---
+
+## 7. Outstanding Items — Where to Start Next
+
+Six items remain. Recommended order:
+
+### 1. Asymmetric JWT signing (S7) — HIGH priority
+- Generate RSA keypair (or ECDSA P-256)
+- Update `pkg/auth/jwt.go`: `SigningMethodRS256`, load private key for signing, public key for validation
+- Update `JWTConfig` to accept key file paths instead of a shared secret string
+- Update all 10 service `main.go` files and gateway to load the public key
+- Update `pkg/auth/jwt_test.go`
+
+### 2. gRPC TLS (S8) — HIGH priority
+- Generate self-signed CA + service certs (or use cert-manager in K8s)
+- Update all `server.go` files: `grpc.NewServer(grpc.Creds(credentials.NewTLS(...)))`
+- Update gateway proxy: `grpc.WithTransportCredentials(credentials.NewTLS(...))`
+- Add `TLS_CERT_FILE` and `TLS_KEY_FILE` env vars to config
+- Add cert volume mounts to docker-compose and Helm charts
+
+### 3. Integration tests (P4-24) — MEDIUM priority
+- Start with `services/ledger-service/test/integration/` and `services/payment-service/test/integration/`
+- Use `pkg/testutil` postgres container helpers
+- Test actual SQL against a real Postgres instance
+- Test Kafka publish/consume round-trips
+- Run with `go test -tags=integration`
+
+### 4. Concurrency tests (P4-27) — MEDIUM priority
+- Add to existing domain model test files
+- Test concurrent `Freeze` + `Close` on same account
+- Test concurrent balance updates in ledger
+- Test optimistic locking version conflicts
+- Use `-race` flag (already in Makefile)
+
+### 5. E2E tests (P4-26) — LOW priority (requires full stack)
+- Un-skip `TestOnboardingFlow` and `TestPaymentFlow` in `e2e/e2e_test.go`
+- Add response body assertions
+- Add flows for FX, deposits, lending, cards, fraud
+- Requires `docker-compose up` before running
+
+### 6. Standardize infra package naming (C2) — LOW priority
+- Rename `infrastructure/persistence/postgres/` → `infrastructure/postgres/` (or vice versa) across 7 services
+- Rename `infrastructure/messaging/` → `infrastructure/kafka/` (or vice versa) across 7 services
+- Update all import paths
+- Best done with IDE refactoring tools
 
 ---
 
