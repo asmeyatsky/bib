@@ -229,5 +229,5 @@ func TestOutbox_EventsPersisted(t *testing.T) {
 	).Scan(&aggregateType, &eventType)
 	require.NoError(t, err)
 	assert.Equal(t, "JournalEntry", aggregateType)
-	assert.Equal(t, "entry.posted", eventType)
+	assert.Equal(t, "ledger.entry.posted", eventType)
 }

@@ -19,7 +19,10 @@ PKGS := \
 	pkg/auth \
 	pkg/observability \
 	pkg/iso20022 \
-	pkg/testutil
+	pkg/testutil \
+	pkg/tlsutil \
+	pkg/residency \
+	pkg/openbanking
 
 ALL_MODULES := $(PKGS) $(SERVICES)
 
@@ -54,7 +57,8 @@ build:
 	@for svc in $(SERVICES); do \
 		name=$$(basename $$svc); \
 		echo "  Building $$name..."; \
-		(cd $$svc && go build -o ../../bin/$$name ./cmd/$$name) || exit 1; \
+		cmddir=$$(ls -d $$svc/cmd/*/); \
+		(cd $$svc && go build -o ../../bin/$$name ./cmd/$$(basename $$cmddir)) || exit 1; \
 	done
 
 proto:
@@ -79,7 +83,7 @@ docker-down:
 
 test-e2e:
 	@echo "==> Running end-to-end tests..."
-	go test -race -tags=e2e -timeout=10m ./test/e2e/...
+	cd e2e && go test -race -tags=e2e -timeout=10m ./...
 
 migrate-up:
 	@echo "==> Running migrations up..."
