@@ -8,13 +8,13 @@ import (
 
 // OutboxEntry represents a domain event stored in the outbox table.
 type OutboxEntry struct {
-	Payload       []byte
 	CreatedAt     time.Time
 	PublishedAt   *time.Time
 	ID            string
 	AggregateID   string
 	AggregateType string
 	EventType     string
+	Payload       []byte
 }
 
 // NewOutboxEntry creates an OutboxEntry from a DomainEvent.
