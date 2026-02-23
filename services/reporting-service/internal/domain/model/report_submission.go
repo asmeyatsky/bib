@@ -14,19 +14,19 @@ import (
 
 // ReportSubmission is the aggregate root for regulatory report submissions.
 type ReportSubmission struct {
-	id               uuid.UUID
-	tenantID         uuid.UUID
-	reportType       valueobject.ReportType
-	reportingPeriod  string
-	status           valueobject.SubmissionStatus
-	xbrlContent      string
+	updatedAt        time.Time
+	createdAt        time.Time
 	generatedAt      *time.Time
 	submittedAt      *time.Time
+	reportingPeriod  string
+	xbrlContent      string
+	status           valueobject.SubmissionStatus
+	reportType       valueobject.ReportType
 	validationErrors []string
-	version          int
-	createdAt        time.Time
-	updatedAt        time.Time
 	domainEvents     []events.DomainEvent
+	version          int
+	id               uuid.UUID
+	tenantID         uuid.UUID
 }
 
 // NewReportSubmission creates a new ReportSubmission in DRAFT status.
@@ -197,18 +197,18 @@ func (r ReportSubmission) Reject(errors []string, now time.Time) (ReportSubmissi
 
 // --- Accessors ---
 
-func (r ReportSubmission) ID() uuid.UUID                          { return r.id }
-func (r ReportSubmission) TenantID() uuid.UUID                    { return r.tenantID }
-func (r ReportSubmission) ReportType() valueobject.ReportType     { return r.reportType }
-func (r ReportSubmission) ReportingPeriod() string                { return r.reportingPeriod }
-func (r ReportSubmission) Status() valueobject.SubmissionStatus   { return r.status }
-func (r ReportSubmission) XBRLContent() string                    { return r.xbrlContent }
-func (r ReportSubmission) GeneratedAt() *time.Time                { return r.generatedAt }
-func (r ReportSubmission) SubmittedAt() *time.Time                { return r.submittedAt }
-func (r ReportSubmission) ValidationErrors() []string             { return r.validationErrors }
-func (r ReportSubmission) Version() int                           { return r.version }
-func (r ReportSubmission) CreatedAt() time.Time                   { return r.createdAt }
-func (r ReportSubmission) UpdatedAt() time.Time                   { return r.updatedAt }
+func (r ReportSubmission) ID() uuid.UUID                        { return r.id }
+func (r ReportSubmission) TenantID() uuid.UUID                  { return r.tenantID }
+func (r ReportSubmission) ReportType() valueobject.ReportType   { return r.reportType }
+func (r ReportSubmission) ReportingPeriod() string              { return r.reportingPeriod }
+func (r ReportSubmission) Status() valueobject.SubmissionStatus { return r.status }
+func (r ReportSubmission) XBRLContent() string                  { return r.xbrlContent }
+func (r ReportSubmission) GeneratedAt() *time.Time              { return r.generatedAt }
+func (r ReportSubmission) SubmittedAt() *time.Time              { return r.submittedAt }
+func (r ReportSubmission) ValidationErrors() []string           { return r.validationErrors }
+func (r ReportSubmission) Version() int                         { return r.version }
+func (r ReportSubmission) CreatedAt() time.Time                 { return r.createdAt }
+func (r ReportSubmission) UpdatedAt() time.Time                 { return r.updatedAt }
 
 // DomainEvents returns the uncommitted domain events.
 func (r ReportSubmission) DomainEvents() []events.DomainEvent {

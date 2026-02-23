@@ -114,7 +114,7 @@ func TestSubmitLoanApplication_Execute(t *testing.T) {
 		appRepo := &mockLoanApplicationRepository{}
 		publisher := &mockLendingEventPublisher{}
 		creditClient := &mockCreditBureauClient{
-			getCreditScoreFunc: func(_ context.Context, applicantID string) (string, error) {
+			getCreditScoreFunc: func(_ context.Context, _ string) (string, error) {
 				return "750", nil
 			},
 		}
@@ -139,7 +139,7 @@ func TestSubmitLoanApplication_Execute(t *testing.T) {
 		appRepo := &mockLoanApplicationRepository{}
 		publisher := &mockLendingEventPublisher{}
 		creditClient := &mockCreditBureauClient{
-			getCreditScoreFunc: func(_ context.Context, applicantID string) (string, error) {
+			getCreditScoreFunc: func(_ context.Context, _ string) (string, error) {
 				return "500", nil // below threshold
 			},
 		}

@@ -92,7 +92,7 @@ func TestGetReportUseCase_Execute(t *testing.T) {
 		)
 
 		repo := &mockReportSubmissionRepository{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.ReportSubmission, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.ReportSubmission, error) {
 				return submission, nil
 			},
 		}
@@ -111,7 +111,7 @@ func TestGetReportUseCase_Execute(t *testing.T) {
 
 	t.Run("fails when report not found", func(t *testing.T) {
 		repo := &mockReportSubmissionRepository{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.ReportSubmission, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.ReportSubmission, error) {
 				return model.ReportSubmission{}, fmt.Errorf("report not found")
 			},
 		}

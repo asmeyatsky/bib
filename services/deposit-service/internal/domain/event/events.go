@@ -14,11 +14,11 @@ const AggregateTypeDepositPosition = "DepositPosition"
 // DepositOpened is emitted when a new deposit position is opened.
 type DepositOpened struct {
 	events.BaseEvent
+	Principal  string    `json:"principal"`
+	Currency   string    `json:"currency"`
 	PositionID uuid.UUID `json:"position_id"`
 	AccountID  uuid.UUID `json:"account_id"`
 	ProductID  uuid.UUID `json:"product_id"`
-	Principal  string    `json:"principal"`
-	Currency   string    `json:"currency"`
 }
 
 func NewDepositOpened(positionID, tenantID, accountID, productID uuid.UUID, principal decimal.Decimal, currency string) DepositOpened {
@@ -34,12 +34,12 @@ func NewDepositOpened(positionID, tenantID, accountID, productID uuid.UUID, prin
 
 // InterestAccrued is emitted when interest is accrued on a deposit position.
 type InterestAccrued struct {
+	AsOf time.Time `json:"as_of"`
 	events.BaseEvent
-	PositionID uuid.UUID `json:"position_id"`
-	AccountID  uuid.UUID `json:"account_id"`
 	Amount     string    `json:"amount"`
 	Currency   string    `json:"currency"`
-	AsOf       time.Time `json:"as_of"`
+	PositionID uuid.UUID `json:"position_id"`
+	AccountID  uuid.UUID `json:"account_id"`
 }
 
 func NewInterestAccrued(positionID, tenantID, accountID uuid.UUID, amount decimal.Decimal, currency string, asOf time.Time) InterestAccrued {

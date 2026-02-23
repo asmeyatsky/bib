@@ -54,9 +54,9 @@ func (m *mockAccountRepository) ListByHolder(_ context.Context, _ uuid.UUID, _, 
 }
 
 type mockEventPublisher struct {
-	publishedEvents []event.DomainEvent
-	publishedTopic  string
 	publishErr      error
+	publishedTopic  string
+	publishedEvents []event.DomainEvent
 }
 
 func (m *mockEventPublisher) Publish(_ context.Context, topic string, events ...event.DomainEvent) error {
@@ -69,10 +69,10 @@ func (m *mockEventPublisher) Publish(_ context.Context, topic string, events ...
 }
 
 type mockLedgerClient struct {
-	createCalled    bool
+	createErr       error
 	createdCode     string
 	createdCurrency string
-	createErr       error
+	createCalled    bool
 }
 
 func (m *mockLedgerClient) CreateLedgerAccount(_ context.Context, _ uuid.UUID, accountCode string, currency string) error {

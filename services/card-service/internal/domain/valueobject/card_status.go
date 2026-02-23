@@ -7,20 +7,20 @@ import "fmt"
 type CardStatus string
 
 const (
-	CardStatusPending   CardStatus = "PENDING"
-	CardStatusActive    CardStatus = "ACTIVE"
-	CardStatusFrozen    CardStatus = "FROZEN"
+	CardStatusPending  CardStatus = "PENDING"
+	CardStatusActive   CardStatus = "ACTIVE"
+	CardStatusFrozen   CardStatus = "FROZEN"
 	CardStatusCanceled CardStatus = "CANCELED"
-	CardStatusExpired   CardStatus = "EXPIRED"
+	CardStatusExpired  CardStatus = "EXPIRED"
 )
 
 // validCardStatuses contains all valid card statuses for validation.
 var validCardStatuses = map[CardStatus]bool{
-	CardStatusPending:   true,
-	CardStatusActive:    true,
-	CardStatusFrozen:    true,
+	CardStatusPending:  true,
+	CardStatusActive:   true,
+	CardStatusFrozen:   true,
 	CardStatusCanceled: true,
-	CardStatusExpired:   true,
+	CardStatusExpired:  true,
 }
 
 // NewCardStatus creates a validated CardStatus from a string.

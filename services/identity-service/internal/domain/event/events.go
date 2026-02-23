@@ -11,8 +11,8 @@ const AggregateTypeIdentityVerification = "IdentityVerification"
 // VerificationInitiated is emitted when a new identity verification is created.
 type VerificationInitiated struct {
 	events.BaseEvent
-	VerificationID uuid.UUID `json:"verification_id"`
 	ApplicantEmail string    `json:"applicant_email"`
+	VerificationID uuid.UUID `json:"verification_id"`
 }
 
 func NewVerificationInitiated(verificationID, tenantID uuid.UUID, email string) VerificationInitiated {
@@ -26,8 +26,8 @@ func NewVerificationInitiated(verificationID, tenantID uuid.UUID, email string) 
 // VerificationCompleted is emitted when all checks pass and the verification is approved.
 type VerificationCompleted struct {
 	events.BaseEvent
-	VerificationID uuid.UUID `json:"verification_id"`
 	ApplicantEmail string    `json:"applicant_email"`
+	VerificationID uuid.UUID `json:"verification_id"`
 }
 
 func NewVerificationCompleted(verificationID, tenantID uuid.UUID, email string) VerificationCompleted {
@@ -41,8 +41,8 @@ func NewVerificationCompleted(verificationID, tenantID uuid.UUID, email string) 
 // VerificationRejected is emitted when one or more checks fail and the verification is rejected.
 type VerificationRejected struct {
 	events.BaseEvent
-	VerificationID uuid.UUID `json:"verification_id"`
 	ApplicantEmail string    `json:"applicant_email"`
+	VerificationID uuid.UUID `json:"verification_id"`
 }
 
 func NewVerificationRejected(verificationID, tenantID uuid.UUID, email string) VerificationRejected {

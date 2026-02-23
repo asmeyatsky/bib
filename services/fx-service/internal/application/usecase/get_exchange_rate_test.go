@@ -61,8 +61,8 @@ func (m *mockRateProvider) FetchRate(ctx context.Context, base, quote string) (v
 }
 
 type mockEventPublisher struct {
-	publishedEvents []events.DomainEvent
 	publishFunc     func(ctx context.Context, topic string, events ...events.DomainEvent) error
+	publishedEvents []events.DomainEvent
 }
 
 func (m *mockEventPublisher) Publish(ctx context.Context, topic string, evts ...events.DomainEvent) error {

@@ -23,7 +23,7 @@ func TestGetDepositPosition_Execute(t *testing.T) {
 		)
 
 		positionRepo := &mockDepositPositionRepository{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.DepositPosition, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.DepositPosition, error) {
 				return position, nil
 			},
 		}

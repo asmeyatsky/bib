@@ -10,10 +10,10 @@ import (
 
 // Balance represents the balance of a ledger account at a point in time.
 type Balance struct {
+	asOf        time.Time
 	accountCode valueobject.AccountCode
 	amount      decimal.Decimal
 	currency    string
-	asOf        time.Time
 }
 
 func NewBalance(accountCode valueobject.AccountCode, amount decimal.Decimal, currency string, asOf time.Time) Balance {

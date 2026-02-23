@@ -4,10 +4,10 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/google/uuid"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/model"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/port"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/valueobject"
+	"github.com/google/uuid"
 )
 
 var _ port.RailAdapter = (*SWIFTAdapter)(nil)
@@ -21,7 +21,7 @@ func NewSWIFTAdapter(logger *slog.Logger) *SWIFTAdapter {
 	return &SWIFTAdapter{logger: logger}
 }
 
-func (a *SWIFTAdapter) Submit(ctx context.Context, order model.PaymentOrder) error {
+func (a *SWIFTAdapter) Submit(_ context.Context, order model.PaymentOrder) error {
 	a.logger.Info("SWIFT: submitting international payment",
 		"order_id", order.ID(),
 		"amount", order.Amount(),
@@ -39,7 +39,7 @@ func (a *SWIFTAdapter) Submit(ctx context.Context, order model.PaymentOrder) err
 	return nil
 }
 
-func (a *SWIFTAdapter) GetStatus(ctx context.Context, orderID uuid.UUID) (valueobject.PaymentStatus, string, error) {
+func (a *SWIFTAdapter) GetStatus(_ context.Context, _ uuid.UUID) (valueobject.PaymentStatus, string, error) {
 	// Stub: in production, this would query SWIFT gpi Tracker for payment status.
 	// SWIFT payments typically settle in 1-2 business days.
 	return valueobject.PaymentStatusProcessing, "awaiting correspondent bank processing", nil

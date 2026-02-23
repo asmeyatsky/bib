@@ -19,21 +19,21 @@ func NewFraudProxy(conn *ServiceConn, logger *slog.Logger) *FraudProxy {
 }
 
 type assessTransactionReq struct {
+	Metadata        map[string]string `json:"metadata,omitempty"`
 	TenantID        string            `json:"tenant_id"`
 	TransactionID   string            `json:"transaction_id"`
 	AccountID       string            `json:"account_id"`
 	Amount          string            `json:"amount"`
 	Currency        string            `json:"currency"`
 	TransactionType string            `json:"transaction_type"`
-	Metadata        map[string]string `json:"metadata,omitempty"`
 }
 
 type assessTransactionResp struct {
 	AssessmentID string   `json:"assessment_id"`
-	RiskScore    int      `json:"risk_score"`
 	RiskLevel    string   `json:"risk_level"`
 	Decision     string   `json:"decision"`
 	Signals      []string `json:"signals"`
+	RiskScore    int      `json:"risk_score"`
 }
 
 type getAssessmentResp struct {
@@ -43,10 +43,10 @@ type getAssessmentResp struct {
 	Amount          string   `json:"amount"`
 	Currency        string   `json:"currency"`
 	TransactionType string   `json:"transaction_type"`
-	RiskScore       int      `json:"risk_score"`
 	RiskLevel       string   `json:"risk_level"`
 	Decision        string   `json:"decision"`
 	Signals         []string `json:"signals"`
+	RiskScore       int      `json:"risk_score"`
 }
 
 // AssessTransaction handles POST /api/v1/fraud/assessments.

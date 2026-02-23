@@ -67,7 +67,7 @@ func TestListAccountsUseCase_Execute(t *testing.T) {
 		accounts := sampleAccounts(tenantID, 3)
 
 		repo := &listMockAccountRepository{
-			listByTenantFunc: func(_ context.Context, tid uuid.UUID, limit, offset int) ([]model.CustomerAccount, int, error) {
+			listByTenantFunc: func(_ context.Context, tid uuid.UUID, _, _ int) ([]model.CustomerAccount, int, error) {
 				assert.Equal(t, tenantID, tid)
 				return accounts, 3, nil
 			},
@@ -90,7 +90,7 @@ func TestListAccountsUseCase_Execute(t *testing.T) {
 		accounts := sampleAccounts(tenantID, 2)
 
 		repo := &listMockAccountRepository{
-			listByHolderFunc: func(_ context.Context, hid uuid.UUID, limit, offset int) ([]model.CustomerAccount, int, error) {
+			listByHolderFunc: func(_ context.Context, hid uuid.UUID, _, _ int) ([]model.CustomerAccount, int, error) {
 				assert.Equal(t, holderID, hid)
 				return accounts, 2, nil
 			},
@@ -124,7 +124,7 @@ func TestListAccountsUseCase_Execute(t *testing.T) {
 		tenantID := uuid.New()
 
 		repo := &listMockAccountRepository{
-			listByTenantFunc: func(_ context.Context, tid uuid.UUID, limit, offset int) ([]model.CustomerAccount, int, error) {
+			listByTenantFunc: func(_ context.Context, _ uuid.UUID, limit, offset int) ([]model.CustomerAccount, int, error) {
 				assert.Equal(t, 20, limit) // default limit
 				assert.Equal(t, 0, offset)
 				return nil, 0, nil
@@ -144,7 +144,7 @@ func TestListAccountsUseCase_Execute(t *testing.T) {
 		tenantID := uuid.New()
 
 		repo := &listMockAccountRepository{
-			listByTenantFunc: func(_ context.Context, tid uuid.UUID, limit, offset int) ([]model.CustomerAccount, int, error) {
+			listByTenantFunc: func(_ context.Context, _ uuid.UUID, limit, _ int) ([]model.CustomerAccount, int, error) {
 				assert.Equal(t, 100, limit) // capped at max
 				return nil, 0, nil
 			},
@@ -163,7 +163,7 @@ func TestListAccountsUseCase_Execute(t *testing.T) {
 		tenantID := uuid.New()
 
 		repo := &listMockAccountRepository{
-			listByTenantFunc: func(_ context.Context, tid uuid.UUID, limit, offset int) ([]model.CustomerAccount, int, error) {
+			listByTenantFunc: func(_ context.Context, _ uuid.UUID, _, _ int) ([]model.CustomerAccount, int, error) {
 				return nil, 0, fmt.Errorf("database unavailable")
 			},
 		}
@@ -184,11 +184,11 @@ func TestListAccountsUseCase_Execute(t *testing.T) {
 		holderCalled := false
 
 		repo := &listMockAccountRepository{
-			listByHolderFunc: func(_ context.Context, hid uuid.UUID, limit, offset int) ([]model.CustomerAccount, int, error) {
+			listByHolderFunc: func(_ context.Context, _ uuid.UUID, _, _ int) ([]model.CustomerAccount, int, error) {
 				holderCalled = true
 				return nil, 0, nil
 			},
-			listByTenantFunc: func(_ context.Context, tid uuid.UUID, limit, offset int) ([]model.CustomerAccount, int, error) {
+			listByTenantFunc: func(_ context.Context, _ uuid.UUID, _, _ int) ([]model.CustomerAccount, int, error) {
 				t.Fatal("should not call ListByTenant when HolderID is set")
 				return nil, 0, nil
 			},

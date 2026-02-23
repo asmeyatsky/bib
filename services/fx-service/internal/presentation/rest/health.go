@@ -24,10 +24,10 @@ func NewHealthHandler(pool *pgxpool.Pool, logger *slog.Logger) *HealthHandler {
 
 // healthResponse is the JSON body returned by health endpoints.
 type healthResponse struct {
+	Checks    map[string]string `json:"checks,omitempty"`
 	Status    string            `json:"status"`
 	Service   string            `json:"service"`
 	Timestamp string            `json:"timestamp"`
-	Checks    map[string]string `json:"checks,omitempty"`
 }
 
 // LivenessHandler returns 200 if the process is alive.

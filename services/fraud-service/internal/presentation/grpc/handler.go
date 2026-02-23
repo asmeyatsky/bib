@@ -66,11 +66,11 @@ func NewFraudServiceHandler(
 // AssessTransactionRequest represents the proto AssessTransactionRequest message.
 type AssessTransactionRequest struct {
 	Metadata        map[string]string `json:"metadata"`
+	Amount          *MoneyMsg         `json:"amount"`
 	TenantID        string            `json:"tenant_id"`
 	TransactionID   string            `json:"transaction_id"`
 	AccountID       string            `json:"account_id"`
 	TransactionType string            `json:"transaction_type"`
-	Amount          *MoneyMsg         `json:"amount"`
 }
 
 // MoneyMsg represents the proto Money message.
@@ -81,7 +81,7 @@ type MoneyMsg struct {
 
 // TransactionAssessmentMsg represents the proto TransactionAssessment message.
 type TransactionAssessmentMsg struct {
-	RiskSignals     []string  `json:"risk_signals"`
+	Amount          *MoneyMsg `json:"amount"`
 	ID              string    `json:"id"`
 	TenantID        string    `json:"tenant_id"`
 	TransactionID   string    `json:"transaction_id"`
@@ -89,7 +89,7 @@ type TransactionAssessmentMsg struct {
 	TransactionType string    `json:"transaction_type"`
 	RiskLevel       string    `json:"risk_level"`
 	Decision        string    `json:"decision"`
-	Amount          *MoneyMsg `json:"amount"`
+	RiskSignals     []string  `json:"risk_signals"`
 	RiskScore       int32     `json:"risk_score"`
 }
 

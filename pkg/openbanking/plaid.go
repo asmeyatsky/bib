@@ -32,22 +32,14 @@ type PlaidClient interface {
 
 // PlaidConfig holds configuration for the Plaid client.
 type PlaidConfig struct {
-	// ClientID is the Plaid client ID.
-	ClientID string
-	// Secret is the Plaid secret key.
-	Secret string
-	// Environment is the Plaid environment: "sandbox", "development", or "production".
-	Environment string
-	// BaseURL is the Plaid API base URL (derived from environment if empty).
-	BaseURL string
-	// WebhookURL is the URL for receiving Plaid webhooks.
-	WebhookURL string
-	// Products lists the Plaid products to enable (e.g. "transactions", "auth").
-	Products []string
-	// CountryCodes lists the supported country codes.
+	ClientID     string
+	Secret       string
+	Environment  string
+	BaseURL      string
+	WebhookURL   string
+	Language     string
+	Products     []string
 	CountryCodes []string
-	// Language is the language for the Link flow.
-	Language string
 }
 
 // DefaultPlaidConfig returns configuration defaults for the Plaid sandbox.

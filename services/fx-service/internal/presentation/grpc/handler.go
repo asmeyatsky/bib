@@ -118,8 +118,8 @@ type ListExchangeRatesRequest struct {
 
 // ListExchangeRatesResponse represents the proto ListExchangeRatesResponse message.
 type ListExchangeRatesResponse struct {
-	Rates         []*ExchangeRateMsg `json:"rates"`
 	NextPageToken string             `json:"next_page_token"`
+	Rates         []*ExchangeRateMsg `json:"rates"`
 	TotalCount    int32              `json:"total_count"`
 }
 

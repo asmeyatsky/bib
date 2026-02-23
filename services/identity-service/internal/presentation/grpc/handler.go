@@ -95,7 +95,6 @@ type CompleteCheckResponse struct {
 type VerificationMsg struct {
 	CreatedAt          *timestamppb.Timestamp
 	UpdatedAt          *timestamppb.Timestamp
-	Checks             []*CheckMsg
 	ID                 string
 	TenantID           string
 	ApplicantFirstName string
@@ -104,6 +103,7 @@ type VerificationMsg struct {
 	ApplicantDOB       string
 	ApplicantCountry   string
 	Status             string
+	Checks             []*CheckMsg
 	Version            int32
 }
 

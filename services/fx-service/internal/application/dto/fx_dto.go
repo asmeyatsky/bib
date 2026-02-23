@@ -11,38 +11,39 @@ import (
 
 // GetExchangeRateRequest is the input DTO for fetching an exchange rate.
 type GetExchangeRateRequest struct {
-	TenantID      uuid.UUID
 	BaseCurrency  string
 	QuoteCurrency string
+	TenantID      uuid.UUID
 }
 
 // ExchangeRateResponse is the output DTO for exchange rate queries.
 type ExchangeRateResponse struct {
-	ID            uuid.UUID
-	TenantID      uuid.UUID
+	EffectiveAt   time.Time
+	ExpiresAt     time.Time
+	CreatedAt     time.Time
 	BaseCurrency  string
 	QuoteCurrency string
 	Rate          decimal.Decimal
 	InverseRate   decimal.Decimal
 	Provider      string
-	EffectiveAt   time.Time
-	ExpiresAt     time.Time
 	Version       int
-	CreatedAt     time.Time
+	ID            uuid.UUID
+	TenantID      uuid.UUID
 }
 
 // --- Convert Amount DTOs ---
 
 // ConvertAmountRequest is the input DTO for currency conversion.
 type ConvertAmountRequest struct {
-	TenantID     uuid.UUID
 	FromCurrency string
 	ToCurrency   string
 	Amount       decimal.Decimal
+	TenantID     uuid.UUID
 }
 
 // ConvertAmountResponse is the output DTO for currency conversion.
 type ConvertAmountResponse struct {
+	EffectiveAt     time.Time
 	FromCurrency    string
 	ToCurrency      string
 	OriginalAmount  decimal.Decimal
@@ -50,16 +51,15 @@ type ConvertAmountResponse struct {
 	Rate            decimal.Decimal
 	InverseRate     decimal.Decimal
 	Provider        string
-	EffectiveAt     time.Time
 }
 
 // --- List Rates DTOs ---
 
 // ListRatesRequest is the input DTO for listing exchange rates.
 type ListRatesRequest struct {
-	TenantID     uuid.UUID
-	BaseCurrency string
 	AsOf         time.Time
+	BaseCurrency string
+	TenantID     uuid.UUID
 }
 
 // ListRatesResponse is the output DTO for listing exchange rates.
@@ -71,9 +71,9 @@ type ListRatesResponse struct {
 
 // RevaluateRequest is the input DTO for running an FX revaluation.
 type RevaluateRequest struct {
-	TenantID           uuid.UUID
 	FunctionalCurrency string
 	Positions          []ForeignCurrencyPositionDTO
+	TenantID           uuid.UUID
 }
 
 // ForeignCurrencyPositionDTO transfers a foreign-currency position.
@@ -85,10 +85,10 @@ type ForeignCurrencyPositionDTO struct {
 
 // RevaluateResponse is the output DTO for the revaluation result.
 type RevaluateResponse struct {
-	TenantID           uuid.UUID
 	FunctionalCurrency string
 	TotalGainLoss      decimal.Decimal
 	Entries            []RevaluationEntryDTO
+	TenantID           uuid.UUID
 }
 
 // RevaluationEntryDTO transfers a single revaluation line item.

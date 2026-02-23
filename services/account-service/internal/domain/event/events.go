@@ -43,9 +43,9 @@ func NewAccountOpened(
 
 // AccountActivated is emitted when an account transitions to ACTIVE status.
 type AccountActivated struct {
+	ActivatedAt time.Time `json:"activated_at"`
 	events.BaseEvent
-	AccountNumber string    `json:"account_number"`
-	ActivatedAt   time.Time `json:"activated_at"`
+	AccountNumber string `json:"account_number"`
 }
 
 // NewAccountActivated creates a new AccountActivated event.
@@ -59,10 +59,10 @@ func NewAccountActivated(accountID uuid.UUID, tenantID uuid.UUID, accountNumber 
 
 // AccountFrozen is emitted when an account is frozen.
 type AccountFrozen struct {
+	FrozenAt time.Time `json:"frozen_at"`
 	events.BaseEvent
-	AccountNumber string    `json:"account_number"`
-	Reason        string    `json:"reason"`
-	FrozenAt      time.Time `json:"frozen_at"`
+	AccountNumber string `json:"account_number"`
+	Reason        string `json:"reason"`
 }
 
 // NewAccountFrozen creates a new AccountFrozen event.
@@ -77,9 +77,9 @@ func NewAccountFrozen(accountID uuid.UUID, tenantID uuid.UUID, accountNumber str
 
 // AccountUnfrozen is emitted when a frozen account is unfrozen.
 type AccountUnfrozen struct {
+	UnfrozenAt time.Time `json:"unfrozen_at"`
 	events.BaseEvent
-	AccountNumber string    `json:"account_number"`
-	UnfrozenAt    time.Time `json:"unfrozen_at"`
+	AccountNumber string `json:"account_number"`
 }
 
 // NewAccountUnfrozen creates a new AccountUnfrozen event.
@@ -93,10 +93,10 @@ func NewAccountUnfrozen(accountID uuid.UUID, tenantID uuid.UUID, accountNumber s
 
 // AccountClosed is emitted when an account is closed.
 type AccountClosed struct {
+	ClosedAt time.Time `json:"closed_at"`
 	events.BaseEvent
-	AccountNumber string    `json:"account_number"`
-	Reason        string    `json:"reason"`
-	ClosedAt      time.Time `json:"closed_at"`
+	AccountNumber string `json:"account_number"`
+	Reason        string `json:"reason"`
 }
 
 // NewAccountClosed creates a new AccountClosed event.

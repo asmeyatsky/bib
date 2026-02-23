@@ -65,20 +65,20 @@ func TestRiskLevel_FromString(t *testing.T) {
 func TestRiskLevel_FromScore(t *testing.T) {
 	tests := []struct {
 		name     string
-		score    int
 		expected valueobject.RiskLevel
+		score    int
 	}{
-		{"score 0 is LOW", 0, valueobject.RiskLevelLow},
-		{"score 10 is LOW", 10, valueobject.RiskLevelLow},
-		{"score 34 is LOW", 34, valueobject.RiskLevelLow},
-		{"score 35 is MEDIUM", 35, valueobject.RiskLevelMedium},
-		{"score 50 is MEDIUM", 50, valueobject.RiskLevelMedium},
-		{"score 59 is MEDIUM", 59, valueobject.RiskLevelMedium},
-		{"score 60 is HIGH", 60, valueobject.RiskLevelHigh},
-		{"score 75 is HIGH", 75, valueobject.RiskLevelHigh},
-		{"score 79 is HIGH", 79, valueobject.RiskLevelHigh},
-		{"score 80 is CRITICAL", 80, valueobject.RiskLevelCritical},
-		{"score 100 is CRITICAL", 100, valueobject.RiskLevelCritical},
+		{name: "score 0 is LOW", expected: valueobject.RiskLevelLow, score: 0},
+		{name: "score 10 is LOW", expected: valueobject.RiskLevelLow, score: 10},
+		{name: "score 34 is LOW", expected: valueobject.RiskLevelLow, score: 34},
+		{name: "score 35 is MEDIUM", expected: valueobject.RiskLevelMedium, score: 35},
+		{name: "score 50 is MEDIUM", expected: valueobject.RiskLevelMedium, score: 50},
+		{name: "score 59 is MEDIUM", expected: valueobject.RiskLevelMedium, score: 59},
+		{name: "score 60 is HIGH", expected: valueobject.RiskLevelHigh, score: 60},
+		{name: "score 75 is HIGH", expected: valueobject.RiskLevelHigh, score: 75},
+		{name: "score 79 is HIGH", expected: valueobject.RiskLevelHigh, score: 79},
+		{name: "score 80 is CRITICAL", expected: valueobject.RiskLevelCritical, score: 80},
+		{name: "score 100 is CRITICAL", expected: valueobject.RiskLevelCritical, score: 100},
 	}
 
 	for _, tt := range tests {

@@ -101,6 +101,8 @@ type OpenDepositPositionRequest struct {
 }
 
 type DepositPositionMsg struct {
+	OpenedAt        *timestamppb.Timestamp
+	MaturityDate    *timestamppb.Timestamp
 	ID              string
 	TenantID        string
 	AccountID       string
@@ -109,8 +111,6 @@ type DepositPositionMsg struct {
 	Currency        string
 	AccruedInterest string
 	Status          string
-	OpenedAt        *timestamppb.Timestamp
-	MaturityDate    *timestamppb.Timestamp
 }
 
 type OpenDepositPositionResponse struct {
@@ -126,13 +126,13 @@ type GetDepositPositionResponse struct {
 }
 
 type AccrueInterestRequest struct {
-	TenantID string
 	AsOfDate *timestamppb.Timestamp
+	TenantID string
 }
 
 type AccrueInterestResponse struct {
-	PositionsProcessed int32
 	TotalAccrued       string
+	PositionsProcessed int32
 }
 
 // CreateDepositProduct processes product creation requests.

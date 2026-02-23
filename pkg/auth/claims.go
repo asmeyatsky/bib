@@ -8,9 +8,9 @@ import (
 // Claims represents the JWT claims for BIB platform.
 type Claims struct {
 	jwt.RegisteredClaims
+	Roles    []string  `json:"roles"`
 	UserID   uuid.UUID `json:"user_id"`
 	TenantID uuid.UUID `json:"tenant_id"`
-	Roles    []string  `json:"roles"`
 }
 
 // HasRole checks if the claims include the specified role.

@@ -52,8 +52,8 @@ type CreditTransferTransaction struct {
 
 // XML marshaling structs (internal)
 type pain001Document struct {
-	XMLName           xml.Name                 `xml:"Document"`
-	Xmlns             string                   `xml:"xmlns,attr"`
+	XMLName          xml.Name                `xml:"Document"`
+	Xmlns            string                  `xml:"xmlns,attr"`
 	CstmrCdtTrfInitn pain001CstmrCdtTrfInitn `xml:"CstmrCdtTrfInitn"`
 }
 

@@ -15,17 +15,17 @@ import (
 // ExchangeRate is the root aggregate for the FX bounded context.
 // It represents an immutable exchange rate between two currencies at a point in time.
 type ExchangeRate struct {
-	id           uuid.UUID
-	tenantID     uuid.UUID
+	effectiveAt  time.Time
+	expiresAt    time.Time
+	createdAt    time.Time
 	pair         valueobject.CurrencyPair
 	rate         valueobject.SpotRate
 	inverseRate  valueobject.SpotRate
 	provider     string
-	effectiveAt  time.Time
-	expiresAt    time.Time
-	version      int
-	createdAt    time.Time
 	domainEvents []events.DomainEvent
+	version      int
+	id           uuid.UUID
+	tenantID     uuid.UUID
 }
 
 // NewExchangeRate creates a new ExchangeRate aggregate with full validation.

@@ -128,14 +128,14 @@ func TestParseMT950_MissingAccountIdentification(t *testing.T) {
 
 func TestParseSWIFTDate(t *testing.T) {
 	tests := []struct {
-		input    string
 		expected time.Time
+		input    string
 		wantErr  bool
 	}{
-		{"230115", time.Date(2023, 1, 15, 0, 0, 0, 0, time.UTC), false},
-		{"991231", time.Date(1999, 12, 31, 0, 0, 0, 0, time.UTC), false},
-		{"", time.Time{}, true},
-		{"12345", time.Time{}, true},
+		{time.Date(2023, 1, 15, 0, 0, 0, 0, time.UTC), "230115", false},
+		{time.Date(1999, 12, 31, 0, 0, 0, 0, time.UTC), "991231", false},
+		{time.Time{}, "", true},
+		{time.Time{}, "12345", true},
 	}
 
 	for _, tt := range tests {

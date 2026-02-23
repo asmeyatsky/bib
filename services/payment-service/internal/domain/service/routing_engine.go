@@ -24,7 +24,7 @@ func NewRoutingEngine() *RoutingEngine {
 //   - EUR -> SEPA
 //   - International (non-USD, non-EUR, or non-US destination) -> SWIFT
 func (e *RoutingEngine) SelectRail(
-	amount decimal.Decimal,
+	_ decimal.Decimal,
 	currency string,
 	isInternal bool,
 	destinationCountry string,

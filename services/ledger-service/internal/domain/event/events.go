@@ -12,9 +12,9 @@ const AggregateTypeJournalEntry = "JournalEntry"
 
 // EntryPosted is emitted when a journal entry is posted.
 type EntryPosted struct {
-	events.BaseEvent
-	EntryID       uuid.UUID `json:"entry_id"`
 	EffectiveDate time.Time `json:"effective_date"`
+	events.BaseEvent
+	EntryID uuid.UUID `json:"entry_id"`
 }
 
 func NewEntryPosted(entryID, tenantID uuid.UUID, effectiveDate time.Time) EntryPosted {

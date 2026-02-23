@@ -7,23 +7,23 @@ import (
 
 // Config holds all configuration for the API gateway.
 type Config struct {
-	HTTPPort         int
-	LedgerAddr       string
-	AccountAddr      string
-	FXAddr           string
-	DepositAddr      string
-	IdentityAddr     string
-	PaymentAddr      string
-	LendingAddr      string
-	FraudAddr        string
-	CardAddr         string
-	ReportingAddr    string
-	JWTSecret        string // Deprecated: use JWTPrivateKey for RSA signing.
-	JWTPrivateKey    string // PEM-encoded RSA private key for signing tokens.
-	JWTPrivateKeyFile string // Path to PEM file containing RSA private key.
-	RateLimit        int // requests per second per client
-	LogLevel         string
-	LogFormat        string
+	FraudAddr         string
+	CardAddr          string
+	AccountAddr       string
+	FXAddr            string
+	DepositAddr       string
+	IdentityAddr      string
+	PaymentAddr       string
+	LendingAddr       string
+	LedgerAddr        string
+	ReportingAddr     string
+	LogFormat         string
+	JWTSecret         string
+	JWTPrivateKey     string
+	JWTPrivateKeyFile string
+	LogLevel          string
+	RateLimit         int
+	HTTPPort          int
 }
 
 // Validate checks required configuration values.
@@ -38,23 +38,23 @@ func (c Config) Validate() {
 // to match docker-compose conventions.
 func Load() Config {
 	return Config{
-		HTTPPort:      getEnvInt("HTTP_PORT", 8080),
-		LedgerAddr:    getEnvWithAlt("LEDGER_ADDR", "LEDGER_SERVICE_ADDR", "localhost:9081"),
-		AccountAddr:   getEnvWithAlt("ACCOUNT_ADDR", "ACCOUNT_SERVICE_ADDR", "localhost:9082"),
-		FXAddr:        getEnvWithAlt("FX_ADDR", "FX_SERVICE_ADDR", "localhost:9083"),
-		DepositAddr:   getEnvWithAlt("DEPOSIT_ADDR", "DEPOSIT_SERVICE_ADDR", "localhost:9084"),
-		IdentityAddr:  getEnvWithAlt("IDENTITY_ADDR", "IDENTITY_SERVICE_ADDR", "localhost:9085"),
-		PaymentAddr:   getEnvWithAlt("PAYMENT_ADDR", "PAYMENT_SERVICE_ADDR", "localhost:9086"),
-		LendingAddr:   getEnvWithAlt("LENDING_ADDR", "LENDING_SERVICE_ADDR", "localhost:9087"),
-		FraudAddr:     getEnvWithAlt("FRAUD_ADDR", "FRAUD_SERVICE_ADDR", "localhost:9088"),
-		CardAddr:      getEnvWithAlt("CARD_ADDR", "CARD_SERVICE_ADDR", "localhost:9089"),
-		ReportingAddr: getEnvWithAlt("REPORTING_ADDR", "REPORTING_SERVICE_ADDR", "localhost:9090"),
-		JWTSecret:        getEnv("JWT_SECRET", ""),
-		JWTPrivateKey:    getEnv("JWT_PRIVATE_KEY", ""),
+		HTTPPort:          getEnvInt("HTTP_PORT", 8080),
+		LedgerAddr:        getEnvWithAlt("LEDGER_ADDR", "LEDGER_SERVICE_ADDR", "localhost:9081"),
+		AccountAddr:       getEnvWithAlt("ACCOUNT_ADDR", "ACCOUNT_SERVICE_ADDR", "localhost:9082"),
+		FXAddr:            getEnvWithAlt("FX_ADDR", "FX_SERVICE_ADDR", "localhost:9083"),
+		DepositAddr:       getEnvWithAlt("DEPOSIT_ADDR", "DEPOSIT_SERVICE_ADDR", "localhost:9084"),
+		IdentityAddr:      getEnvWithAlt("IDENTITY_ADDR", "IDENTITY_SERVICE_ADDR", "localhost:9085"),
+		PaymentAddr:       getEnvWithAlt("PAYMENT_ADDR", "PAYMENT_SERVICE_ADDR", "localhost:9086"),
+		LendingAddr:       getEnvWithAlt("LENDING_ADDR", "LENDING_SERVICE_ADDR", "localhost:9087"),
+		FraudAddr:         getEnvWithAlt("FRAUD_ADDR", "FRAUD_SERVICE_ADDR", "localhost:9088"),
+		CardAddr:          getEnvWithAlt("CARD_ADDR", "CARD_SERVICE_ADDR", "localhost:9089"),
+		ReportingAddr:     getEnvWithAlt("REPORTING_ADDR", "REPORTING_SERVICE_ADDR", "localhost:9090"),
+		JWTSecret:         getEnv("JWT_SECRET", ""),
+		JWTPrivateKey:     getEnv("JWT_PRIVATE_KEY", ""),
 		JWTPrivateKeyFile: getEnv("JWT_PRIVATE_KEY_FILE", ""),
-		RateLimit:     getEnvInt("RATE_LIMIT", 100),
-		LogLevel:      getEnv("LOG_LEVEL", "info"),
-		LogFormat:     getEnv("LOG_FORMAT", "json"),
+		RateLimit:         getEnvInt("RATE_LIMIT", 100),
+		LogLevel:          getEnv("LOG_LEVEL", "info"),
+		LogFormat:         getEnv("LOG_FORMAT", "json"),
 	}
 }
 

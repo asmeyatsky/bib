@@ -50,9 +50,9 @@ func (m *mockJournalRepo) ListByTenant(_ context.Context, _ uuid.UUID, _, _ time
 }
 
 type mockBalanceRepo struct {
-	balance    decimal.Decimal
 	balanceErr error
 	updateErr  error
+	balance    decimal.Decimal
 }
 
 func (m *mockBalanceRepo) GetBalance(_ context.Context, _ valueobject.AccountCode, _ string, _ time.Time) (decimal.Decimal, error) {

@@ -8,26 +8,21 @@ import (
 
 // Config holds all configuration for the account service.
 type Config struct {
-	// gRPC server port
-	GRPCPort int
-	// HTTP metrics/health port
-	HTTPPort int
-	// Database configuration
-	Database DatabaseConfig
-	// Kafka configuration
-	Kafka KafkaConfig
-	// Service name for observability
+	Database    DatabaseConfig
 	ServiceName string
+	Kafka       KafkaConfig
+	GRPCPort    int
+	HTTPPort    int
 }
 
 // DatabaseConfig holds PostgreSQL connection settings.
 type DatabaseConfig struct {
 	Host     string
-	Port     int
 	User     string
 	Password string
 	Database string
 	SSLMode  string
+	Port     int
 }
 
 // DSN returns the PostgreSQL data source name.

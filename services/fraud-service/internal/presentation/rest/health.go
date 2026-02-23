@@ -51,7 +51,7 @@ func (h *HealthHandler) Healthz(w http.ResponseWriter, _ *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp) //nolint:errcheck // best-effort HTTP response encoding
 }
 
 // Readyz handles readiness probe requests.
@@ -69,5 +69,5 @@ func (h *HealthHandler) Readyz(w http.ResponseWriter, _ *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp) //nolint:errcheck // best-effort HTTP response encoding
 }

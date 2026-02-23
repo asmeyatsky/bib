@@ -48,8 +48,8 @@ type FICreditTransferTransaction struct {
 
 // XML marshaling structs
 type pacs008Document struct {
-	XMLName           xml.Name                   `xml:"Document"`
-	Xmlns             string                     `xml:"xmlns,attr"`
+	XMLName           xml.Name                 `xml:"Document"`
+	Xmlns             string                   `xml:"xmlns,attr"`
 	FIToFICstmrCdtTrf pacs008FIToFICstmrCdtTrf `xml:"FIToFICstmrCdtTrf"`
 }
 

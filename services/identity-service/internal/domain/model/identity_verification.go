@@ -16,17 +16,17 @@ import (
 type IdentityVerification struct {
 	createdAt          time.Time
 	updatedAt          time.Time
-	checks             []VerificationCheck
-	domainEvents       []events.DomainEvent
-	id                 uuid.UUID
-	tenantID           uuid.UUID
+	applicantDOB       string
 	applicantFirstName string
 	applicantLastName  string
 	applicantEmail     string
-	applicantDOB       string
 	applicantCountry   string
 	status             valueobject.VerificationStatus
+	domainEvents       []events.DomainEvent
+	checks             []VerificationCheck
 	version            int
+	id                 uuid.UUID
+	tenantID           uuid.UUID
 }
 
 // NewIdentityVerification creates a new verification in PENDING status
@@ -253,18 +253,18 @@ func copyEvents(src []events.DomainEvent) []events.DomainEvent {
 
 // Accessors
 
-func (v IdentityVerification) ID() uuid.UUID                         { return v.id }
-func (v IdentityVerification) TenantID() uuid.UUID                   { return v.tenantID }
-func (v IdentityVerification) ApplicantFirstName() string            { return v.applicantFirstName }
-func (v IdentityVerification) ApplicantLastName() string             { return v.applicantLastName }
-func (v IdentityVerification) ApplicantEmail() string                { return v.applicantEmail }
-func (v IdentityVerification) ApplicantDOB() string                  { return v.applicantDOB }
-func (v IdentityVerification) ApplicantCountry() string              { return v.applicantCountry }
+func (v IdentityVerification) ID() uuid.UUID                          { return v.id }
+func (v IdentityVerification) TenantID() uuid.UUID                    { return v.tenantID }
+func (v IdentityVerification) ApplicantFirstName() string             { return v.applicantFirstName }
+func (v IdentityVerification) ApplicantLastName() string              { return v.applicantLastName }
+func (v IdentityVerification) ApplicantEmail() string                 { return v.applicantEmail }
+func (v IdentityVerification) ApplicantDOB() string                   { return v.applicantDOB }
+func (v IdentityVerification) ApplicantCountry() string               { return v.applicantCountry }
 func (v IdentityVerification) Status() valueobject.VerificationStatus { return v.status }
-func (v IdentityVerification) Version() int                          { return v.version }
-func (v IdentityVerification) CreatedAt() time.Time                  { return v.createdAt }
-func (v IdentityVerification) UpdatedAt() time.Time                  { return v.updatedAt }
-func (v IdentityVerification) DomainEvents() []events.DomainEvent    { return v.domainEvents }
+func (v IdentityVerification) Version() int                           { return v.version }
+func (v IdentityVerification) CreatedAt() time.Time                   { return v.createdAt }
+func (v IdentityVerification) UpdatedAt() time.Time                   { return v.updatedAt }
+func (v IdentityVerification) DomainEvents() []events.DomainEvent     { return v.domainEvents }
 
 func (v IdentityVerification) Checks() []VerificationCheck {
 	result := make([]VerificationCheck, len(v.checks))

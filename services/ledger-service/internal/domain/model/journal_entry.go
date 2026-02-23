@@ -24,17 +24,17 @@ const (
 // JournalEntry is the root aggregate for the ledger bounded context.
 // It represents an immutable double-entry accounting transaction.
 type JournalEntry struct {
-	id            uuid.UUID
-	tenantID      uuid.UUID
 	effectiveDate time.Time
-	postings      []valueobject.PostingPair
+	createdAt     time.Time
+	updatedAt     time.Time
 	status        EntryStatus
 	description   string
 	reference     string
-	version       int
-	createdAt     time.Time
-	updatedAt     time.Time
+	postings      []valueobject.PostingPair
 	domainEvents  []events.DomainEvent
+	version       int
+	id            uuid.UUID
+	tenantID      uuid.UUID
 }
 
 // NewJournalEntry creates a new journal entry in PENDING status.
@@ -193,6 +193,7 @@ func (je JournalEntry) Version() int                        { return je.version 
 func (je JournalEntry) CreatedAt() time.Time                { return je.createdAt }
 func (je JournalEntry) UpdatedAt() time.Time                { return je.updatedAt }
 func (je JournalEntry) DomainEvents() []events.DomainEvent  { return je.domainEvents }
+
 // ClearDomainEvents returns the collected domain events and a new JournalEntry with events cleared.
 func (je JournalEntry) ClearDomainEvents() ([]events.DomainEvent, JournalEntry) {
 	evts := je.domainEvents

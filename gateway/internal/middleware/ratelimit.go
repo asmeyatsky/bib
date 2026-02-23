@@ -11,11 +11,11 @@ import (
 
 // RateLimiter implements a simple token bucket rate limiter.
 type RateLimiter struct {
-	mu         sync.Mutex
+	lastRefill time.Time
 	tokens     float64
 	maxTokens  float64
-	refillRate float64 // tokens per second
-	lastRefill time.Time
+	refillRate float64
+	mu         sync.Mutex
 }
 
 // NewRateLimiter creates a rate limiter that allows rps requests per second.
@@ -67,9 +67,9 @@ func RateLimitMiddleware(limiter *RateLimiter) func(http.Handler) http.Handler {
 // Clients are identified by tenant ID from JWT claims, falling back to
 // the remote IP address for unauthenticated requests.
 type PerClientRateLimiter struct {
-	mu       sync.Mutex
 	limiters map[string]*RateLimiter
 	rps      int
+	mu       sync.Mutex
 }
 
 // NewPerClientRateLimiter creates a per-client rate limiter.

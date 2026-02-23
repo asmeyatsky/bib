@@ -7,11 +7,11 @@ import (
 
 // Config holds all service configuration loaded from environment variables.
 type Config struct {
-	DB        DBConfig
-	Kafka     KafkaConfig
 	Telemetry TelemetryConfig
 	LogLevel  string
 	LogFormat string
+	Kafka     KafkaConfig
+	DB        DBConfig
 	HTTPPort  int
 	GRPCPort  int
 }
@@ -56,7 +56,7 @@ func Load() Config {
 			Name:     getEnv("DB_NAME", "bib_identity"),
 			SSLMode:  getEnv("DB_SSLMODE", "require"),
 			MaxConns: int32(getEnvInt("DB_MAX_CONNS", 20)), //nolint:gosec // bounded by env config
-			MinConns: int32(getEnvInt("DB_MIN_CONNS", 5)), //nolint:gosec // bounded by env config
+			MinConns: int32(getEnvInt("DB_MIN_CONNS", 5)),  //nolint:gosec // bounded by env config
 		},
 		Kafka: KafkaConfig{
 			Brokers: []string{getEnv("KAFKA_BROKERS", "localhost:9092")},

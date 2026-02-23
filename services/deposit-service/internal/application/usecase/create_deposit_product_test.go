@@ -77,8 +77,8 @@ func (m *mockDepositPositionRepository) FindByAccount(_ context.Context, _ uuid.
 }
 
 type mockDepositEventPublisher struct {
-	publishedEvents []events.DomainEvent
 	publishFunc     func(ctx context.Context, topic string, events ...events.DomainEvent) error
+	publishedEvents []events.DomainEvent
 }
 
 func (m *mockDepositEventPublisher) Publish(ctx context.Context, topic string, evts ...events.DomainEvent) error {

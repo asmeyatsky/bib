@@ -12,7 +12,6 @@ import (
 
 // ReportData holds the financial data needed to generate a regulatory report.
 type ReportData struct {
-	TenantID           uuid.UUID
 	Period             string
 	TotalAssets        decimal.Decimal
 	TotalLiabilities   decimal.Decimal
@@ -21,6 +20,7 @@ type ReportData struct {
 	RiskWeightedAssets decimal.Decimal
 	CET1Ratio          decimal.Decimal
 	LCRRatio           decimal.Decimal
+	TenantID           uuid.UUID
 }
 
 // XBRLGenerator is a domain service that generates XBRL content for regulatory reports.

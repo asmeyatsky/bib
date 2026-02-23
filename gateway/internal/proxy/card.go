@@ -54,8 +54,8 @@ type authorizeTransactionReq struct {
 }
 
 type authorizeTransactionResp struct {
-	Approved      bool   `json:"approved"`
 	DeclineReason string `json:"decline_reason,omitempty"`
+	Approved      bool   `json:"approved"`
 }
 
 type freezeCardResp struct {

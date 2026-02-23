@@ -61,7 +61,7 @@ func _FXService_GetExchangeRate_Handler(srv interface{}, ctx context.Context, de
 	if err := dec(req); err != nil {
 		return nil, err
 	}
-	return srv.(FXServiceServer).GetExchangeRate(ctx, req)
+	return srv.(FXServiceServer).GetExchangeRate(ctx, req) //nolint:errcheck // gRPC type assertion
 }
 
 //nolint:revive // gRPC handler registration
@@ -70,7 +70,7 @@ func _FXService_ConvertAmount_Handler(srv interface{}, ctx context.Context, dec 
 	if err := dec(req); err != nil {
 		return nil, err
 	}
-	return srv.(FXServiceServer).ConvertAmount(ctx, req)
+	return srv.(FXServiceServer).ConvertAmount(ctx, req) //nolint:errcheck // gRPC type assertion
 }
 
 //nolint:revive // gRPC handler registration
@@ -79,7 +79,7 @@ func _FXService_ListExchangeRates_Handler(srv interface{}, ctx context.Context, 
 	if err := dec(req); err != nil {
 		return nil, err
 	}
-	return srv.(FXServiceServer).ListExchangeRates(ctx, req)
+	return srv.(FXServiceServer).ListExchangeRates(ctx, req) //nolint:errcheck // gRPC type assertion
 }
 
 //nolint:revive // gRPC handler registration
@@ -88,5 +88,5 @@ func _FXService_Revaluate_Handler(srv interface{}, ctx context.Context, dec func
 	if err := dec(req); err != nil {
 		return nil, err
 	}
-	return srv.(FXServiceServer).Revaluate(ctx, req)
+	return srv.(FXServiceServer).Revaluate(ctx, req) //nolint:errcheck // gRPC type assertion
 }

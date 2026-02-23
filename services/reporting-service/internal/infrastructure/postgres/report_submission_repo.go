@@ -124,18 +124,18 @@ func (r *ReportSubmissionRepo) FindByTenantAndType(ctx context.Context, tenantID
 
 func scanReportSubmission(row pgx.Row) (model.ReportSubmission, error) {
 	var (
-		id               uuid.UUID
-		tenantID         uuid.UUID
-		reportTypeStr    string
-		reportingPeriod  string
-		statusStr        string
-		xbrlContent      string
-		generatedAt      *time.Time
-		submittedAt      *time.Time
-		validationJSON   []byte
-		version          int
-		createdAt        time.Time
-		updatedAt        time.Time
+		id              uuid.UUID
+		tenantID        uuid.UUID
+		reportTypeStr   string
+		reportingPeriod string
+		statusStr       string
+		xbrlContent     string
+		generatedAt     *time.Time
+		submittedAt     *time.Time
+		validationJSON  []byte
+		version         int
+		createdAt       time.Time
+		updatedAt       time.Time
 	)
 
 	err := row.Scan(
@@ -173,18 +173,18 @@ func scanReportSubmissions(rows pgx.Rows) ([]model.ReportSubmission, error) {
 	var submissions []model.ReportSubmission
 	for rows.Next() {
 		var (
-			id               uuid.UUID
-			tenantID         uuid.UUID
-			reportTypeStr    string
-			reportingPeriod  string
-			statusStr        string
-			xbrlContent      string
-			generatedAt      *time.Time
-			submittedAt      *time.Time
-			validationJSON   []byte
-			version          int
-			createdAt        time.Time
-			updatedAt        time.Time
+			id              uuid.UUID
+			tenantID        uuid.UUID
+			reportTypeStr   string
+			reportingPeriod string
+			statusStr       string
+			xbrlContent     string
+			generatedAt     *time.Time
+			submittedAt     *time.Time
+			validationJSON  []byte
+			version         int
+			createdAt       time.Time
+			updatedAt       time.Time
 		)
 
 		err := rows.Scan(

@@ -25,11 +25,11 @@ import (
 
 // ServiceConn represents a gRPC client connection to a backend service.
 type ServiceConn struct {
+	Health healthpb.HealthClient
+	Conn   *grpc.ClientConn
+	Logger *slog.Logger
 	Name   string
 	Addr   string
-	Conn   *grpc.ClientConn
-	Health healthpb.HealthClient
-	Logger *slog.Logger
 }
 
 // Dial establishes a gRPC connection to the backend service.
@@ -107,7 +107,7 @@ func readJSON(r *http.Request, v interface{}) error {
 func writeJSON(w http.ResponseWriter, statusCode int, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	_ = json.NewEncoder(w).Encode(v)
+	_ = json.NewEncoder(w).Encode(v) //nolint:errcheck
 }
 
 // writeError writes a JSON error response.

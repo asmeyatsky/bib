@@ -19,8 +19,8 @@ import (
 // --- Mock implementations ---
 
 type mockIdentityEventPublisher struct {
-	publishedEvents []events.DomainEvent
 	publishFunc     func(ctx context.Context, topic string, events ...events.DomainEvent) error
+	publishedEvents []events.DomainEvent
 }
 
 func (m *mockIdentityEventPublisher) Publish(ctx context.Context, topic string, evts ...events.DomainEvent) error {
@@ -52,7 +52,7 @@ func TestCompleteCheck_Execute(t *testing.T) {
 		checkID := checks[0].ID()
 
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.IdentityVerification, error) {
 				return v, nil
 			},
 		}
@@ -91,7 +91,7 @@ func TestCompleteCheck_Execute(t *testing.T) {
 
 	t.Run("fails when verification not found", func(t *testing.T) {
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.IdentityVerification, error) {
 				return model.IdentityVerification{}, fmt.Errorf("not found")
 			},
 		}
@@ -113,7 +113,7 @@ func TestCompleteCheck_Execute(t *testing.T) {
 	t.Run("fails when check not found in verification", func(t *testing.T) {
 		v := inProgressVerification()
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.IdentityVerification, error) {
 				return v, nil
 			},
 		}
@@ -138,7 +138,7 @@ func TestCompleteCheck_Execute(t *testing.T) {
 		checkID := checks[0].ID()
 
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.IdentityVerification, error) {
 				return v, nil
 			},
 			saveFunc: func(_ context.Context, _ model.IdentityVerification) error {
@@ -166,7 +166,7 @@ func TestCompleteCheck_Execute(t *testing.T) {
 		checkID := checks[0].ID()
 
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.IdentityVerification, error) {
 				return v, nil
 			},
 		}
@@ -199,7 +199,7 @@ func TestCompleteCheck_Execute(t *testing.T) {
 		checkID := checks[0].ID()
 
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.IdentityVerification, error) {
 				return v, nil
 			},
 		}

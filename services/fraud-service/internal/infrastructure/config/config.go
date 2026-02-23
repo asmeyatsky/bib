@@ -20,11 +20,11 @@ type KafkaConfig struct {
 }
 
 type Config struct {
-	DB          DatabaseConfig
-	Kafka       KafkaConfig
 	ServiceName string
 	Environment string
 	LogLevel    string
+	DB          DatabaseConfig
+	Kafka       KafkaConfig
 	GRPCPort    int
 	HTTPPort    int
 }

@@ -14,8 +14,8 @@ func NewJITFundingService() *JITFundingService {
 
 // FundingResult contains the outcome of a JIT funding check.
 type FundingResult struct {
-	Approved      bool   `json:"approved"`
 	DeclineReason string `json:"decline_reason,omitempty"`
+	Approved      bool   `json:"approved"`
 }
 
 // CheckFunding verifies the source account has sufficient funds for the transaction.

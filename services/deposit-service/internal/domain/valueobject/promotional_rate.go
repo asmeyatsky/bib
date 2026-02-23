@@ -9,10 +9,10 @@ import (
 // PromotionalRate is an immutable value object representing a promotional
 // interest rate bonus applied during a campaign period.
 type PromotionalRate struct {
-	bonusRateBps        int             // additional basis points on top of standard rate
-	eligibilityCriteria string          // human-readable eligibility description
-	minDeposit          decimal.Decimal // minimum deposit to qualify
-	maxDeposit          decimal.Decimal // maximum deposit eligible for promotion
+	eligibilityCriteria string
+	minDeposit          decimal.Decimal
+	maxDeposit          decimal.Decimal
+	bonusRateBps        int
 }
 
 // NewPromotionalRate creates a validated PromotionalRate.

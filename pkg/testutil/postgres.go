@@ -18,8 +18,8 @@ import (
 // PostgresContainer wraps a testcontainers PostgreSQL instance.
 type PostgresContainer struct {
 	Container *postgres.PostgresContainer
-	DSN       string
 	Pool      *pgxpool.Pool
+	DSN       string
 }
 
 // NewPostgresContainer starts a PostgreSQL container for testing.

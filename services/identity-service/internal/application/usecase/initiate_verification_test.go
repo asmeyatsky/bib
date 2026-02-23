@@ -21,9 +21,9 @@ import (
 
 // mockVerificationRepository implements port.VerificationRepository for testing.
 type mockVerificationRepository struct {
-	savedVerifications []model.IdentityVerification
 	findByIDFunc       func(ctx context.Context, id uuid.UUID) (model.IdentityVerification, error)
 	saveFunc           func(ctx context.Context, v model.IdentityVerification) error
+	savedVerifications []model.IdentityVerification
 }
 
 func (m *mockVerificationRepository) Save(ctx context.Context, v model.IdentityVerification) error {
@@ -47,9 +47,9 @@ func (m *mockVerificationRepository) ListByTenant(_ context.Context, _ uuid.UUID
 
 // mockVerificationProvider implements port.VerificationProvider for testing.
 type mockVerificationProvider struct {
-	initiatedChecks    []initiatedCheck
 	initiateCheckFunc  func(ctx context.Context, checkType valueobject.CheckType, applicant port.ApplicantInfo) (string, error)
 	getCheckResultFunc func(ctx context.Context, providerRef string) (valueobject.VerificationStatus, string, error)
+	initiatedChecks    []initiatedCheck
 }
 
 type initiatedCheck struct {
@@ -80,8 +80,8 @@ func (m *mockVerificationProvider) GetCheckResult(ctx context.Context, providerR
 
 // mockEventPublisher implements port.EventPublisher for testing.
 type mockEventPublisher struct {
-	publishedEvents []events.DomainEvent
 	publishFunc     func(ctx context.Context, topic string, events ...events.DomainEvent) error
+	publishedEvents []events.DomainEvent
 }
 
 func (m *mockEventPublisher) Publish(ctx context.Context, topic string, evts ...events.DomainEvent) error {

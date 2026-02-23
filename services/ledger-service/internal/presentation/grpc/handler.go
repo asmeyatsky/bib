@@ -78,9 +78,9 @@ func NewLedgerHandler(
 type PostJournalEntryRequest struct {
 	TenantID      string
 	EffectiveDate string
-	Postings      []*PostingPairMsg
 	Description   string
 	Reference     string
+	Postings      []*PostingPairMsg
 }
 
 type PostingPairMsg struct {
@@ -92,15 +92,15 @@ type PostingPairMsg struct {
 }
 
 type JournalEntryMsg struct {
+	CreatedAt     *timestamppb.Timestamp
+	UpdatedAt     *timestamppb.Timestamp
 	ID            string
 	TenantID      string
 	EffectiveDate string
-	Postings      []*PostingPairMsg
 	Status        string
 	Description   string
 	Reference     string
-	CreatedAt     *timestamppb.Timestamp
-	UpdatedAt     *timestamppb.Timestamp
+	Postings      []*PostingPairMsg
 	Version       int32
 }
 

@@ -52,8 +52,8 @@ func TestJournalEntry_ConcurrentEventCollection(t *testing.T) {
 	const goroutines = 100
 
 	type result struct {
-		posted JournalEntry
 		err    error
+		posted JournalEntry
 	}
 
 	results := make([]result, goroutines)
@@ -102,8 +102,8 @@ func TestPostingPair_ConcurrentCreation(t *testing.T) {
 	const goroutines = 100
 
 	type result struct {
-		pair valueobject.PostingPair
 		err  error
+		pair valueobject.PostingPair
 	}
 
 	results := make([]result, goroutines)

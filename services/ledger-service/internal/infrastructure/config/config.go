@@ -8,22 +8,22 @@ import (
 
 // Config holds all service configuration loaded from environment variables.
 type Config struct {
-	HTTPPort  int
-	GRPCPort  int
-	DB        DBConfig
-	Kafka     KafkaConfig
 	Telemetry TelemetryConfig
 	LogLevel  string
 	LogFormat string
+	Kafka     KafkaConfig
+	DB        DBConfig
+	HTTPPort  int
+	GRPCPort  int
 }
 
 type DBConfig struct {
 	Host     string
-	Port     int
 	User     string
 	Password string
 	Name     string
 	SSLMode  string
+	Port     int
 	MaxConns int32
 	MinConns int32
 }

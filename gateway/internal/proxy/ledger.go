@@ -29,22 +29,22 @@ type postingPair struct {
 type postJournalEntryReq struct {
 	TenantID      string        `json:"tenant_id"`
 	EffectiveDate string        `json:"effective_date"`
-	Postings      []postingPair `json:"postings"`
 	Description   string        `json:"description,omitempty"`
 	Reference     string        `json:"reference,omitempty"`
+	Postings      []postingPair `json:"postings"`
 }
 
 type journalEntryMsg struct {
 	ID            string        `json:"id"`
 	TenantID      string        `json:"tenant_id"`
 	EffectiveDate string        `json:"effective_date"`
-	Postings      []postingPair `json:"postings"`
 	Status        string        `json:"status"`
 	Description   string        `json:"description"`
 	Reference     string        `json:"reference"`
-	Version       int32         `json:"version"`
 	CreatedAt     string        `json:"created_at"`
 	UpdatedAt     string        `json:"updated_at"`
+	Postings      []postingPair `json:"postings"`
+	Version       int32         `json:"version"`
 }
 
 type postJournalEntryResp struct {

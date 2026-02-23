@@ -14,33 +14,25 @@ import (
 // It provides API key authentication, per-partner rate limiting,
 // and webhook registration for partner integrations.
 type PartnerProxy struct {
-	logger   *slog.Logger
-	partners map[string]*PartnerConfig // keyed by API key
-	mu       sync.RWMutex
-	webhooks map[string][]WebhookRegistration // keyed by partner ID
-
-	// Backend service connections
-	accountConn *ServiceConn
-	paymentConn *ServiceConn
-	ledgerConn  *ServiceConn
-
-	// Rate limiters per partner
+	logger       *slog.Logger
+	partners     map[string]*PartnerConfig
+	webhooks     map[string][]WebhookRegistration
+	accountConn  *ServiceConn
+	paymentConn  *ServiceConn
+	ledgerConn   *ServiceConn
 	rateLimiters map[string]*partnerRateLimiter
+	mu           sync.RWMutex
 }
 
 // PartnerConfig holds the configuration for a partner integration.
 type PartnerConfig struct {
-	PartnerID   string
-	PartnerName string
-	APIKey      string
-	// RateLimit is the maximum requests per second for this partner.
-	RateLimit int
-	// AllowedEndpoints lists the API paths this partner can access.
+	PartnerID        string
+	PartnerName      string
+	APIKey           string
+	WebhookSecret    string
 	AllowedEndpoints []string
-	// WebhookSecret is used to sign webhook payloads.
-	WebhookSecret string
-	// IsActive indicates if the partner integration is enabled.
-	IsActive bool
+	RateLimit        int
+	IsActive         bool
 }
 
 // WebhookRegistration represents a partner's webhook endpoint.
@@ -48,17 +40,17 @@ type WebhookRegistration struct {
 	ID        string   `json:"id"`
 	PartnerID string   `json:"partner_id"`
 	URL       string   `json:"url"`
-	Events    []string `json:"events"` // e.g. ["payment.completed", "account.opened"]
 	Secret    string   `json:"secret,omitempty"`
 	CreatedAt string   `json:"created_at"`
+	Events    []string `json:"events"`
 }
 
 type partnerRateLimiter struct {
-	mu         sync.Mutex
+	lastRefill time.Time
 	tokens     float64
 	maxTokens  float64
 	refillRate float64
-	lastRefill time.Time
+	mu         sync.Mutex
 }
 
 func newPartnerRateLimiter(rps int) *partnerRateLimiter {
@@ -318,7 +310,7 @@ func (p *PartnerProxy) ListWebhooks(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{ //nolint:errcheck
 		"webhooks": sanitized,
 		"count":    len(sanitized),
 	})

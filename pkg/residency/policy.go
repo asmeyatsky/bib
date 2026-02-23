@@ -11,8 +11,8 @@ type PolicyViolation struct {
 
 // PolicyResult holds the outcome of a policy evaluation.
 type PolicyResult struct {
-	Allowed    bool
 	Violations []PolicyViolation
+	Allowed    bool
 }
 
 // PolicyEngine evaluates data storage and processing operations against
@@ -111,10 +111,10 @@ func (pe *PolicyEngine) ValidateProcessing(
 	if !regionAllowed {
 		result.Allowed = false
 		result.Violations = append(result.Violations, PolicyViolation{
-			Rule:        "PROCESSING_REGION_ALLOWED",
+			Rule: "PROCESSING_REGION_ALLOWED",
 			Description: fmt.Sprintf("processing in region %s not allowed for jurisdiction %s",
 				processingRegion, jurisdiction),
-			Severity:    "ERROR",
+			Severity: "ERROR",
 		})
 	}
 
@@ -154,10 +154,10 @@ func (pe *PolicyEngine) ValidateCrossBorderTransfer(
 		if !inJurisdiction {
 			result.Allowed = false
 			result.Violations = append(result.Violations, PolicyViolation{
-				Rule:        "CROSS_BORDER_PROHIBITED",
+				Rule: "CROSS_BORDER_PROHIBITED",
 				Description: fmt.Sprintf("cross-border transfer from %s to region %s is prohibited",
 					sourceJurisdiction, destinationRegion),
-				Severity:    "ERROR",
+				Severity: "ERROR",
 			})
 			return result
 		}
@@ -176,10 +176,10 @@ func (pe *PolicyEngine) ValidateCrossBorderTransfer(
 		if !inJurisdiction {
 			result.Allowed = false
 			result.Violations = append(result.Violations, PolicyViolation{
-				Rule:        "CROSS_BORDER_CONSENT",
+				Rule: "CROSS_BORDER_CONSENT",
 				Description: fmt.Sprintf("cross-border transfer from %s requires data subject consent",
 					sourceJurisdiction),
-				Severity:    "ERROR",
+				Severity: "ERROR",
 			})
 		}
 	}

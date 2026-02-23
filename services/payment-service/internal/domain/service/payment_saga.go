@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/model"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/port"
+	"github.com/google/uuid"
 )
 
 // SagaStep represents a step in the payment saga.
@@ -23,13 +23,13 @@ const (
 
 // SagaState tracks the current state of a payment saga.
 type SagaState struct {
-	OrderID        uuid.UUID
-	CurrentStep    SagaStep
-	CompletedSteps []SagaStep
-	FailedStep     *SagaStep
-	FailureReason  string
 	StartedAt      time.Time
+	FailedStep     *SagaStep
 	CompletedAt    *time.Time
+	CurrentStep    SagaStep
+	FailureReason  string
+	CompletedSteps []SagaStep
+	OrderID        uuid.UUID
 }
 
 // PaymentSagaOrchestrator manages the payment saga workflow.

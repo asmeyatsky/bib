@@ -49,9 +49,9 @@ func (uc *InitiatePayment) Execute(ctx context.Context, req dto.InitiatePaymentR
 
 	// Optionally assess fraud risk.
 	if uc.fraudClient != nil {
-		approved, err := uc.fraudClient.AssessTransaction(ctx, req.TenantID, req.SourceAccountID, req.Amount, req.Currency)
-		if err != nil {
-			return dto.InitiatePaymentResponse{}, fmt.Errorf("fraud assessment failed: %w", err)
+		approved, assessErr := uc.fraudClient.AssessTransaction(ctx, req.TenantID, req.SourceAccountID, req.Amount, req.Currency)
+		if assessErr != nil {
+			return dto.InitiatePaymentResponse{}, fmt.Errorf("fraud assessment failed: %w", assessErr)
 		}
 		if !approved {
 			return dto.InitiatePaymentResponse{}, fmt.Errorf("payment rejected by fraud assessment")

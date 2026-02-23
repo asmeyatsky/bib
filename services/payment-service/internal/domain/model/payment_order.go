@@ -15,24 +15,24 @@ import (
 // PaymentOrder is the root aggregate for the payment bounded context.
 // It represents an immutable payment instruction moving through its lifecycle.
 type PaymentOrder struct {
-	id                   uuid.UUID
-	tenantID             uuid.UUID
-	sourceAccountID      uuid.UUID
-	destinationAccountID uuid.UUID // internal account, or uuid.Nil for external
-	amount               decimal.Decimal
+	initiatedAt          time.Time
+	updatedAt            time.Time
+	createdAt            time.Time
+	settledAt            *time.Time
+	routingInfo          valueobject.RoutingInfo
 	currency             string
 	rail                 valueobject.PaymentRail
 	status               valueobject.PaymentStatus
-	routingInfo          valueobject.RoutingInfo
 	reference            string
 	description          string
 	failureReason        string
-	initiatedAt          time.Time
-	settledAt            *time.Time
-	version              int
-	createdAt            time.Time
-	updatedAt            time.Time
+	amount               decimal.Decimal
 	domainEvents         []events.DomainEvent
+	version              int
+	destinationAccountID uuid.UUID
+	sourceAccountID      uuid.UUID
+	tenantID             uuid.UUID
+	id                   uuid.UUID
 }
 
 // NewPaymentOrder creates a new payment order in INITIATED status.
@@ -203,20 +203,20 @@ func (po PaymentOrder) ID() uuid.UUID                        { return po.id }
 func (po PaymentOrder) TenantID() uuid.UUID                  { return po.tenantID }
 func (po PaymentOrder) SourceAccountID() uuid.UUID           { return po.sourceAccountID }
 func (po PaymentOrder) DestinationAccountID() uuid.UUID      { return po.destinationAccountID }
-func (po PaymentOrder) Amount() decimal.Decimal               { return po.amount }
-func (po PaymentOrder) Currency() string                      { return po.currency }
-func (po PaymentOrder) Rail() valueobject.PaymentRail         { return po.rail }
-func (po PaymentOrder) Status() valueobject.PaymentStatus     { return po.status }
-func (po PaymentOrder) RoutingInfo() valueobject.RoutingInfo  { return po.routingInfo }
-func (po PaymentOrder) Reference() string                     { return po.reference }
-func (po PaymentOrder) Description() string                   { return po.description }
-func (po PaymentOrder) FailureReason() string                 { return po.failureReason }
-func (po PaymentOrder) InitiatedAt() time.Time                { return po.initiatedAt }
-func (po PaymentOrder) SettledAt() *time.Time                 { return po.settledAt }
-func (po PaymentOrder) Version() int                          { return po.version }
-func (po PaymentOrder) CreatedAt() time.Time                  { return po.createdAt }
-func (po PaymentOrder) UpdatedAt() time.Time                  { return po.updatedAt }
-func (po PaymentOrder) DomainEvents() []events.DomainEvent    { return po.domainEvents }
+func (po PaymentOrder) Amount() decimal.Decimal              { return po.amount }
+func (po PaymentOrder) Currency() string                     { return po.currency }
+func (po PaymentOrder) Rail() valueobject.PaymentRail        { return po.rail }
+func (po PaymentOrder) Status() valueobject.PaymentStatus    { return po.status }
+func (po PaymentOrder) RoutingInfo() valueobject.RoutingInfo { return po.routingInfo }
+func (po PaymentOrder) Reference() string                    { return po.reference }
+func (po PaymentOrder) Description() string                  { return po.description }
+func (po PaymentOrder) FailureReason() string                { return po.failureReason }
+func (po PaymentOrder) InitiatedAt() time.Time               { return po.initiatedAt }
+func (po PaymentOrder) SettledAt() *time.Time                { return po.settledAt }
+func (po PaymentOrder) Version() int                         { return po.version }
+func (po PaymentOrder) CreatedAt() time.Time                 { return po.createdAt }
+func (po PaymentOrder) UpdatedAt() time.Time                 { return po.updatedAt }
+func (po PaymentOrder) DomainEvents() []events.DomainEvent   { return po.domainEvents }
 
 // ClearDomainEvents returns the collected domain events and a new PaymentOrder with events cleared.
 func (po PaymentOrder) ClearDomainEvents() ([]events.DomainEvent, PaymentOrder) {

@@ -51,7 +51,7 @@ func main() {
 	if err != nil {
 		logger.Warn("failed to initialize tracer, continuing without tracing", "error", err)
 	} else {
-		defer func() { _ = shutdown(ctx) }()
+		defer func() { _ = shutdown(ctx) }() //nolint:errcheck
 	}
 
 	// Initialize database
@@ -167,7 +167,7 @@ func main() {
 	}
 
 	// Graceful shutdown
-	_ = httpServer.Shutdown(context.Background())
+	_ = httpServer.Shutdown(context.Background()) //nolint:errcheck
 	grpcServer.Stop()
 	logger.Info("deposit-service stopped")
 }

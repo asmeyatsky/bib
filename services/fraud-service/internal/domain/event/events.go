@@ -22,15 +22,15 @@ const (
 // AssessmentCompleted is published when a fraud assessment has been completed
 // for a transaction.
 type AssessmentCompleted struct {
+	AssessedAt time.Time `json:"assessed_at"`
 	events.BaseEvent
-	AssessedAt    time.Time `json:"assessed_at"`
+	RiskLevel     string    `json:"risk_level"`
+	Decision      string    `json:"decision"`
 	Signals       []string  `json:"signals"`
+	RiskScore     int       `json:"risk_score"`
 	AssessmentID  uuid.UUID `json:"assessment_id"`
 	TransactionID uuid.UUID `json:"transaction_id"`
 	AccountID     uuid.UUID `json:"account_id"`
-	RiskLevel     string    `json:"risk_level"`
-	Decision      string    `json:"decision"`
-	RiskScore     int       `json:"risk_score"`
 }
 
 func NewAssessmentCompleted(assessmentID, tenantID, transactionID, accountID uuid.UUID, riskScore int, riskLevel, decision string, signals []string, assessedAt time.Time) AssessmentCompleted {

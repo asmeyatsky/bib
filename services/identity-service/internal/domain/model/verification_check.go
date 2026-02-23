@@ -12,13 +12,13 @@ import (
 // VerificationCheck is a child entity within the IdentityVerification aggregate.
 // It represents a single verification check (e.g. document, selfie, watchlist).
 type VerificationCheck struct {
-	id                uuid.UUID
+	completedAt       *time.Time
 	checkType         valueobject.CheckType
 	status            valueobject.VerificationStatus
 	provider          string
 	providerReference string
 	failureReason     string
-	completedAt       *time.Time
+	id                uuid.UUID
 }
 
 // NewVerificationCheck creates a new check in PENDING status.
@@ -87,12 +87,12 @@ func (vc VerificationCheck) SetInProgress() (VerificationCheck, error) {
 
 // Accessors
 
-func (vc VerificationCheck) ID() uuid.UUID                         { return vc.id }
-func (vc VerificationCheck) CheckType() valueobject.CheckType      { return vc.checkType }
+func (vc VerificationCheck) ID() uuid.UUID                          { return vc.id }
+func (vc VerificationCheck) CheckType() valueobject.CheckType       { return vc.checkType }
 func (vc VerificationCheck) Status() valueobject.VerificationStatus { return vc.status }
-func (vc VerificationCheck) Provider() string                      { return vc.provider }
-func (vc VerificationCheck) ProviderReference() string             { return vc.providerReference }
-func (vc VerificationCheck) FailureReason() string                 { return vc.failureReason }
+func (vc VerificationCheck) Provider() string                       { return vc.provider }
+func (vc VerificationCheck) ProviderReference() string              { return vc.providerReference }
+func (vc VerificationCheck) FailureReason() string                  { return vc.failureReason }
 
 func (vc VerificationCheck) CompletedAt() *time.Time {
 	if vc.completedAt == nil {

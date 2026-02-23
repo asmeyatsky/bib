@@ -13,9 +13,9 @@ import (
 type CampaignStatus string
 
 const (
-	CampaignStatusDraft     CampaignStatus = "DRAFT"
-	CampaignStatusActive    CampaignStatus = "ACTIVE"
-	CampaignStatusExpired   CampaignStatus = "EXPIRED"
+	CampaignStatusDraft    CampaignStatus = "DRAFT"
+	CampaignStatusActive   CampaignStatus = "ACTIVE"
+	CampaignStatusExpired  CampaignStatus = "EXPIRED"
 	CampaignStatusCanceled CampaignStatus = "CANCELED"
 )
 
@@ -32,22 +32,21 @@ const (
 // Campaign is the aggregate root for deposit promotional campaigns.
 // It tracks promotional rates, eligibility, time windows, and effectiveness metrics.
 type Campaign struct {
-	id              uuid.UUID
-	tenantID        uuid.UUID
-	name            string
-	description     string
-	productID       uuid.UUID // associated deposit product
-	promotionalRate valueobject.PromotionalRate
-	targetAudience  TargetAudience
-	startDate       time.Time
-	endDate         time.Time
-	status          CampaignStatus
-	// Effectiveness tracking
-	totalEnrollments  int
-	totalDepositValue string // decimal string
-	version           int
-	createdAt         time.Time
 	updatedAt         time.Time
+	createdAt         time.Time
+	endDate           time.Time
+	startDate         time.Time
+	description       string
+	targetAudience    TargetAudience
+	status            CampaignStatus
+	totalDepositValue string
+	name              string
+	promotionalRate   valueobject.PromotionalRate
+	totalEnrollments  int
+	version           int
+	id                uuid.UUID
+	productID         uuid.UUID
+	tenantID          uuid.UUID
 }
 
 // NewCampaign creates a new Campaign in DRAFT status.
@@ -188,18 +187,18 @@ func (c Campaign) IsActiveAt(t time.Time) bool {
 }
 
 // Accessors
-func (c Campaign) ID() uuid.UUID                               { return c.id }
-func (c Campaign) TenantID() uuid.UUID                         { return c.tenantID }
-func (c Campaign) Name() string                                { return c.name }
-func (c Campaign) Description() string                         { return c.description }
-func (c Campaign) ProductID() uuid.UUID                        { return c.productID }
+func (c Campaign) ID() uuid.UUID                                { return c.id }
+func (c Campaign) TenantID() uuid.UUID                          { return c.tenantID }
+func (c Campaign) Name() string                                 { return c.name }
+func (c Campaign) Description() string                          { return c.description }
+func (c Campaign) ProductID() uuid.UUID                         { return c.productID }
 func (c Campaign) PromotionalRate() valueobject.PromotionalRate { return c.promotionalRate }
-func (c Campaign) TargetAudience() TargetAudience              { return c.targetAudience }
-func (c Campaign) StartDate() time.Time                        { return c.startDate }
-func (c Campaign) EndDate() time.Time                          { return c.endDate }
-func (c Campaign) Status() CampaignStatus                      { return c.status }
-func (c Campaign) TotalEnrollments() int                       { return c.totalEnrollments }
-func (c Campaign) TotalDepositValue() string                   { return c.totalDepositValue }
-func (c Campaign) Version() int                                { return c.version }
-func (c Campaign) CreatedAt() time.Time                        { return c.createdAt }
-func (c Campaign) UpdatedAt() time.Time                        { return c.updatedAt }
+func (c Campaign) TargetAudience() TargetAudience               { return c.targetAudience }
+func (c Campaign) StartDate() time.Time                         { return c.startDate }
+func (c Campaign) EndDate() time.Time                           { return c.endDate }
+func (c Campaign) Status() CampaignStatus                       { return c.status }
+func (c Campaign) TotalEnrollments() int                        { return c.totalEnrollments }
+func (c Campaign) TotalDepositValue() string                    { return c.totalDepositValue }
+func (c Campaign) Version() int                                 { return c.version }
+func (c Campaign) CreatedAt() time.Time                         { return c.createdAt }
+func (c Campaign) UpdatedAt() time.Time                         { return c.updatedAt }

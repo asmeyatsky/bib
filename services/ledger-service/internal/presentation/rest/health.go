@@ -20,11 +20,11 @@ func (h *HealthHandler) RegisterRoutes(mux *http.ServeMux) {
 func (h *HealthHandler) Healthz(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"}) //nolint:errcheck // best-effort HTTP response encoding
 }
 
 func (h *HealthHandler) Readyz(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(map[string]string{"status": "ready"})
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "ready"}) //nolint:errcheck // best-effort HTTP response encoding
 }

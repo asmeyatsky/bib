@@ -12,9 +12,9 @@ import (
 
 // Publisher implements port.EventPublisher using Kafka.
 type Publisher struct {
-	topic    string
 	producer *pkgkafka.Producer
 	logger   *slog.Logger
+	topic    string
 }
 
 // NewPublisher creates a new Kafka event publisher.

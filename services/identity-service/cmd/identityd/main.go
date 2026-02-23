@@ -51,7 +51,7 @@ func main() {
 	if err != nil {
 		logger.Warn("failed to initialize tracer, continuing without tracing", "error", err)
 	} else {
-		defer func() { _ = shutdown(ctx) }()
+		defer func() { _ = shutdown(ctx) }() //nolint:errcheck // best-effort tracer shutdown
 	}
 
 	// Initialize database
@@ -171,7 +171,7 @@ func main() {
 	}
 
 	// Graceful shutdown
-	_ = httpServer.Shutdown(context.Background())
+	_ = httpServer.Shutdown(context.Background()) //nolint:errcheck // best-effort shutdown
 	grpcServer.Stop()
 	logger.Info("identity-service stopped")
 }

@@ -19,8 +19,8 @@ import (
 type Server struct {
 	server  *grpc.Server
 	handler *IdentityHandler
-	port    int
 	logger  *slog.Logger
+	port    int
 }
 
 func NewServer(handler *IdentityHandler, port int, logger *slog.Logger, jwtService *auth.JWTService, opts ...grpc.ServerOption) *Server {

@@ -9,11 +9,11 @@ import (
 
 // PostJournalEntryRequest is the input DTO for posting a journal entry.
 type PostJournalEntryRequest struct {
-	TenantID      uuid.UUID
 	EffectiveDate time.Time
-	Postings      []PostingPairDTO
 	Description   string
 	Reference     string
+	Postings      []PostingPairDTO
+	TenantID      uuid.UUID
 }
 
 // PostingPairDTO transfers posting pair data.
@@ -27,37 +27,37 @@ type PostingPairDTO struct {
 
 // JournalEntryResponse is the output DTO for a journal entry.
 type JournalEntryResponse struct {
-	ID            uuid.UUID
-	TenantID      uuid.UUID
 	EffectiveDate time.Time
-	Postings      []PostingPairDTO
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 	Status        string
 	Description   string
 	Reference     string
+	Postings      []PostingPairDTO
 	Version       int
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID            uuid.UUID
+	TenantID      uuid.UUID
 }
 
 // GetBalanceRequest is the input DTO for balance queries.
 type GetBalanceRequest struct {
+	AsOf        time.Time
 	AccountCode string
 	Currency    string
-	AsOf        time.Time
 }
 
 // BalanceResponse is the output DTO for balance queries.
 type BalanceResponse struct {
+	AsOf        time.Time
 	AccountCode string
 	Amount      decimal.Decimal
 	Currency    string
-	AsOf        time.Time
 }
 
 // BackvalueEntryRequest is the input DTO for back-valuation.
 type BackvalueEntryRequest struct {
-	EntryID uuid.UUID
 	NewDate time.Time
+	EntryID uuid.UUID
 }
 
 // PeriodCloseRequest is the input DTO for closing a fiscal period.
@@ -69,12 +69,12 @@ type PeriodCloseRequest struct {
 
 // ListEntriesRequest is the input DTO for listing journal entries.
 type ListEntriesRequest struct {
-	TenantID    uuid.UUID
-	AccountCode string
 	FromDate    time.Time
 	ToDate      time.Time
+	AccountCode string
 	PageSize    int
 	Offset      int
+	TenantID    uuid.UUID
 }
 
 // ListEntriesResponse is the output DTO for listing journal entries.

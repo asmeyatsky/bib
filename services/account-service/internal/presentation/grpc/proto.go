@@ -53,11 +53,11 @@ var _AccountService_serviceDesc = grpclib.ServiceDesc{
 	ServiceName: "bib.account.v1.AccountService",
 	HandlerType: (*AccountServiceServer)(nil),
 	Methods: []grpclib.MethodDesc{
-		{MethodName: "OpenAccount", Handler: _AccountService_OpenAccount_Handler},   //nolint:revive // gRPC handler registration
-		{MethodName: "GetAccount", Handler: _AccountService_GetAccount_Handler},     //nolint:revive // gRPC handler registration
+		{MethodName: "OpenAccount", Handler: _AccountService_OpenAccount_Handler},     //nolint:revive // gRPC handler registration
+		{MethodName: "GetAccount", Handler: _AccountService_GetAccount_Handler},       //nolint:revive // gRPC handler registration
 		{MethodName: "FreezeAccount", Handler: _AccountService_FreezeAccount_Handler}, //nolint:revive // gRPC handler registration
-		{MethodName: "CloseAccount", Handler: _AccountService_CloseAccount_Handler}, //nolint:revive // gRPC handler registration
-		{MethodName: "ListAccounts", Handler: _AccountService_ListAccounts_Handler}, //nolint:revive // gRPC handler registration
+		{MethodName: "CloseAccount", Handler: _AccountService_CloseAccount_Handler},   //nolint:revive // gRPC handler registration
+		{MethodName: "ListAccounts", Handler: _AccountService_ListAccounts_Handler},   //nolint:revive // gRPC handler registration
 	},
 	Streams: []grpclib.StreamDesc{},
 }

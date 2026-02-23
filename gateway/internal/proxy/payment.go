@@ -39,24 +39,24 @@ type initiatePaymentResp struct {
 }
 
 type paymentOrderMsg struct {
-	ID                    string `json:"id"`
-	TenantID              string `json:"tenant_id"`
+	RoutingNumber         string `json:"routing_number"`
+	Reference             string `json:"reference"`
 	SourceAccountID       string `json:"source_account_id"`
 	DestinationAccountID  string `json:"destination_account_id"`
 	Amount                string `json:"amount"`
 	Currency              string `json:"currency"`
 	Rail                  string `json:"rail"`
 	Status                string `json:"status"`
-	RoutingNumber         string `json:"routing_number"`
+	TenantID              string `json:"tenant_id"`
+	ID                    string `json:"id"`
 	ExternalAccountNumber string `json:"external_account_number"`
-	Reference             string `json:"reference"`
 	Description           string `json:"description"`
 	FailureReason         string `json:"failure_reason,omitempty"`
 	InitiatedAt           string `json:"initiated_at"`
 	SettledAt             string `json:"settled_at,omitempty"`
-	Version               int32  `json:"version"`
-	CreatedAt             string `json:"created_at"`
 	UpdatedAt             string `json:"updated_at"`
+	CreatedAt             string `json:"created_at"`
+	Version               int32  `json:"version"`
 }
 
 type getPaymentResp struct {

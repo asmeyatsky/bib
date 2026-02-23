@@ -34,7 +34,7 @@ func TestGetPayment_Execute(t *testing.T) {
 		order := samplePaymentOrder()
 
 		repo := &mockPaymentOrderRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.PaymentOrder, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.PaymentOrder, error) {
 				return order, nil
 			},
 		}
@@ -57,7 +57,7 @@ func TestGetPayment_Execute(t *testing.T) {
 
 	t.Run("fails when payment order not found", func(t *testing.T) {
 		repo := &mockPaymentOrderRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.PaymentOrder, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.PaymentOrder, error) {
 				return model.PaymentOrder{}, fmt.Errorf("payment order not found")
 			},
 		}

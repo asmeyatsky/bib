@@ -50,8 +50,8 @@ func (m *mockAssessmentRepository) FindByAccountID(_ context.Context, _, _ uuid.
 }
 
 type mockFraudEventPublisher struct {
-	publishedEvents []events.DomainEvent
 	publishFunc     func(ctx context.Context, evts ...events.DomainEvent) error
+	publishedEvents []events.DomainEvent
 }
 
 func (m *mockFraudEventPublisher) Publish(ctx context.Context, evts ...events.DomainEvent) error {

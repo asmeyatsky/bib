@@ -19,8 +19,8 @@ type Server struct {
 	grpcServer   *grpc.Server
 	healthServer *health.Server
 	handler      *AccountHandler
-	port         int
 	logger       *slog.Logger
+	port         int
 }
 
 // NewServer creates a new gRPC server with the provided handler.

@@ -54,15 +54,15 @@ type ReconciliationResult struct {
 
 // ReconciliationSummary aggregates the results of a full reconciliation run.
 type ReconciliationSummary struct {
-	AccountID        string
 	StatementDate    time.Time
+	AccountID        string
+	Results          []ReconciliationResult
 	TotalExternal    int
 	TotalInternal    int
 	Matched          int
 	AmountMismatches int
 	MissingLocal     int
 	UnmatchedLocal   int
-	Results          []ReconciliationResult
 }
 
 // NostroReconciliation is a domain service that compares internal ledger

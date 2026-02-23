@@ -46,8 +46,8 @@ func (uc *ProcessPayment) Execute(ctx context.Context, paymentID uuid.UUID) erro
 	}
 
 	// Persist the PROCESSING state.
-	if err := uc.paymentRepo.Save(ctx, processing); err != nil {
-		return fmt.Errorf("failed to save processing state: %w", err)
+	if saveErr := uc.paymentRepo.Save(ctx, processing); saveErr != nil {
+		return fmt.Errorf("failed to save processing state: %w", saveErr)
 	}
 
 	// Submit to the rail adapter.
@@ -61,8 +61,8 @@ func (uc *ProcessPayment) Execute(ctx context.Context, paymentID uuid.UUID) erro
 			return fmt.Errorf("failed to mark failure after submit error: %w (submit error: %v)", failErr, submitErr)
 		}
 
-		if err := uc.paymentRepo.Save(ctx, failed); err != nil {
-			return fmt.Errorf("failed to save failed state: %w", err)
+		if saveErr := uc.paymentRepo.Save(ctx, failed); saveErr != nil {
+			return fmt.Errorf("failed to save failed state: %w", saveErr)
 		}
 
 		if events := failed.DomainEvents(); len(events) > 0 {
@@ -80,13 +80,13 @@ func (uc *ProcessPayment) Execute(ctx context.Context, paymentID uuid.UUID) erro
 		return fmt.Errorf("failed to mark settled: %w", err)
 	}
 
-	if err := uc.paymentRepo.Save(ctx, settled); err != nil {
-		return fmt.Errorf("failed to save settled state: %w", err)
+	if saveErr := uc.paymentRepo.Save(ctx, settled); saveErr != nil {
+		return fmt.Errorf("failed to save settled state: %w", saveErr)
 	}
 
 	if events := settled.DomainEvents(); len(events) > 0 {
-		if err := uc.publisher.Publish(ctx, TopicPaymentOrders, events...); err != nil {
-			return fmt.Errorf("failed to publish settlement events: %w", err)
+		if pubErr := uc.publisher.Publish(ctx, TopicPaymentOrders, events...); pubErr != nil {
+			return fmt.Errorf("failed to publish settlement events: %w", pubErr)
 		}
 	}
 

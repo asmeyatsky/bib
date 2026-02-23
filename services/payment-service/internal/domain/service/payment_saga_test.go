@@ -18,8 +18,8 @@ import (
 // --- Mocks ---
 
 type mockFraudClient struct {
-	approved bool
 	err      error
+	approved bool
 }
 
 func (m *mockFraudClient) AssessTransaction(_ context.Context, _, _ uuid.UUID, _ decimal.Decimal, _ string) (bool, error) {
@@ -28,9 +28,9 @@ func (m *mockFraudClient) AssessTransaction(_ context.Context, _, _ uuid.UUID, _
 
 type mockRailAdapter struct {
 	submitErr error
+	statusErr error
 	status    valueobject.PaymentStatus
 	statusMsg string
-	statusErr error
 }
 
 func (m *mockRailAdapter) Submit(_ context.Context, _ model.PaymentOrder) error {

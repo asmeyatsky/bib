@@ -14,19 +14,19 @@ import (
 
 // ApplyCampaignRateRequest is the input for applying a campaign rate to a deposit position.
 type ApplyCampaignRateRequest struct {
+	AsOf       time.Time
 	PositionID uuid.UUID
 	CampaignID uuid.UUID
-	AsOf       time.Time
 }
 
 // ApplyCampaignRateResponse is the output DTO for the campaign rate application.
 type ApplyCampaignRateResponse struct {
+	BonusInterest decimal.Decimal
+	StandardRate  int
+	BonusRate     int
+	EffectiveRate int
 	PositionID    uuid.UUID
 	CampaignID    uuid.UUID
-	BonusInterest decimal.Decimal
-	StandardRate  int // bps
-	BonusRate     int // bps
-	EffectiveRate int // bps (standard + bonus)
 }
 
 // ApplyCampaignRate applies a promotional campaign rate to a deposit position.

@@ -28,13 +28,13 @@ type mockCardRepository struct {
 }
 
 type mockTransaction struct {
-	CardID           uuid.UUID
 	Amount           decimal.Decimal
 	Currency         string
 	MerchantName     string
 	MerchantCategory string
 	AuthCode         string
 	Status           string
+	CardID           uuid.UUID
 }
 
 func newMockCardRepository() *mockCardRepository {
@@ -113,8 +113,8 @@ func (p *mockEventPublisher) Publish(_ context.Context, events []event.DomainEve
 
 // mockBalanceClient returns a configurable balance.
 type mockBalanceClient struct {
-	balance decimal.Decimal
 	err     error
+	balance decimal.Decimal
 }
 
 func newMockBalanceClient(balance decimal.Decimal) *mockBalanceClient {

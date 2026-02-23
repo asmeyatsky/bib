@@ -75,10 +75,10 @@ type InitiatePaymentRequest struct {
 }
 
 type InitiatePaymentResponse struct {
+	CreatedAt *timestamppb.Timestamp
 	ID        string
 	Status    string
 	Rail      string
-	CreatedAt *timestamppb.Timestamp
 }
 
 type GetPaymentRequestMsg struct {
@@ -86,24 +86,24 @@ type GetPaymentRequestMsg struct {
 }
 
 type PaymentOrderMsg struct {
-	ID                    string
-	TenantID              string
-	SourceAccountID       string
-	DestinationAccountID  string
-	Amount                string
-	Currency              string
+	InitiatedAt           *timestamppb.Timestamp
+	UpdatedAt             *timestamppb.Timestamp
+	CreatedAt             *timestamppb.Timestamp
+	SettledAt             *timestamppb.Timestamp
+	RoutingNumber         string
+	Description           string
 	Rail                  string
 	Status                string
-	RoutingNumber         string
+	ID                    string
 	ExternalAccountNumber string
 	Reference             string
-	Description           string
+	Currency              string
 	FailureReason         string
-	InitiatedAt           *timestamppb.Timestamp
-	SettledAt             *timestamppb.Timestamp
+	Amount                string
+	DestinationAccountID  string
+	TenantID              string
+	SourceAccountID       string
 	Version               int32
-	CreatedAt             *timestamppb.Timestamp
-	UpdatedAt             *timestamppb.Timestamp
 }
 
 type GetPaymentResponseMsg struct {
@@ -267,7 +267,7 @@ func (h *PaymentHandler) HandleListPayments(ctx context.Context, req *ListPaymen
 
 	return &ListPaymentsResponseMsg{
 		Payments:   payments,
-		TotalCount: int32(result.TotalCount),
+		TotalCount: int32(result.TotalCount), //nolint:gosec // bounded
 	}, nil
 }
 
@@ -287,7 +287,7 @@ func toPaymentOrderMsg(r dto.PaymentOrderResponse) *PaymentOrderMsg {
 		Description:           r.Description,
 		FailureReason:         r.FailureReason,
 		InitiatedAt:           timestamppb.New(r.InitiatedAt),
-		Version:               int32(r.Version),
+		Version:               int32(r.Version), //nolint:gosec // bounded
 		CreatedAt:             timestamppb.New(r.CreatedAt),
 		UpdatedAt:             timestamppb.New(r.UpdatedAt),
 	}

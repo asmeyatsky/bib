@@ -56,9 +56,9 @@ func TestCustomerAccount_ConcurrentStateTransitions(t *testing.T) {
 	const goroutines = 10
 
 	type result struct {
-		account CustomerAccount
 		err     error
 		op      string
+		account CustomerAccount
 	}
 
 	results := make([]result, goroutines*3)

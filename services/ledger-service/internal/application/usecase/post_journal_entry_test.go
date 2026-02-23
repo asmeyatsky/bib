@@ -23,9 +23,9 @@ import (
 
 // mockJournalRepository implements port.JournalRepository for testing.
 type mockJournalRepository struct {
-	savedEntries []model.JournalEntry
 	findByIDFunc func(ctx context.Context, id uuid.UUID) (model.JournalEntry, error)
 	saveFunc     func(ctx context.Context, entry model.JournalEntry) error
+	savedEntries []model.JournalEntry
 }
 
 func (m *mockJournalRepository) Save(ctx context.Context, entry model.JournalEntry) error {
@@ -53,9 +53,9 @@ func (m *mockJournalRepository) ListByTenant(_ context.Context, _ uuid.UUID, _, 
 
 // mockBalanceRepository implements port.BalanceRepository for testing.
 type mockBalanceRepository struct {
-	updates        []balanceUpdate
 	updateFunc     func(ctx context.Context, account valueobject.AccountCode, currency string, delta decimal.Decimal) error
 	getBalanceFunc func(ctx context.Context, account valueobject.AccountCode, currency string, asOf time.Time) (decimal.Decimal, error)
+	updates        []balanceUpdate
 }
 
 type balanceUpdate struct {
@@ -81,8 +81,8 @@ func (m *mockBalanceRepository) GetBalance(ctx context.Context, account valueobj
 
 // mockEventPublisher implements port.EventPublisher for testing.
 type mockEventPublisher struct {
-	publishedEvents []events.DomainEvent
 	publishFunc     func(ctx context.Context, topic string, events ...events.DomainEvent) error
+	publishedEvents []events.DomainEvent
 }
 
 func (m *mockEventPublisher) Publish(ctx context.Context, topic string, evts ...events.DomainEvent) error {

@@ -41,13 +41,13 @@ func TestNewTransactionAssessment_Valid(t *testing.T) {
 func TestNewTransactionAssessment_Validation(t *testing.T) {
 	tests := []struct {
 		name      string
-		tenantID  uuid.UUID
-		txnID     uuid.UUID
-		accountID uuid.UUID
 		amount    decimal.Decimal
 		currency  string
 		txnType   string
 		wantErr   string
+		tenantID  uuid.UUID
+		txnID     uuid.UUID
+		accountID uuid.UUID
 	}{
 		{
 			name:      "nil tenant ID",
@@ -191,15 +191,15 @@ func TestAssess_CriticalRisk_Decline_EmitsHighRiskEvent(t *testing.T) {
 func TestAssess_BoundaryScores(t *testing.T) {
 	tests := []struct {
 		name     string
-		score    int
 		decision valueobject.AssessmentDecision
+		score    int
 	}{
-		{"score 0 approves", 0, valueobject.DecisionApprove},
-		{"score 29 approves", 29, valueobject.DecisionApprove},
-		{"score 30 reviews", 30, valueobject.DecisionReview},
-		{"score 70 reviews", 70, valueobject.DecisionReview},
-		{"score 71 declines", 71, valueobject.DecisionDecline},
-		{"score 100 declines", 100, valueobject.DecisionDecline},
+		{name: "score 0 approves", decision: valueobject.DecisionApprove, score: 0},
+		{name: "score 29 approves", decision: valueobject.DecisionApprove, score: 29},
+		{name: "score 30 reviews", decision: valueobject.DecisionReview, score: 30},
+		{name: "score 70 reviews", decision: valueobject.DecisionReview, score: 70},
+		{name: "score 71 declines", decision: valueobject.DecisionDecline, score: 71},
+		{name: "score 100 declines", decision: valueobject.DecisionDecline, score: 100},
 	}
 
 	for _, tt := range tests {

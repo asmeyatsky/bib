@@ -21,7 +21,7 @@ func TestGetVerification_Execute(t *testing.T) {
 		)
 
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.IdentityVerification, error) {
 				return v, nil
 			},
 		}
@@ -43,7 +43,7 @@ func TestGetVerification_Execute(t *testing.T) {
 
 	t.Run("fails when verification not found", func(t *testing.T) {
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.IdentityVerification, error) {
 				return model.IdentityVerification{}, fmt.Errorf("not found")
 			},
 		}

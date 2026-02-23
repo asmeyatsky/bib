@@ -16,10 +16,10 @@ import (
 
 // Server wraps the gRPC server with fraud service handlers.
 type Server struct {
-	address    string
 	grpcServer *grpc.Server
 	handler    *FraudServiceHandler
 	logger     *slog.Logger
+	address    string
 }
 
 // NewServer creates a new gRPC server for the fraud service.

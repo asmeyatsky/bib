@@ -11,10 +11,10 @@ const AggregateTypeExchangeRate = "ExchangeRate"
 // RateUpdated is emitted when an exchange rate is updated.
 type RateUpdated struct {
 	events.BaseEvent
-	ExchangeRateID uuid.UUID `json:"exchange_rate_id"`
 	Pair           string    `json:"pair"`
 	Rate           string    `json:"rate"`
 	Provider       string    `json:"provider"`
+	ExchangeRateID uuid.UUID `json:"exchange_rate_id"`
 }
 
 // NewRateUpdated creates a RateUpdated domain event.

@@ -77,11 +77,11 @@ type MoneyMsg struct {
 
 // IssueCardRequest represents the proto IssueCardRequest message.
 type IssueCardRequest struct {
+	DailyLimit   *MoneyMsg `json:"daily_limit"`
+	MonthlyLimit *MoneyMsg `json:"monthly_limit"`
 	TenantID     string    `json:"tenant_id"`
 	AccountID    string    `json:"account_id"`
 	CardType     string    `json:"type"`
-	DailyLimit   *MoneyMsg `json:"daily_limit"`
-	MonthlyLimit *MoneyMsg `json:"monthly_limit"`
 }
 
 // IssueCardResponse represents the proto IssueCardResponse message.
@@ -99,9 +99,9 @@ type AuthorizeTransactionRequest struct {
 
 // AuthorizeTransactionResponse represents the proto AuthorizeTransactionResponse message.
 type AuthorizeTransactionResponse struct {
-	Approved          bool   `json:"approved"`
 	DeclineReason     string `json:"decline_reason"`
 	AuthorizationCode string `json:"authorization_code"`
+	Approved          bool   `json:"approved"`
 }
 
 // GetCardRequest represents the proto GetCardRequest message.
@@ -116,6 +116,8 @@ type GetCardResponse struct {
 
 // CardMsg represents the proto Card message.
 type CardMsg struct {
+	DailyLimit   *MoneyMsg `json:"daily_limit"`
+	MonthlyLimit *MoneyMsg `json:"monthly_limit"`
 	ID           string    `json:"id"`
 	TenantID     string    `json:"tenant_id"`
 	AccountID    string    `json:"account_id"`
@@ -124,8 +126,6 @@ type CardMsg struct {
 	LastFour     string    `json:"last_four"`
 	ExpiryMonth  string    `json:"expiry_month"`
 	ExpiryYear   string    `json:"expiry_year"`
-	DailyLimit   *MoneyMsg `json:"daily_limit"`
-	MonthlyLimit *MoneyMsg `json:"monthly_limit"`
 }
 
 // IssueCard handles the gRPC request to issue a new card.

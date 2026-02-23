@@ -56,7 +56,7 @@ func _CardService_IssueCard_Handler(srv interface{}, ctx context.Context, dec fu
 	if err := dec(req); err != nil {
 		return nil, err
 	}
-	return srv.(CardServiceServer).IssueCard(ctx, req)
+	return srv.(CardServiceServer).IssueCard(ctx, req) //nolint:errcheck
 }
 
 func _CardService_AuthorizeTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
@@ -64,7 +64,7 @@ func _CardService_AuthorizeTransaction_Handler(srv interface{}, ctx context.Cont
 	if err := dec(req); err != nil {
 		return nil, err
 	}
-	return srv.(CardServiceServer).AuthorizeTransaction(ctx, req)
+	return srv.(CardServiceServer).AuthorizeTransaction(ctx, req) //nolint:errcheck
 }
 
 func _CardService_GetCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
@@ -72,5 +72,5 @@ func _CardService_GetCard_Handler(srv interface{}, ctx context.Context, dec func
 	if err := dec(req); err != nil {
 		return nil, err
 	}
-	return srv.(CardServiceServer).GetCard(ctx, req)
+	return srv.(CardServiceServer).GetCard(ctx, req) //nolint:errcheck
 }

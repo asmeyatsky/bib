@@ -36,9 +36,9 @@ type JWTConfig struct {
 
 // JWTService handles JWT token operations.
 type JWTService struct {
-	config     JWTConfig
 	privateKey *rsa.PrivateKey
 	publicKey  *rsa.PublicKey
+	config     JWTConfig
 	useRSA     bool
 }
 

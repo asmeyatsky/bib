@@ -48,9 +48,9 @@ func TestCard_ConcurrentAuthorizeTransaction(t *testing.T) {
 	txnAmount := decimal.NewFromInt(50) // Each $50; daily limit is $1000
 
 	type result struct {
-		card     Card
-		authCode string
 		err      error
+		authCode string
+		card     Card
 	}
 
 	results := make([]result, goroutines)

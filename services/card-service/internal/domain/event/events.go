@@ -14,13 +14,13 @@ type DomainEvent = events.DomainEvent
 
 // CardIssued is emitted when a new card is created.
 type CardIssued struct {
+	IssuedAt time.Time `json:"issued_at"`
 	events.BaseEvent
-	CardID    uuid.UUID `json:"card_id"`
-	AccountID uuid.UUID `json:"account_id"`
 	CardType  string    `json:"card_type"`
 	Currency  string    `json:"currency"`
 	LastFour  string    `json:"last_four"`
-	IssuedAt  time.Time `json:"issued_at"`
+	CardID    uuid.UUID `json:"card_id"`
+	AccountID uuid.UUID `json:"account_id"`
 }
 
 func NewCardIssued(cardID, tenantID, accountID uuid.UUID, cardType, currency, lastFour string, issuedAt time.Time) CardIssued {
@@ -37,10 +37,10 @@ func NewCardIssued(cardID, tenantID, accountID uuid.UUID, cardType, currency, la
 
 // CardActivated is emitted when a card transitions to ACTIVE status.
 type CardActivated struct {
-	events.BaseEvent
-	CardID      uuid.UUID `json:"card_id"`
-	AccountID   uuid.UUID `json:"account_id"`
 	ActivatedAt time.Time `json:"activated_at"`
+	events.BaseEvent
+	CardID    uuid.UUID `json:"card_id"`
+	AccountID uuid.UUID `json:"account_id"`
 }
 
 func NewCardActivated(cardID, tenantID, accountID uuid.UUID, activatedAt time.Time) CardActivated {
@@ -54,15 +54,15 @@ func NewCardActivated(cardID, tenantID, accountID uuid.UUID, activatedAt time.Ti
 
 // TransactionAuthorized is emitted when a transaction is successfully authorized.
 type TransactionAuthorized struct {
+	AuthorizedAt time.Time `json:"authorized_at"`
 	events.BaseEvent
-	CardID           uuid.UUID       `json:"card_id"`
-	AccountID        uuid.UUID       `json:"account_id"`
 	Amount           decimal.Decimal `json:"amount"`
 	Currency         string          `json:"currency"`
 	MerchantName     string          `json:"merchant_name"`
 	MerchantCategory string          `json:"merchant_category"`
 	AuthCode         string          `json:"auth_code"`
-	AuthorizedAt     time.Time       `json:"authorized_at"`
+	CardID           uuid.UUID       `json:"card_id"`
+	AccountID        uuid.UUID       `json:"account_id"`
 }
 
 func NewTransactionAuthorized(cardID, tenantID, accountID uuid.UUID, amount decimal.Decimal, currency, merchantName, merchantCategory, authCode string, authorizedAt time.Time) TransactionAuthorized {
@@ -81,13 +81,13 @@ func NewTransactionAuthorized(cardID, tenantID, accountID uuid.UUID, amount deci
 
 // TransactionDeclined is emitted when a transaction is declined.
 type TransactionDeclined struct {
+	DeclinedAt time.Time `json:"declined_at"`
 	events.BaseEvent
-	CardID       uuid.UUID       `json:"card_id"`
 	Amount       decimal.Decimal `json:"amount"`
 	Currency     string          `json:"currency"`
 	MerchantName string          `json:"merchant_name"`
 	Reason       string          `json:"reason"`
-	DeclinedAt   time.Time       `json:"declined_at"`
+	CardID       uuid.UUID       `json:"card_id"`
 }
 
 func NewTransactionDeclined(cardID, tenantID uuid.UUID, amount decimal.Decimal, currency, merchantName, reason string, declinedAt time.Time) TransactionDeclined {
@@ -104,9 +104,9 @@ func NewTransactionDeclined(cardID, tenantID uuid.UUID, amount decimal.Decimal, 
 
 // CardFrozen is emitted when a card is frozen.
 type CardFrozen struct {
-	events.BaseEvent
-	CardID   uuid.UUID `json:"card_id"`
 	FrozenAt time.Time `json:"frozen_at"`
+	events.BaseEvent
+	CardID uuid.UUID `json:"card_id"`
 }
 
 func NewCardFrozen(cardID, tenantID uuid.UUID, frozenAt time.Time) CardFrozen {
@@ -119,9 +119,9 @@ func NewCardFrozen(cardID, tenantID uuid.UUID, frozenAt time.Time) CardFrozen {
 
 // CardCanceled is emitted when a card is canceled.
 type CardCanceled struct {
-	events.BaseEvent
-	CardID     uuid.UUID `json:"card_id"`
 	CanceledAt time.Time `json:"canceled_at"`
+	events.BaseEvent
+	CardID uuid.UUID `json:"card_id"`
 }
 
 func NewCardCanceled(cardID, tenantID uuid.UUID, canceledAt time.Time) CardCanceled {

@@ -17,36 +17,36 @@ import (
 
 // CreateCampaignRequest is the input for creating a deposit campaign.
 type CreateCampaignRequest struct {
-	TenantID            uuid.UUID
+	StartDate           time.Time
+	EndDate             time.Time
 	Name                string
 	Description         string
-	ProductID           uuid.UUID
-	BonusRateBps        int
 	EligibilityCriteria string
 	MinDeposit          decimal.Decimal
 	MaxDeposit          decimal.Decimal
 	TargetAudience      string
-	StartDate           time.Time
-	EndDate             time.Time
+	BonusRateBps        int
+	TenantID            uuid.UUID
+	ProductID           uuid.UUID
 }
 
 // CampaignResponse is the output DTO for a campaign.
 type CampaignResponse struct {
-	ID                uuid.UUID
-	TenantID          uuid.UUID
-	Name              string
-	Description       string
-	ProductID         uuid.UUID
-	BonusRateBps      int
-	TargetAudience    string
 	StartDate         time.Time
-	EndDate           time.Time
-	Status            string
-	TotalEnrollments  int
-	TotalDepositValue string
-	Version           int
-	CreatedAt         time.Time
 	UpdatedAt         time.Time
+	CreatedAt         time.Time
+	EndDate           time.Time
+	TargetAudience    string
+	Description       string
+	Status            string
+	TotalDepositValue string
+	Name              string
+	BonusRateBps      int
+	TotalEnrollments  int
+	Version           int
+	ID                uuid.UUID
+	ProductID         uuid.UUID
+	TenantID          uuid.UUID
 }
 
 // CreateCampaign handles the creation of new deposit campaigns.

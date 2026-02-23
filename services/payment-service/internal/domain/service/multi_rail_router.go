@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/shopspring/decimal"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/valueobject"
+	"github.com/shopspring/decimal"
 )
 
 // MultiRailRouter selects the optimal payment rail based on cost, speed, and availability.
@@ -17,10 +17,10 @@ type RailConfig struct {
 	Rail         valueobject.PaymentRail
 	MaxAmount    decimal.Decimal
 	Currencies   []string
-	CostBps      int // cost in basis points
-	SpeedSeconds int // typical settlement time
+	Countries    []string
+	CostBps      int
+	SpeedSeconds int
 	Available    bool
-	Countries    []string // supported destination countries
 }
 
 func NewMultiRailRouter() *MultiRailRouter {

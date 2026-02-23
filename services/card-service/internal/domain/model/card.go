@@ -17,21 +17,21 @@ import (
 // Card is the aggregate root for card management.
 // It encapsulates all card state and enforces business invariants.
 type Card struct {
-	id           uuid.UUID
-	tenantID     uuid.UUID
-	accountID    uuid.UUID
-	cardType     valueobject.CardType
-	status       valueobject.CardStatus
+	updatedAt    time.Time
+	createdAt    time.Time
 	cardNumber   valueobject.CardNumber
 	currency     string
+	status       valueobject.CardStatus
+	cardType     valueobject.CardType
 	dailyLimit   decimal.Decimal
 	monthlyLimit decimal.Decimal
 	dailySpent   decimal.Decimal
 	monthlySpent decimal.Decimal
-	version      int
-	createdAt    time.Time
-	updatedAt    time.Time
 	domainEvents []events.DomainEvent
+	version      int
+	id           uuid.UUID
+	accountID    uuid.UUID
+	tenantID     uuid.UUID
 }
 
 // NewCard creates a new Card aggregate in PENDING status.
@@ -286,7 +286,7 @@ func (c Card) ResetMonthlySpend(now time.Time) Card {
 
 // --- Getters ---
 
-func (c Card) ID() uuid.UUID                     { return c.id }
+func (c Card) ID() uuid.UUID                      { return c.id }
 func (c Card) TenantID() uuid.UUID                { return c.tenantID }
 func (c Card) AccountID() uuid.UUID               { return c.accountID }
 func (c Card) CardType() valueobject.CardType     { return c.cardType }

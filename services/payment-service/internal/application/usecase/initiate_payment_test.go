@@ -21,9 +21,9 @@ import (
 // --- Mock implementations ---
 
 type mockPaymentOrderRepository struct {
-	savedOrders  []model.PaymentOrder
 	findByIDFunc func(ctx context.Context, id uuid.UUID) (model.PaymentOrder, error)
 	saveFunc     func(ctx context.Context, order model.PaymentOrder) error
+	savedOrders  []model.PaymentOrder
 }
 
 func (m *mockPaymentOrderRepository) Save(ctx context.Context, order model.PaymentOrder) error {
@@ -50,8 +50,8 @@ func (m *mockPaymentOrderRepository) ListByTenant(_ context.Context, _ uuid.UUID
 }
 
 type mockEventPublisher struct {
-	publishedEvents []events.DomainEvent
 	publishFunc     func(ctx context.Context, topic string, events ...events.DomainEvent) error
+	publishedEvents []events.DomainEvent
 }
 
 func (m *mockEventPublisher) Publish(ctx context.Context, topic string, evts ...events.DomainEvent) error {

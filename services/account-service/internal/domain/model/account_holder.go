@@ -13,10 +13,10 @@ var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-
 // AccountHolder is an entity that represents the owner of a customer account.
 // It is part of the CustomerAccount aggregate.
 type AccountHolder struct {
-	id                     uuid.UUID
 	firstName              string
 	lastName               string
 	email                  string
+	id                     uuid.UUID
 	identityVerificationID uuid.UUID
 }
 

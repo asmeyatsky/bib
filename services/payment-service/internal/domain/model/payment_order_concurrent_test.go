@@ -56,9 +56,9 @@ func TestPaymentOrder_ConcurrentStatusTransitions(t *testing.T) {
 	const goroutines = 10
 
 	type result struct {
-		order PaymentOrder
 		err   error
 		op    string
+		order PaymentOrder
 	}
 
 	results := make([]result, goroutines*4)

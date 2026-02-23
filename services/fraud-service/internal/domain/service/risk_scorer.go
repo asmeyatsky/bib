@@ -7,11 +7,11 @@ import (
 
 // RiskInput contains the data required for risk scoring.
 type RiskInput struct {
-	Amount          decimal.Decimal
 	Metadata        map[string]string
+	Amount          decimal.Decimal
 	Currency        string
-	AccountID       uuid.UUID
 	TransactionType string
+	AccountID       uuid.UUID
 }
 
 // RiskOutput contains the result of risk scoring.

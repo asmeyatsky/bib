@@ -33,7 +33,7 @@ func (r *PaymentOrderRepo) Save(ctx context.Context, order model.PaymentOrder) e
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }() //nolint:errcheck
 
 	var destAcctID *uuid.UUID
 	if order.DestinationAccountID() != uuid.Nil {
@@ -86,24 +86,24 @@ func (r *PaymentOrderRepo) Save(ctx context.Context, order model.PaymentOrder) e
 
 func (r *PaymentOrderRepo) FindByID(ctx context.Context, id uuid.UUID) (model.PaymentOrder, error) {
 	var (
-		orderID        uuid.UUID
-		tenantID       uuid.UUID
-		sourceAcctID   uuid.UUID
-		destAcctID     *uuid.UUID
-		amount         decimal.Decimal
-		currency       string
-		railStr        string
-		statusStr      string
-		routingNumber  string
-		extAcctNumber  string
-		reference      string
-		description    string
-		failureReason  string
-		initiatedAt    time.Time
-		settledAt      *time.Time
-		version        int
-		createdAt      time.Time
-		updatedAt      time.Time
+		orderID       uuid.UUID
+		tenantID      uuid.UUID
+		sourceAcctID  uuid.UUID
+		destAcctID    *uuid.UUID
+		amount        decimal.Decimal
+		currency      string
+		railStr       string
+		statusStr     string
+		routingNumber string
+		extAcctNumber string
+		reference     string
+		description   string
+		failureReason string
+		initiatedAt   time.Time
+		settledAt     *time.Time
+		version       int
+		createdAt     time.Time
+		updatedAt     time.Time
 	)
 
 	err := r.pool.QueryRow(ctx, `
@@ -127,9 +127,9 @@ func (r *PaymentOrderRepo) FindByID(ctx context.Context, id uuid.UUID) (model.Pa
 		return model.PaymentOrder{}, fmt.Errorf("query payment order: %w", err)
 	}
 
-	rail, _ := valueobject.NewPaymentRail(railStr)
-	status, _ := valueobject.NewPaymentStatus(statusStr)
-	routingInfo, _ := valueobject.NewRoutingInfo(routingNumber, extAcctNumber)
+	rail, _ := valueobject.NewPaymentRail(railStr)                             //nolint:errcheck // DB stores valid values
+	status, _ := valueobject.NewPaymentStatus(statusStr)                       //nolint:errcheck // DB stores valid values
+	routingInfo, _ := valueobject.NewRoutingInfo(routingNumber, extAcctNumber) //nolint:errcheck // DB stores valid values
 
 	var destinationAccountID uuid.UUID
 	if destAcctID != nil {

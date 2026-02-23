@@ -36,10 +36,10 @@ type verificationMsg struct {
 	ApplicantDOB       string     `json:"applicant_dob"`
 	ApplicantCountry   string     `json:"applicant_country"`
 	Status             string     `json:"status"`
-	Checks             []checkMsg `json:"checks"`
-	Version            int32      `json:"version"`
 	CreatedAt          string     `json:"created_at"`
 	UpdatedAt          string     `json:"updated_at"`
+	Checks             []checkMsg `json:"checks"`
+	Version            int32      `json:"version"`
 }
 
 type checkMsg struct {

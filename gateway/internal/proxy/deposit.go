@@ -37,12 +37,12 @@ type depositProductMsg struct {
 	TenantID  string         `json:"tenant_id"`
 	Name      string         `json:"name"`
 	Currency  string         `json:"currency"`
-	Tiers     []interestTier `json:"tiers"`
-	TermDays  int32          `json:"term_days"`
-	IsActive  bool           `json:"is_active"`
-	Version   int32          `json:"version"`
 	CreatedAt string         `json:"created_at"`
 	UpdatedAt string         `json:"updated_at"`
+	Tiers     []interestTier `json:"tiers"`
+	TermDays  int32          `json:"term_days"`
+	Version   int32          `json:"version"`
+	IsActive  bool           `json:"is_active"`
 }
 
 type createProductResp struct {
@@ -57,20 +57,20 @@ type openPositionReq struct {
 }
 
 type depositPositionMsg struct {
-	ID              string `json:"id"`
-	TenantID        string `json:"tenant_id"`
+	AccruedInterest string `json:"accrued_interest"`
+	CreatedAt       string `json:"created_at"`
 	AccountID       string `json:"account_id"`
 	ProductID       string `json:"product_id"`
 	Principal       string `json:"principal"`
 	Currency        string `json:"currency"`
-	AccruedInterest string `json:"accrued_interest"`
-	Status          string `json:"status"`
 	OpenedAt        string `json:"opened_at"`
+	ID              string `json:"id"`
+	TenantID        string `json:"tenant_id"`
 	MaturityDate    string `json:"maturity_date,omitempty"`
 	LastAccrualDate string `json:"last_accrual_date"`
-	Version         int32  `json:"version"`
-	CreatedAt       string `json:"created_at"`
 	UpdatedAt       string `json:"updated_at"`
+	Status          string `json:"status"`
+	Version         int32  `json:"version"`
 }
 
 type openPositionResp struct {

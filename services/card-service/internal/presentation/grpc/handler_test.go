@@ -76,8 +76,8 @@ func (m *mockCardProcessor) GetCardDetails(_ context.Context, _ uuid.UUID) error
 }
 
 type mockBalanceClient struct {
-	balance    decimal.Decimal
 	balanceErr error
+	balance    decimal.Decimal
 }
 
 func (m *mockBalanceClient) GetAvailableBalance(_ context.Context, _ uuid.UUID) (decimal.Decimal, error) {

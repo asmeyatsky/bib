@@ -14,16 +14,16 @@ import (
 // DepositProduct is the aggregate root for deposit product definitions.
 // It contains tiered interest configuration and term/demand classification.
 type DepositProduct struct {
-	id        uuid.UUID
-	tenantID  uuid.UUID
+	createdAt time.Time
+	updatedAt time.Time
 	name      string
 	currency  string
 	tiers     []valueobject.InterestTier
-	termDays  int // 0 = demand deposit, >0 = term deposit
-	isActive  bool
+	termDays  int
 	version   int
-	createdAt time.Time
-	updatedAt time.Time
+	id        uuid.UUID
+	tenantID  uuid.UUID
+	isActive  bool
 }
 
 // NewDepositProduct creates a new DepositProduct with validation.

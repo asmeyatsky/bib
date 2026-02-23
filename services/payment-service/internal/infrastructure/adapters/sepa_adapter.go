@@ -4,10 +4,10 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/google/uuid"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/model"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/port"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/valueobject"
+	"github.com/google/uuid"
 )
 
 var _ port.RailAdapter = (*SEPAAdapter)(nil)
@@ -21,7 +21,7 @@ func NewSEPAAdapter(logger *slog.Logger) *SEPAAdapter {
 	return &SEPAAdapter{logger: logger}
 }
 
-func (a *SEPAAdapter) Submit(ctx context.Context, order model.PaymentOrder) error {
+func (a *SEPAAdapter) Submit(_ context.Context, order model.PaymentOrder) error {
 	a.logger.Info("SEPA: submitting euro payment",
 		"order_id", order.ID(),
 		"amount", order.Amount(),
@@ -38,7 +38,7 @@ func (a *SEPAAdapter) Submit(ctx context.Context, order model.PaymentOrder) erro
 	return nil
 }
 
-func (a *SEPAAdapter) GetStatus(ctx context.Context, orderID uuid.UUID) (valueobject.PaymentStatus, string, error) {
+func (a *SEPAAdapter) GetStatus(_ context.Context, _ uuid.UUID) (valueobject.PaymentStatus, string, error) {
 	// Stub: SEPA Instant provides near-real-time confirmation.
 	// Standard SEPA credit transfers settle by next business day.
 	return valueobject.PaymentStatusSettled, "", nil

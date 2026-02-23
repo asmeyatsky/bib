@@ -9,18 +9,12 @@ import (
 // MT950StatementMessage represents a parsed SWIFT MT950 statement message.
 // MT950 is used for nostro account statement reporting between correspondent banks.
 type MT950StatementMessage struct {
-	// TransactionReference is the sender's reference (field :20:).
-	TransactionReference string
-	// AccountIdentification is the nostro account number (field :25:).
+	OpeningBalance        StatementBalance
+	ClosingBalance        StatementBalance
+	TransactionReference  string
 	AccountIdentification string
-	// StatementNumber is the statement/sequence number (field :28C:).
-	StatementNumber string
-	// OpeningBalance is the opening balance from field :60F:.
-	OpeningBalance StatementBalance
-	// Entries contains the individual statement lines from field :61:.
-	Entries []StatementEntry
-	// ClosingBalance is the closing balance from field :62F:.
-	ClosingBalance StatementBalance
+	StatementNumber       string
+	Entries               []StatementEntry
 }
 
 // StatementBalance represents an opening or closing balance in an MT950 message.

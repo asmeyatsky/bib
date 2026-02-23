@@ -18,67 +18,67 @@ type InterestTierDTO struct {
 
 // CreateDepositProductRequest is the input DTO for creating a deposit product.
 type CreateDepositProductRequest struct {
-	TenantID uuid.UUID
 	Name     string
 	Currency string
 	Tiers    []InterestTierDTO
 	TermDays int
+	TenantID uuid.UUID
 }
 
 // DepositProductResponse is the output DTO for a deposit product.
 type DepositProductResponse struct {
-	ID        uuid.UUID
-	TenantID  uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
 	Name      string
 	Currency  string
 	Tiers     []InterestTierDTO
 	TermDays  int
-	IsActive  bool
 	Version   int
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        uuid.UUID
+	TenantID  uuid.UUID
+	IsActive  bool
 }
 
 // --- Deposit Position DTOs ---
 
 // OpenPositionRequest is the input DTO for opening a deposit position.
 type OpenPositionRequest struct {
+	Principal decimal.Decimal
 	TenantID  uuid.UUID
 	AccountID uuid.UUID
 	ProductID uuid.UUID
-	Principal decimal.Decimal
 }
 
 // DepositPositionResponse is the output DTO for a deposit position.
 type DepositPositionResponse struct {
-	ID              uuid.UUID
-	TenantID        uuid.UUID
-	AccountID       uuid.UUID
-	ProductID       uuid.UUID
-	Principal       decimal.Decimal
-	Currency        string
+	OpenedAt        time.Time
+	UpdatedAt       time.Time
+	CreatedAt       time.Time
+	LastAccrualDate time.Time
+	MaturityDate    *time.Time
 	AccruedInterest decimal.Decimal
 	Status          string
-	OpenedAt        time.Time
-	MaturityDate    *time.Time
-	LastAccrualDate time.Time
+	Currency        string
+	Principal       decimal.Decimal
 	Version         int
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	ID              uuid.UUID
+	ProductID       uuid.UUID
+	AccountID       uuid.UUID
+	TenantID        uuid.UUID
 }
 
 // --- Accrual DTOs ---
 
 // AccrueInterestRequest is the input DTO for batch interest accrual.
 type AccrueInterestRequest struct {
-	TenantID uuid.UUID
 	AsOf     time.Time
+	TenantID uuid.UUID
 }
 
 // AccrueInterestResponse is the output DTO for batch interest accrual.
 type AccrueInterestResponse struct {
-	PositionsProcessed int
 	TotalAccrued       decimal.Decimal
+	PositionsProcessed int
 }
 
 // --- Query DTOs ---

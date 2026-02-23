@@ -47,7 +47,7 @@ func TestListPayments_Execute(t *testing.T) {
 		order := samplePaymentOrder()
 
 		repo := &listMockPaymentOrderRepository{
-			listByTenantFunc: func(ctx context.Context, tid uuid.UUID, limit, offset int) ([]model.PaymentOrder, int, error) {
+			listByTenantFunc: func(_ context.Context, tid uuid.UUID, _ int, _ int) ([]model.PaymentOrder, int, error) {
 				assert.Equal(t, tenantID, tid)
 				return []model.PaymentOrder{order}, 1, nil
 			},
@@ -68,7 +68,7 @@ func TestListPayments_Execute(t *testing.T) {
 		order := samplePaymentOrder()
 
 		repo := &listMockPaymentOrderRepository{
-			listByAccountFunc: func(ctx context.Context, aid uuid.UUID, limit, offset int) ([]model.PaymentOrder, int, error) {
+			listByAccountFunc: func(_ context.Context, aid uuid.UUID, _ int, _ int) ([]model.PaymentOrder, int, error) {
 				assert.Equal(t, accountID, aid)
 				return []model.PaymentOrder{order}, 1, nil
 			},
@@ -92,7 +92,7 @@ func TestListPayments_Execute(t *testing.T) {
 		tenantID := uuid.New()
 
 		repo := &listMockPaymentOrderRepository{
-			listByTenantFunc: func(ctx context.Context, tid uuid.UUID, limit, offset int) ([]model.PaymentOrder, int, error) {
+			listByTenantFunc: func(_ context.Context, _ uuid.UUID, limit, _ int) ([]model.PaymentOrder, int, error) {
 				assert.Equal(t, 20, limit) // default
 				return nil, 0, nil
 			},
@@ -110,7 +110,7 @@ func TestListPayments_Execute(t *testing.T) {
 		tenantID := uuid.New()
 
 		repo := &listMockPaymentOrderRepository{
-			listByTenantFunc: func(ctx context.Context, tid uuid.UUID, limit, offset int) ([]model.PaymentOrder, int, error) {
+			listByTenantFunc: func(_ context.Context, _ uuid.UUID, limit, _ int) ([]model.PaymentOrder, int, error) {
 				assert.Equal(t, 100, limit) // capped
 				return nil, 0, nil
 			},
@@ -126,7 +126,7 @@ func TestListPayments_Execute(t *testing.T) {
 
 	t.Run("fails when repository returns error", func(t *testing.T) {
 		repo := &listMockPaymentOrderRepository{
-			listByTenantFunc: func(ctx context.Context, tid uuid.UUID, limit, offset int) ([]model.PaymentOrder, int, error) {
+			listByTenantFunc: func(_ context.Context, _ uuid.UUID, _, _ int) ([]model.PaymentOrder, int, error) {
 				return nil, 0, fmt.Errorf("database unavailable")
 			},
 		}

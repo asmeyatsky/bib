@@ -14,22 +14,22 @@ import (
 
 // TransactionAssessment is the aggregate root for fraud risk assessments.
 type TransactionAssessment struct {
-	amount          decimal.Decimal
 	assessedAt      time.Time
 	createdAt       time.Time
 	updatedAt       time.Time
+	currency        string
+	amount          decimal.Decimal
+	decision        valueobject.AssessmentDecision
+	riskLevel       valueobject.RiskLevel
+	transactionType string
 	riskSignals     []string
 	domainEvents    []events.DomainEvent
-	id              uuid.UUID
-	tenantID        uuid.UUID
-	transactionID   uuid.UUID
-	accountID       uuid.UUID
-	currency        string
-	transactionType string
-	riskLevel       valueobject.RiskLevel
-	decision        valueobject.AssessmentDecision
 	riskScore       int
 	version         int
+	accountID       uuid.UUID
+	transactionID   uuid.UUID
+	tenantID        uuid.UUID
+	id              uuid.UUID
 }
 
 // NewTransactionAssessment creates a new assessment for an incoming transaction.

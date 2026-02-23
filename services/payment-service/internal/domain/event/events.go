@@ -14,10 +14,10 @@ const AggregateTypePaymentOrder = "PaymentOrder"
 // PaymentInitiated is emitted when a new payment order is created.
 type PaymentInitiated struct {
 	events.BaseEvent
-	PaymentID uuid.UUID       `json:"payment_id"`
 	Amount    decimal.Decimal `json:"amount"`
 	Currency  string          `json:"currency"`
 	Rail      string          `json:"rail"`
+	PaymentID uuid.UUID       `json:"payment_id"`
 }
 
 func NewPaymentInitiated(paymentID, tenantID uuid.UUID, amount decimal.Decimal, currency, rail string) PaymentInitiated {
@@ -33,8 +33,8 @@ func NewPaymentInitiated(paymentID, tenantID uuid.UUID, amount decimal.Decimal, 
 // PaymentProcessing is emitted when a payment order begins processing via a rail adapter.
 type PaymentProcessing struct {
 	events.BaseEvent
-	PaymentID uuid.UUID `json:"payment_id"`
 	Rail      string    `json:"rail"`
+	PaymentID uuid.UUID `json:"payment_id"`
 }
 
 func NewPaymentProcessing(paymentID, tenantID uuid.UUID, rail string) PaymentProcessing {
@@ -47,9 +47,9 @@ func NewPaymentProcessing(paymentID, tenantID uuid.UUID, rail string) PaymentPro
 
 // PaymentSettled is emitted when a payment order is successfully settled.
 type PaymentSettled struct {
+	SettledAt time.Time `json:"settled_at"`
 	events.BaseEvent
 	PaymentID uuid.UUID `json:"payment_id"`
-	SettledAt time.Time `json:"settled_at"`
 }
 
 func NewPaymentSettled(paymentID, tenantID uuid.UUID, settledAt time.Time) PaymentSettled {
@@ -63,8 +63,8 @@ func NewPaymentSettled(paymentID, tenantID uuid.UUID, settledAt time.Time) Payme
 // PaymentFailed is emitted when a payment order fails.
 type PaymentFailed struct {
 	events.BaseEvent
-	PaymentID     uuid.UUID `json:"payment_id"`
 	FailureReason string    `json:"failure_reason"`
+	PaymentID     uuid.UUID `json:"payment_id"`
 }
 
 func NewPaymentFailed(paymentID, tenantID uuid.UUID, reason string) PaymentFailed {
@@ -78,8 +78,8 @@ func NewPaymentFailed(paymentID, tenantID uuid.UUID, reason string) PaymentFaile
 // PaymentReversed is emitted when a settled payment order is reversed.
 type PaymentReversed struct {
 	events.BaseEvent
-	PaymentID uuid.UUID `json:"payment_id"`
 	Reason    string    `json:"reason"`
+	PaymentID uuid.UUID `json:"payment_id"`
 }
 
 func NewPaymentReversed(paymentID, tenantID uuid.UUID, reason string) PaymentReversed {

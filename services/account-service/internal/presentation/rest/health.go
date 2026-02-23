@@ -9,9 +9,9 @@ import (
 
 // HealthHandler provides HTTP health check endpoints.
 type HealthHandler struct {
-	serviceName string
 	startedAt   time.Time
 	logger      *slog.Logger
+	serviceName string
 }
 
 // NewHealthHandler creates a new HealthHandler.
@@ -32,9 +32,9 @@ type healthResponse struct {
 
 // readinessResponse is the JSON response for the readiness endpoint.
 type readinessResponse struct {
+	Checks  map[string]string `json:"checks"`
 	Status  string            `json:"status"`
 	Service string            `json:"service"`
-	Checks  map[string]string `json:"checks"`
 }
 
 // Liveness handles the liveness probe endpoint (GET /healthz).
@@ -47,7 +47,7 @@ func (h *HealthHandler) Liveness(w http.ResponseWriter, _ *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp) //nolint:errcheck
 }
 
 // Readiness handles the readiness probe endpoint (GET /readyz).
@@ -65,7 +65,7 @@ func (h *HealthHandler) Readiness(w http.ResponseWriter, _ *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp) //nolint:errcheck
 }
 
 // RegisterRoutes registers health check routes on the provided ServeMux.

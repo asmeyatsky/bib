@@ -23,21 +23,21 @@ const (
 // DepositPosition is the aggregate root for a customer's deposit holding.
 // It tracks principal, accrued interest, status, and lifecycle transitions.
 type DepositPosition struct {
-	id              uuid.UUID
-	tenantID        uuid.UUID
-	accountID       uuid.UUID
-	productID       uuid.UUID
-	principal       decimal.Decimal
-	currency        string
+	openedAt        time.Time
+	updatedAt       time.Time
+	createdAt       time.Time
+	lastAccrualDate time.Time
+	maturityDate    *time.Time
 	accruedInterest decimal.Decimal
 	status          PositionStatus
-	openedAt        time.Time
-	maturityDate    *time.Time
-	lastAccrualDate time.Time
-	version         int
-	createdAt       time.Time
-	updatedAt       time.Time
+	currency        string
+	principal       decimal.Decimal
 	domainEvents    []events.DomainEvent
+	version         int
+	id              uuid.UUID
+	productID       uuid.UUID
+	accountID       uuid.UUID
+	tenantID        uuid.UUID
 }
 
 // NewDepositPosition creates a new deposit position in ACTIVE status.
@@ -196,21 +196,21 @@ func (p DepositPosition) TotalBalance() decimal.Decimal {
 }
 
 // Accessors
-func (p DepositPosition) ID() uuid.UUID                       { return p.id }
-func (p DepositPosition) TenantID() uuid.UUID                 { return p.tenantID }
-func (p DepositPosition) AccountID() uuid.UUID                { return p.accountID }
-func (p DepositPosition) ProductID() uuid.UUID                { return p.productID }
-func (p DepositPosition) Principal() decimal.Decimal           { return p.principal }
-func (p DepositPosition) Currency() string                    { return p.currency }
-func (p DepositPosition) AccruedInterest() decimal.Decimal     { return p.accruedInterest }
-func (p DepositPosition) Status() PositionStatus              { return p.status }
-func (p DepositPosition) OpenedAt() time.Time                 { return p.openedAt }
-func (p DepositPosition) MaturityDate() *time.Time            { return p.maturityDate }
-func (p DepositPosition) LastAccrualDate() time.Time          { return p.lastAccrualDate }
-func (p DepositPosition) Version() int                        { return p.version }
-func (p DepositPosition) CreatedAt() time.Time                { return p.createdAt }
-func (p DepositPosition) UpdatedAt() time.Time                { return p.updatedAt }
-func (p DepositPosition) DomainEvents() []events.DomainEvent  { return p.domainEvents }
+func (p DepositPosition) ID() uuid.UUID                      { return p.id }
+func (p DepositPosition) TenantID() uuid.UUID                { return p.tenantID }
+func (p DepositPosition) AccountID() uuid.UUID               { return p.accountID }
+func (p DepositPosition) ProductID() uuid.UUID               { return p.productID }
+func (p DepositPosition) Principal() decimal.Decimal         { return p.principal }
+func (p DepositPosition) Currency() string                   { return p.currency }
+func (p DepositPosition) AccruedInterest() decimal.Decimal   { return p.accruedInterest }
+func (p DepositPosition) Status() PositionStatus             { return p.status }
+func (p DepositPosition) OpenedAt() time.Time                { return p.openedAt }
+func (p DepositPosition) MaturityDate() *time.Time           { return p.maturityDate }
+func (p DepositPosition) LastAccrualDate() time.Time         { return p.lastAccrualDate }
+func (p DepositPosition) Version() int                       { return p.version }
+func (p DepositPosition) CreatedAt() time.Time               { return p.createdAt }
+func (p DepositPosition) UpdatedAt() time.Time               { return p.updatedAt }
+func (p DepositPosition) DomainEvents() []events.DomainEvent { return p.domainEvents }
 
 // ClearDomainEvents returns the collected domain events.
 func (p DepositPosition) ClearDomainEvents() []events.DomainEvent {

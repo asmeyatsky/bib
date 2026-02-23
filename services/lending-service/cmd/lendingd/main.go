@@ -52,7 +52,7 @@ func main() {
 	if err != nil {
 		logger.Warn("failed to initialize tracer, continuing without tracing", "error", err)
 	} else {
-		defer func() { _ = shutdown(ctx) }()
+		defer func() { _ = shutdown(ctx) }() //nolint:errcheck // best-effort tracer shutdown
 	}
 
 	// Database connection.

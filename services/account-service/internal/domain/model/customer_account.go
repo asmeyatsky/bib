@@ -24,18 +24,18 @@ const (
 // CustomerAccount is the main aggregate root for the account domain.
 // It is immutable; all state transitions return a new instance.
 type CustomerAccount struct {
-	id                uuid.UUID
-	tenantID          uuid.UUID
+	createdAt         time.Time
+	updatedAt         time.Time
 	accountNumber     valueobject.AccountNumber
 	accountType       valueobject.AccountType
 	status            AccountStatus
 	currency          string
-	holder            AccountHolder
 	ledgerAccountCode string
-	version           int
-	createdAt         time.Time
-	updatedAt         time.Time
 	domainEvents      []events.DomainEvent
+	holder            AccountHolder
+	version           int
+	id                uuid.UUID
+	tenantID          uuid.UUID
 }
 
 // NewCustomerAccount creates a new CustomerAccount in PENDING status.

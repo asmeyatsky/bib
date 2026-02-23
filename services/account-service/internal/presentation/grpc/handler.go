@@ -124,8 +124,8 @@ type CloseAccountResponse struct {
 type ListAccountsRequest struct {
 	TenantID  string `json:"tenant_id"`
 	HolderID  string `json:"holder_id"`
-	PageSize  int32  `json:"page_size"`
 	PageToken string `json:"page_token"`
+	PageSize  int32  `json:"page_size"`
 }
 
 // ListAccountsResponse represents the proto ListAccountsResponse message.

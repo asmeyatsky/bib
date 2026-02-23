@@ -4,10 +4,10 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/google/uuid"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/model"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/port"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/valueobject"
+	"github.com/google/uuid"
 )
 
 var _ port.RailAdapter = (*CHIPSAdapter)(nil)
@@ -23,7 +23,7 @@ func NewCHIPSAdapter(logger *slog.Logger) *CHIPSAdapter {
 	return &CHIPSAdapter{logger: logger}
 }
 
-func (a *CHIPSAdapter) Submit(ctx context.Context, order model.PaymentOrder) error {
+func (a *CHIPSAdapter) Submit(_ context.Context, order model.PaymentOrder) error {
 	a.logger.Info("CHIPS: submitting large-value USD payment",
 		"order_id", order.ID(),
 		"amount", order.Amount(),
@@ -37,7 +37,7 @@ func (a *CHIPSAdapter) Submit(ctx context.Context, order model.PaymentOrder) err
 	return nil
 }
 
-func (a *CHIPSAdapter) GetStatus(ctx context.Context, orderID uuid.UUID) (valueobject.PaymentStatus, string, error) {
+func (a *CHIPSAdapter) GetStatus(_ context.Context, _ uuid.UUID) (valueobject.PaymentStatus, string, error) {
 	// Stub: CHIPS provides same-day settlement with final netting at end of day.
 	return valueobject.PaymentStatusProcessing, "pending CHIPS netting cycle", nil
 }

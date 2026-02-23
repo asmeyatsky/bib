@@ -126,13 +126,13 @@ func TestCard_NewCard_Validation(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		tenantID     uuid.UUID
-		accountID    uuid.UUID
 		cardType     valueobject.CardType
 		currency     string
 		dailyLimit   decimal.Decimal
 		monthlyLimit decimal.Decimal
 		wantErr      string
+		tenantID     uuid.UUID
+		accountID    uuid.UUID
 	}{
 		{
 			name:         "nil tenant ID",

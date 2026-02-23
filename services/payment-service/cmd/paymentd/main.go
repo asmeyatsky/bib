@@ -8,11 +8,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/bibbank/bib/pkg/auth"
+	kafkapkg "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/pkg/observability"
 	pgpkg "github.com/bibbank/bib/pkg/postgres"
-	kafkapkg "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/services/payment-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/payment-service/internal/domain/service"
 	"github.com/bibbank/bib/services/payment-service/internal/infrastructure/adapter/ach"
@@ -51,7 +52,7 @@ func main() {
 	if err != nil {
 		logger.Warn("failed to initialize tracer, continuing without tracing", "error", err)
 	} else {
-		defer shutdown(ctx)
+		defer func() { _ = shutdown(ctx) }() //nolint:errcheck
 	}
 
 	// Initialize database.
@@ -80,8 +81,8 @@ func main() {
 		Database: cfg.DB.Name,
 		SSLMode:  cfg.DB.SSLMode,
 	}.DSN()
-	if err := pgpkg.RunMigrations(dsn, "internal/infrastructure/postgres/migrations"); err != nil {
-		logger.Warn("migration warning", "error", err)
+	if migrateErr := pgpkg.RunMigrations(dsn, "internal/infrastructure/postgres/migrations"); migrateErr != nil {
+		logger.Warn("migration warning", "error", migrateErr)
 	}
 
 	// Initialize Kafka producer.
@@ -110,9 +111,9 @@ func main() {
 	case os.Getenv("JWT_PUBLIC_KEY") != "":
 		jwtCfg.PublicKeyPEM = os.Getenv("JWT_PUBLIC_KEY")
 	case os.Getenv("JWT_PUBLIC_KEY_FILE") != "":
-		keyData, err := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
-		if err != nil {
-			logger.Error("failed to load JWT public key file", "error", err)
+		keyData, loadErr := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
+		if loadErr != nil {
+			logger.Error("failed to load JWT public key file", "error", loadErr)
 			os.Exit(1)
 		}
 		jwtCfg.PublicKeyPEM = string(keyData)
@@ -139,8 +140,9 @@ func main() {
 	healthHandler.RegisterRoutes(mux)
 
 	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.HTTPPort),
-		Handler: mux,
+		Addr:              fmt.Sprintf(":%d", cfg.HTTPPort),
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	// Start servers.
@@ -166,7 +168,7 @@ func main() {
 	}
 
 	// Graceful shutdown.
-	httpServer.Shutdown(context.Background())
+	_ = httpServer.Shutdown(context.Background()) //nolint:errcheck
 	grpcServer.Stop()
 	logger.Info("payment-service stopped")
 }
