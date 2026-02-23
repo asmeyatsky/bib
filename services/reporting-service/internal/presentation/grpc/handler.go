@@ -36,6 +36,40 @@ func tenantIDFromContext(ctx context.Context) (uuid.UUID, error) {
 	return claims.TenantID, nil
 }
 
+// ---------------------------------------------------------------------------
+// Request / Response types (stand-in for proto-generated messages)
+// ---------------------------------------------------------------------------
+
+// GenerateReportRequest represents the proto GenerateReportRequest message.
+type GenerateReportRequest struct {
+	TenantID   string `json:"tenant_id"`
+	ReportType string `json:"report_type"`
+	Period     string `json:"period"`
+}
+
+// GenerateReportResponse represents the proto GenerateReportResponse message.
+type GenerateReportResponse = dto.GenerateReportResponse
+
+// GetReportRequest represents the proto GetReportRequest message.
+type GetReportRequest struct {
+	ReportID string `json:"report_id"`
+}
+
+// GetReportResponse represents the proto GetReportResponse message.
+type GetReportResponse = dto.GetReportResponse
+
+// SubmitReportRequest represents the proto SubmitReportRequest message.
+type SubmitReportRequest struct {
+	ReportID string `json:"report_id"`
+}
+
+// SubmitReportResponse represents the proto SubmitReportResponse message.
+type SubmitReportResponse = dto.SubmitReportResponse
+
+// ---------------------------------------------------------------------------
+// ReportingHandler
+// ---------------------------------------------------------------------------
+
 // ReportingHandler handles gRPC requests for the reporting service.
 type ReportingHandler struct {
 	generateReport *usecase.GenerateReportUseCase
@@ -57,72 +91,84 @@ func NewReportingHandler(
 }
 
 // GenerateReport handles the generate report request.
-func (h *ReportingHandler) GenerateReport(ctx context.Context, tenantID, reportType, period string) (dto.GenerateReportResponse, error) {
+func (h *ReportingHandler) GenerateReport(ctx context.Context, req *GenerateReportRequest) (*GenerateReportResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
 	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAuditor); err != nil {
-		return dto.GenerateReportResponse{}, err
+		return nil, err
 	}
 
 	tid, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return dto.GenerateReportResponse{}, err
+		return nil, err
 	}
 
-	req := dto.GenerateReportRequest{
+	dtoReq := dto.GenerateReportRequest{
 		TenantID:   tid,
-		ReportType: reportType,
-		Period:     period,
+		ReportType: req.ReportType,
+		Period:     req.Period,
 	}
 
-	resp, err := h.generateReport.Execute(ctx, req)
+	resp, err := h.generateReport.Execute(ctx, dtoReq)
 	if err != nil {
 		// TODO: log original error server-side: err
-		return dto.GenerateReportResponse{}, status.Error(codes.Internal, "internal error")
+		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return resp, nil
+	return &resp, nil
 }
 
 // GetReport handles the get report request.
-func (h *ReportingHandler) GetReport(ctx context.Context, reportID string) (dto.GetReportResponse, error) {
+func (h *ReportingHandler) GetReport(ctx context.Context, req *GetReportRequest) (*GetReportResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
 	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAuditor, auth.RoleCustomer, auth.RoleAPIClient); err != nil {
-		return dto.GetReportResponse{}, err
+		return nil, err
 	}
 
-	id, err := uuid.Parse(reportID)
+	id, err := uuid.Parse(req.ReportID)
 	if err != nil {
-		return dto.GetReportResponse{}, fmt.Errorf("invalid report ID: %w", err)
+		return nil, fmt.Errorf("invalid report ID: %w", err)
 	}
 
-	req := dto.GetReportRequest{
+	dtoReq := dto.GetReportRequest{
 		ID: id,
 	}
 
-	resp, err := h.getReport.Execute(ctx, req)
+	resp, err := h.getReport.Execute(ctx, dtoReq)
 	if err != nil {
 		// TODO: log original error server-side: err
-		return dto.GetReportResponse{}, status.Error(codes.Internal, "internal error")
+		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return resp, nil
+	return &resp, nil
 }
 
 // SubmitReport handles the submit report request.
-func (h *ReportingHandler) SubmitReport(ctx context.Context, reportID string) (dto.SubmitReportResponse, error) {
+func (h *ReportingHandler) SubmitReport(ctx context.Context, req *SubmitReportRequest) (*SubmitReportResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
 	if err := requireRole(ctx, auth.RoleAdmin); err != nil {
-		return dto.SubmitReportResponse{}, err
+		return nil, err
 	}
 
-	id, err := uuid.Parse(reportID)
+	id, err := uuid.Parse(req.ReportID)
 	if err != nil {
-		return dto.SubmitReportResponse{}, fmt.Errorf("invalid report ID: %w", err)
+		return nil, fmt.Errorf("invalid report ID: %w", err)
 	}
 
-	req := dto.SubmitReportRequest{
+	dtoReq := dto.SubmitReportRequest{
 		ID: id,
 	}
 
-	resp, err := h.submitReport.Execute(ctx, req)
+	resp, err := h.submitReport.Execute(ctx, dtoReq)
 	if err != nil {
 		// TODO: log original error server-side: err
-		return dto.SubmitReportResponse{}, status.Error(codes.Internal, "internal error")
+		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return resp, nil
+	return &resp, nil
 }

@@ -23,7 +23,7 @@ env:
   DB_PORT: "5432"
   DB_USER: bib
   DB_NAME: bib_fx
-  DB_SSLMODE: disable
+  DB_SSLMODE: require
   DB_MAX_CONNS: "20"
   DB_MIN_CONNS: "5"
   KAFKA_BROKERS: bib-kafka:9092

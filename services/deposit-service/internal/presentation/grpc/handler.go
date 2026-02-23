@@ -160,6 +160,12 @@ func (h *DepositHandler) CreateDepositProduct(ctx context.Context, req *CreateDe
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid max_balance: %v", err)
 		}
+		if minBal.IsNegative() {
+			return nil, status.Error(codes.InvalidArgument, "min_balance must not be negative")
+		}
+		if !maxBal.IsPositive() {
+			return nil, status.Error(codes.InvalidArgument, "max_balance must be positive")
+		}
 		rateBps := 0
 		if t.RateBps != "" {
 			d, err := decimal.NewFromString(t.RateBps)
@@ -217,6 +223,9 @@ func (h *DepositHandler) OpenDepositPosition(ctx context.Context, req *OpenDepos
 	principal, err := decimal.NewFromString(req.Principal)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid principal: %v", err)
+	}
+	if !principal.IsPositive() {
+		return nil, status.Error(codes.InvalidArgument, "principal must be positive")
 	}
 
 	result, err := h.openPosition.Execute(ctx, dto.OpenPositionRequest{

@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
+	"github.com/bibbank/bib/pkg/events"
 	"github.com/bibbank/bib/services/lending-service/internal/domain/event"
 	"github.com/bibbank/bib/services/lending-service/internal/domain/valueobject"
 )
@@ -30,7 +31,7 @@ type LoanApplication struct {
 	version         int
 	createdAt       time.Time
 	updatedAt       time.Time
-	domainEvents    []event.DomainEvent
+	domainEvents    []events.DomainEvent
 }
 
 // ---------------------------------------------------------------------------
@@ -191,7 +192,7 @@ func (a LoanApplication) CreditScore() string                          { return 
 func (a LoanApplication) Version() int                                 { return a.version }
 func (a LoanApplication) CreatedAt() time.Time                         { return a.createdAt }
 func (a LoanApplication) UpdatedAt() time.Time                         { return a.updatedAt }
-func (a LoanApplication) DomainEvents() []event.DomainEvent            { return a.domainEvents }
+func (a LoanApplication) DomainEvents() []events.DomainEvent            { return a.domainEvents }
 
 // ClearEvents returns a copy with an empty event list (call after publishing).
 func (a LoanApplication) ClearEvents() LoanApplication {
@@ -204,11 +205,11 @@ func (a LoanApplication) ClearEvents() LoanApplication {
 // helpers
 // ---------------------------------------------------------------------------
 
-func copyEvents(src []event.DomainEvent) []event.DomainEvent {
+func copyEvents(src []events.DomainEvent) []events.DomainEvent {
 	if len(src) == 0 {
 		return nil
 	}
-	dst := make([]event.DomainEvent, len(src))
+	dst := make([]events.DomainEvent, len(src))
 	copy(dst, src)
 	return dst
 }

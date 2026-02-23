@@ -10,11 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	"github.com/bibbank/bib/pkg/auth"
 	pkgkafka "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/pkg/observability"
+	pkgpostgres "github.com/bibbank/bib/pkg/postgres"
 	"github.com/bibbank/bib/services/lending-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/lending-service/internal/domain/service"
 	"github.com/bibbank/bib/services/lending-service/internal/infrastructure/adapter"
@@ -60,24 +59,26 @@ func main() {
 	dbCtx, dbCancel := context.WithTimeout(ctx, 10*time.Second)
 	defer dbCancel()
 
-	pool, err := pgxpool.New(dbCtx, cfg.DatabaseURL)
+	pool, err := pkgpostgres.NewPool(dbCtx, pkgpostgres.Config{
+		Host:     cfg.DB.Host,
+		Port:     cfg.DB.Port,
+		User:     cfg.DB.User,
+		Password: cfg.DB.Password,
+		Database: cfg.DB.Name,
+		SSLMode:  cfg.DB.SSLMode,
+	})
 	if err != nil {
 		logger.Error("failed to connect to database", "error", err)
 		os.Exit(1)
 	}
 	defer pool.Close()
-
-	if err := pool.Ping(dbCtx); err != nil {
-		logger.Error("database ping failed", "error", err)
-		os.Exit(1)
-	}
 	logger.Info("connected to database")
 
 	// Wire infrastructure adapters.
 	appRepo := pgRepo.NewLoanApplicationRepo(pool)
 	loanRepo := pgRepo.NewLoanRepo(pool)
 	kafkaProducer := pkgkafka.NewProducer(pkgkafka.Config{
-		Brokers: []string{cfg.KafkaBroker},
+		Brokers: cfg.Kafka.Brokers,
 	})
 	defer kafkaProducer.Close()
 	publisher := kafka.NewKafkaEventPublisher(kafkaProducer, "lending-events", logger)

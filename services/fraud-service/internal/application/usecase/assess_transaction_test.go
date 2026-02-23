@@ -8,6 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/bibbank/bib/pkg/events"
 	"github.com/stretchr/testify/require"
 
 	"github.com/bibbank/bib/services/fraud-service/internal/application/dto"
@@ -48,11 +50,11 @@ func (m *mockAssessmentRepository) FindByAccountID(_ context.Context, _, _ uuid.
 }
 
 type mockFraudEventPublisher struct {
-	publishedEvents []interface{}
-	publishFunc     func(ctx context.Context, events ...interface{}) error
+	publishedEvents []events.DomainEvent
+	publishFunc     func(ctx context.Context, evts ...events.DomainEvent) error
 }
 
-func (m *mockFraudEventPublisher) Publish(ctx context.Context, evts ...interface{}) error {
+func (m *mockFraudEventPublisher) Publish(ctx context.Context, evts ...events.DomainEvent) error {
 	if m.publishFunc != nil {
 		return m.publishFunc(ctx, evts...)
 	}
@@ -147,7 +149,7 @@ func TestAssessTransaction_Execute(t *testing.T) {
 	t.Run("fails when event publishing fails", func(t *testing.T) {
 		repo := &mockAssessmentRepository{}
 		publisher := &mockFraudEventPublisher{
-			publishFunc: func(ctx context.Context, evts ...interface{}) error {
+			publishFunc: func(ctx context.Context, evts ...events.DomainEvent) error {
 				return fmt.Errorf("kafka unavailable")
 			},
 		}

@@ -11,8 +11,8 @@ fullnameOverride: ""
 
 service:
   type: ClusterIP
-  grpcPort: 8082
-  httpPort: 9082
+  grpcPort: 9082
+  httpPort: 8082
 
 resources:
   limits:
@@ -23,13 +23,13 @@ resources:
     memory: 128Mi
 
 env:
-  GRPC_PORT: "8082"
-  HTTP_PORT: "9082"
+  GRPC_PORT: "9082"
+  HTTP_PORT: "8082"
   DB_HOST: "postgres"
   DB_PORT: "5432"
   DB_USER: "bib"
   DB_NAME: "bib_account"
-  DB_SSL_MODE: "disable"
+  DB_SSLMODE: "require"
   KAFKA_BROKERS: "kafka:9092"
   SERVICE_NAME: "account-service"
 

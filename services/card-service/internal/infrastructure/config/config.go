@@ -3,48 +3,75 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
-// Config holds the application configuration.
+type DatabaseConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	Name     string
+	SSLMode  string
+}
+
+type KafkaConfig struct {
+	Brokers []string
+}
+
 type Config struct {
-	GRPCPort    string
-	HTTPPort    string
-	DatabaseURL string
-	KafkaBroker string
+	GRPCPort    int
+	HTTPPort    int
+	DB          DatabaseConfig
+	Kafka       KafkaConfig
 	ServiceName string
 }
 
-// Validate checks required configuration values.
 func (c Config) Validate() {
-	if c.DatabaseURL == "" {
-		panic("DATABASE_URL environment variable is required")
+	if c.DB.Password == "" {
+		panic("DB_PASSWORD environment variable is required")
 	}
 }
 
-// Load reads configuration from environment variables with sensible defaults.
 func Load() Config {
 	return Config{
-		GRPCPort:    getEnv("GRPC_PORT", "8089"),
-		HTTPPort:    getEnv("HTTP_PORT", "9089"),
-		DatabaseURL: getEnv("DATABASE_URL", ""),
-		KafkaBroker: getEnv("KAFKA_BROKER", "localhost:9092"),
+		GRPCPort: getEnvInt("GRPC_PORT", 9089),
+		HTTPPort: getEnvInt("HTTP_PORT", 8089),
+		DB: DatabaseConfig{
+			Host:     getEnv("DB_HOST", "localhost"),
+			Port:     getEnvInt("DB_PORT", 5432),
+			User:     getEnv("DB_USER", "bib"),
+			Password: getEnv("DB_PASSWORD", ""),
+			Name:     getEnv("DB_NAME", "bib_card"),
+			SSLMode:  getEnv("DB_SSLMODE", "require"),
+		},
+		Kafka: KafkaConfig{
+			Brokers: []string{getEnv("KAFKA_BROKERS", "localhost:9092")},
+		},
 		ServiceName: "card-service",
 	}
 }
 
-// GRPCAddr returns the full gRPC listen address.
 func (c Config) GRPCAddr() string {
-	return fmt.Sprintf(":%s", c.GRPCPort)
+	return fmt.Sprintf(":%d", c.GRPCPort)
 }
 
-// HTTPAddr returns the full HTTP listen address.
 func (c Config) HTTPAddr() string {
-	return fmt.Sprintf(":%s", c.HTTPPort)
+	return fmt.Sprintf(":%d", c.HTTPPort)
 }
 
 func getEnv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
+	}
+	return fallback
+}
+
+func getEnvInt(key string, fallback int) int {
+	if v := os.Getenv(key); v != "" {
+		if i, err := strconv.Atoi(v); err == nil {
+			return i
+		}
 	}
 	return fallback
 }

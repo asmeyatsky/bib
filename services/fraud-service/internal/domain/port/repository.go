@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/bibbank/bib/pkg/events"
 	"github.com/bibbank/bib/services/fraud-service/internal/domain/model"
 )
 
@@ -26,7 +27,7 @@ type AssessmentRepository interface {
 // EventPublisher defines the port for publishing domain events.
 type EventPublisher interface {
 	// Publish sends one or more domain events to the messaging infrastructure.
-	Publish(ctx context.Context, events ...interface{}) error
+	Publish(ctx context.Context, events ...events.DomainEvent) error
 }
 
 // MLModelClient defines the port for integrating with an external ML model

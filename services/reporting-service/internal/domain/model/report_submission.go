@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/bibbank/bib/pkg/events"
 	"github.com/bibbank/bib/services/reporting-service/internal/domain/event"
 	"github.com/bibbank/bib/services/reporting-service/internal/domain/valueobject"
 )
@@ -25,7 +26,7 @@ type ReportSubmission struct {
 	version          int
 	createdAt        time.Time
 	updatedAt        time.Time
-	domainEvents     []event.DomainEvent
+	domainEvents     []events.DomainEvent
 }
 
 // NewReportSubmission creates a new ReportSubmission in DRAFT status.
@@ -210,7 +211,7 @@ func (r ReportSubmission) CreatedAt() time.Time                   { return r.cre
 func (r ReportSubmission) UpdatedAt() time.Time                   { return r.updatedAt }
 
 // DomainEvents returns the uncommitted domain events.
-func (r ReportSubmission) DomainEvents() []event.DomainEvent {
+func (r ReportSubmission) DomainEvents() []events.DomainEvent {
 	return r.domainEvents
 }
 

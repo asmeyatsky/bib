@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/bibbank/bib/pkg/events"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
@@ -51,7 +52,7 @@ type mockEventPublisher struct {
 	publishErr error
 }
 
-func (m *mockEventPublisher) Publish(_ context.Context, _ ...interface{}) error {
+func (m *mockEventPublisher) Publish(_ context.Context, _ ...events.DomainEvent) error {
 	return m.publishErr
 }
 

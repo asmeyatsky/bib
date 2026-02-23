@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/bibbank/bib/pkg/events"
 	pkgkafka "github.com/bibbank/bib/pkg/kafka"
 )
 
@@ -25,19 +26,11 @@ func NewKafkaPublisher(producer *pkgkafka.Producer, topic string, logger *slog.L
 	}
 }
 
-// eventDescriptor extracts the event type from known domain event types.
-type eventDescriptor interface {
-	EventType() string
-}
-
 // Publish sends domain events to Kafka.
-func (p *KafkaPublisher) Publish(ctx context.Context, events ...interface{}) error {
-	messages := make([]pkgkafka.Message, 0, len(events))
-	for _, evt := range events {
-		eventType := "unknown"
-		if ed, ok := evt.(eventDescriptor); ok {
-			eventType = ed.EventType()
-		}
+func (p *KafkaPublisher) Publish(ctx context.Context, domainEvents ...events.DomainEvent) error {
+	messages := make([]pkgkafka.Message, 0, len(domainEvents))
+	for _, evt := range domainEvents {
+		eventType := evt.EventType()
 
 		payload, err := json.Marshal(evt)
 		if err != nil {

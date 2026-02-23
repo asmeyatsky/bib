@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/bibbank/bib/pkg/events"
 	"github.com/bibbank/bib/services/account-service/internal/domain/event"
 	"github.com/bibbank/bib/services/account-service/internal/domain/valueobject"
 )
@@ -34,7 +35,7 @@ type CustomerAccount struct {
 	version           int
 	createdAt         time.Time
 	updatedAt         time.Time
-	domainEvents      []event.DomainEvent
+	domainEvents      []events.DomainEvent
 }
 
 // NewCustomerAccount creates a new CustomerAccount in PENDING status.
@@ -266,8 +267,8 @@ func (a CustomerAccount) CreatedAt() time.Time { return a.createdAt }
 func (a CustomerAccount) UpdatedAt() time.Time { return a.updatedAt }
 
 // DomainEvents returns all uncommitted domain events.
-func (a CustomerAccount) DomainEvents() []event.DomainEvent {
-	events := make([]event.DomainEvent, len(a.domainEvents))
+func (a CustomerAccount) DomainEvents() []events.DomainEvent {
+	events := make([]events.DomainEvent, len(a.domainEvents))
 	copy(events, a.domainEvents)
 	return events
 }
@@ -283,7 +284,7 @@ func (a CustomerAccount) ClearDomainEvents() CustomerAccount {
 func (a CustomerAccount) clone() CustomerAccount {
 	cloned := a
 	if len(a.domainEvents) > 0 {
-		cloned.domainEvents = make([]event.DomainEvent, len(a.domainEvents))
+		cloned.domainEvents = make([]events.DomainEvent, len(a.domainEvents))
 		copy(cloned.domainEvents, a.domainEvents)
 	}
 	return cloned

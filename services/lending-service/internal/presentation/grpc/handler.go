@@ -39,6 +39,62 @@ func tenantIDFromContext(ctx context.Context) (string, error) {
 }
 
 // ---------------------------------------------------------------------------
+// Request / Response types (stand-in for proto-generated messages)
+// ---------------------------------------------------------------------------
+
+// SubmitApplicationRequest represents the proto SubmitApplicationRequest message.
+type SubmitApplicationRequest struct {
+	TenantID        string `json:"tenant_id"`
+	ApplicantID     string `json:"applicant_id"`
+	RequestedAmount string `json:"requested_amount"`
+	Currency        string `json:"currency"`
+	TermMonths      int    `json:"term_months"`
+	Purpose         string `json:"purpose"`
+}
+
+// SubmitApplicationResponse represents the proto SubmitApplicationResponse message.
+type SubmitApplicationResponse = dto.LoanApplicationResponse
+
+// DisburseLoanRequest represents the proto DisburseLoanRequest message.
+type DisburseLoanRequest struct {
+	TenantID          string `json:"tenant_id"`
+	ApplicationID     string `json:"application_id"`
+	BorrowerAccountID string `json:"borrower_account_id"`
+	InterestRateBps   int    `json:"interest_rate_bps"`
+}
+
+// DisburseLoanResponse represents the proto DisburseLoanResponse message.
+type DisburseLoanResponse = dto.LoanResponse
+
+// MakePaymentRequest represents the proto MakePaymentRequest message.
+type MakePaymentRequest struct {
+	TenantID string `json:"tenant_id"`
+	LoanID   string `json:"loan_id"`
+	Amount   string `json:"amount"`
+}
+
+// MakePaymentResponse represents the proto MakePaymentResponse message.
+type MakePaymentResponse = dto.PaymentResponse
+
+// GetLoanRequest represents the proto GetLoanRequest message.
+type GetLoanRequest struct {
+	TenantID string `json:"tenant_id"`
+	LoanID   string `json:"loan_id"`
+}
+
+// GetLoanResponse represents the proto GetLoanResponse message.
+type GetLoanResponse = dto.LoanResponse
+
+// GetApplicationRequest represents the proto GetApplicationRequest message.
+type GetApplicationRequest struct {
+	TenantID      string `json:"tenant_id"`
+	ApplicationID string `json:"application_id"`
+}
+
+// GetApplicationResponse represents the proto GetApplicationResponse message.
+type GetApplicationResponse = dto.LoanApplicationResponse
+
+// ---------------------------------------------------------------------------
 // LendingHandler exposes lending operations over gRPC.
 // In a full implementation this would implement a protobuf-generated interface.
 // Here we define a plain struct that can be easily wired into a gRPC server
@@ -72,187 +128,187 @@ func NewLendingHandler(
 }
 
 // SubmitApplication handles a new loan application submission.
-func (h *LendingHandler) SubmitApplication(
-	ctx context.Context,
-	tenantID, applicantID string,
-	requestedAmount string,
-	currency string,
-	termMonths int,
-	purpose string,
-) (dto.LoanApplicationResponse, error) {
+func (h *LendingHandler) SubmitApplication(ctx context.Context, req *SubmitApplicationRequest) (*SubmitApplicationResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
 	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAPIClient); err != nil {
-		return dto.LoanApplicationResponse{}, err
+		return nil, err
 	}
 
 	tid, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return dto.LoanApplicationResponse{}, err
+		return nil, err
 	}
 
-	if applicantID == "" {
-		return dto.LoanApplicationResponse{}, status.Error(codes.InvalidArgument, "applicant_id is required")
+	if req.ApplicantID == "" {
+		return nil, status.Error(codes.InvalidArgument, "applicant_id is required")
 	}
-	amount, err := decimal.NewFromString(requestedAmount)
+	amount, err := decimal.NewFromString(req.RequestedAmount)
 	if err != nil {
-		return dto.LoanApplicationResponse{}, status.Errorf(codes.InvalidArgument, "invalid amount: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid amount: %v", err)
 	}
 	if !amount.IsPositive() {
-		return dto.LoanApplicationResponse{}, status.Error(codes.InvalidArgument, "amount must be positive")
+		return nil, status.Error(codes.InvalidArgument, "amount must be positive")
 	}
-	if currency == "" {
-		return dto.LoanApplicationResponse{}, status.Error(codes.InvalidArgument, "currency is required")
+	if req.Currency == "" {
+		return nil, status.Error(codes.InvalidArgument, "currency is required")
 	}
-	if !currencyCodeRE.MatchString(currency) {
-		return dto.LoanApplicationResponse{}, status.Error(codes.InvalidArgument, "currency must be a 3-letter uppercase ISO code")
+	if !currencyCodeRE.MatchString(req.Currency) {
+		return nil, status.Error(codes.InvalidArgument, "currency must be a 3-letter uppercase ISO code")
 	}
-	if termMonths <= 0 {
-		return dto.LoanApplicationResponse{}, status.Error(codes.InvalidArgument, "term_months must be positive")
+	if req.TermMonths <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "term_months must be positive")
 	}
 
 	resp, err := h.submitApp.Execute(ctx, dto.SubmitApplicationRequest{
 		TenantID:        tid,
-		ApplicantID:     applicantID,
+		ApplicantID:     req.ApplicantID,
 		RequestedAmount: amount,
-		Currency:        currency,
-		TermMonths:      termMonths,
-		Purpose:         purpose,
+		Currency:        req.Currency,
+		TermMonths:      req.TermMonths,
+		Purpose:         req.Purpose,
 	})
 	if err != nil {
 		// TODO: log original error server-side: err
-		return dto.LoanApplicationResponse{}, status.Error(codes.Internal, "internal error")
+		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return resp, nil
+	return &resp, nil
 }
 
 // DisburseLoan handles loan disbursement for an approved application.
-func (h *LendingHandler) DisburseLoan(
-	ctx context.Context,
-	tenantID, applicationID, borrowerAccountID string,
-	interestRateBps int,
-) (dto.LoanResponse, error) {
+func (h *LendingHandler) DisburseLoan(ctx context.Context, req *DisburseLoanRequest) (*DisburseLoanResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
 	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator); err != nil {
-		return dto.LoanResponse{}, err
+		return nil, err
 	}
 
 	tid, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return dto.LoanResponse{}, err
+		return nil, err
 	}
 
-	if applicationID == "" {
-		return dto.LoanResponse{}, status.Error(codes.InvalidArgument, "application_id is required")
+	if req.ApplicationID == "" {
+		return nil, status.Error(codes.InvalidArgument, "application_id is required")
 	}
-	if borrowerAccountID == "" {
-		return dto.LoanResponse{}, status.Error(codes.InvalidArgument, "borrower_account_id is required")
+	if req.BorrowerAccountID == "" {
+		return nil, status.Error(codes.InvalidArgument, "borrower_account_id is required")
 	}
-	if interestRateBps <= 0 {
-		return dto.LoanResponse{}, status.Error(codes.InvalidArgument, "interest_rate_bps must be positive")
+	if req.InterestRateBps <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "interest_rate_bps must be positive")
 	}
 
 	resp, err := h.disburse.Execute(ctx, dto.DisburseLoanRequest{
 		TenantID:          tid,
-		ApplicationID:     applicationID,
-		BorrowerAccountID: borrowerAccountID,
-		InterestRateBps:   interestRateBps,
+		ApplicationID:     req.ApplicationID,
+		BorrowerAccountID: req.BorrowerAccountID,
+		InterestRateBps:   req.InterestRateBps,
 	})
 	if err != nil {
 		// TODO: log original error server-side: err
-		return dto.LoanResponse{}, status.Error(codes.Internal, "internal error")
+		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return resp, nil
+	return &resp, nil
 }
 
 // MakePayment handles a loan payment.
-func (h *LendingHandler) MakePayment(
-	ctx context.Context,
-	tenantID, loanID, amount string,
-) (dto.PaymentResponse, error) {
+func (h *LendingHandler) MakePayment(ctx context.Context, req *MakePaymentRequest) (*MakePaymentResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
 	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAPIClient); err != nil {
-		return dto.PaymentResponse{}, err
+		return nil, err
 	}
 
 	tid, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return dto.PaymentResponse{}, err
+		return nil, err
 	}
 
-	if loanID == "" {
-		return dto.PaymentResponse{}, status.Error(codes.InvalidArgument, "loan_id is required")
+	if req.LoanID == "" {
+		return nil, status.Error(codes.InvalidArgument, "loan_id is required")
 	}
-	amt, err := decimal.NewFromString(amount)
+	amt, err := decimal.NewFromString(req.Amount)
 	if err != nil {
-		return dto.PaymentResponse{}, status.Errorf(codes.InvalidArgument, "invalid amount: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid amount: %v", err)
 	}
 	if !amt.IsPositive() {
-		return dto.PaymentResponse{}, status.Error(codes.InvalidArgument, "amount must be positive")
+		return nil, status.Error(codes.InvalidArgument, "amount must be positive")
 	}
 
 	resp, err := h.payment.Execute(ctx, dto.MakePaymentRequest{
 		TenantID: tid,
-		LoanID:   loanID,
+		LoanID:   req.LoanID,
 		Amount:   amt,
 	})
 	if err != nil {
 		// TODO: log original error server-side: err
-		return dto.PaymentResponse{}, status.Error(codes.Internal, "internal error")
+		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return resp, nil
+	return &resp, nil
 }
 
 // GetLoan retrieves a loan by ID.
-func (h *LendingHandler) GetLoan(
-	ctx context.Context,
-	tenantID, loanID string,
-) (dto.LoanResponse, error) {
+func (h *LendingHandler) GetLoan(ctx context.Context, req *GetLoanRequest) (*GetLoanResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
 	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAuditor, auth.RoleCustomer, auth.RoleAPIClient); err != nil {
-		return dto.LoanResponse{}, err
+		return nil, err
 	}
 
 	tid, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return dto.LoanResponse{}, err
+		return nil, err
 	}
 
-	if loanID == "" {
-		return dto.LoanResponse{}, status.Error(codes.InvalidArgument, "loan_id is required")
+	if req.LoanID == "" {
+		return nil, status.Error(codes.InvalidArgument, "loan_id is required")
 	}
 
 	resp, err := h.getLoan.Execute(ctx, dto.GetLoanRequest{
 		TenantID: tid,
-		LoanID:   loanID,
+		LoanID:   req.LoanID,
 	})
 	if err != nil {
 		// TODO: log original error server-side: err
-		return dto.LoanResponse{}, status.Error(codes.Internal, "internal error")
+		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return resp, nil
+	return &resp, nil
 }
 
 // GetApplication retrieves a loan application by ID.
-func (h *LendingHandler) GetApplication(
-	ctx context.Context,
-	tenantID, applicationID string,
-) (dto.LoanApplicationResponse, error) {
+func (h *LendingHandler) GetApplication(ctx context.Context, req *GetApplicationRequest) (*GetApplicationResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
 	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator, auth.RoleAuditor, auth.RoleCustomer, auth.RoleAPIClient); err != nil {
-		return dto.LoanApplicationResponse{}, err
+		return nil, err
 	}
 
 	tid, err := tenantIDFromContext(ctx)
 	if err != nil {
-		return dto.LoanApplicationResponse{}, err
+		return nil, err
 	}
 
-	if applicationID == "" {
-		return dto.LoanApplicationResponse{}, status.Error(codes.InvalidArgument, "application_id is required")
+	if req.ApplicationID == "" {
+		return nil, status.Error(codes.InvalidArgument, "application_id is required")
 	}
 
 	resp, err := h.getApp.Execute(ctx, dto.GetApplicationRequest{
 		TenantID:      tid,
-		ApplicationID: applicationID,
+		ApplicationID: req.ApplicationID,
 	})
 	if err != nil {
 		// TODO: log original error server-side: err
-		return dto.LoanApplicationResponse{}, status.Error(codes.Internal, "internal error")
+		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return resp, nil
+	return &resp, nil
 }

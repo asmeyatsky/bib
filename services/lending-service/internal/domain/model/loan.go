@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
+	"github.com/bibbank/bib/pkg/events"
 	"github.com/bibbank/bib/services/lending-service/internal/domain/event"
 	"github.com/bibbank/bib/services/lending-service/internal/domain/valueobject"
 )
@@ -32,7 +33,7 @@ type Loan struct {
 	version           int
 	createdAt         time.Time
 	updatedAt         time.Time
-	domainEvents      []event.DomainEvent
+	domainEvents      []events.DomainEvent
 }
 
 // ---------------------------------------------------------------------------
@@ -236,7 +237,7 @@ func (l Loan) NextPaymentDue() time.Time           { return l.nextPaymentDue }
 func (l Loan) Version() int                        { return l.version }
 func (l Loan) CreatedAt() time.Time                { return l.createdAt }
 func (l Loan) UpdatedAt() time.Time                { return l.updatedAt }
-func (l Loan) DomainEvents() []event.DomainEvent   { return l.domainEvents }
+func (l Loan) DomainEvents() []events.DomainEvent   { return l.domainEvents }
 
 // Schedule returns a defensive copy of the amortization schedule.
 func (l Loan) Schedule() []AmortizationEntry {

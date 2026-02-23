@@ -3,50 +3,79 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
-// Config holds all configuration for the fraud service.
+type DatabaseConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	Name     string
+	SSLMode  string
+}
+
+type KafkaConfig struct {
+	Brokers []string
+}
+
 type Config struct {
-	GRPCPort    string
-	HTTPPort    string
-	DatabaseURL string
-	KafkaBroker string
+	GRPCPort    int
+	HTTPPort    int
+	DB          DatabaseConfig
+	Kafka       KafkaConfig
+	ServiceName string
 	Environment string
 	LogLevel    string
 }
 
-// Validate checks required configuration values.
-func (c *Config) Validate() {
-	if c.DatabaseURL == "" {
-		panic("DATABASE_URL environment variable is required")
+func (c Config) Validate() {
+	if c.DB.Password == "" {
+		panic("DB_PASSWORD environment variable is required")
 	}
 }
 
-// Load reads configuration from environment variables with sensible defaults.
-func Load() *Config {
-	return &Config{
-		GRPCPort:    getEnv("GRPC_PORT", "8088"),
-		HTTPPort:    getEnv("HTTP_PORT", "9088"),
-		DatabaseURL: getEnv("DATABASE_URL", ""),
-		KafkaBroker: getEnv("KAFKA_BROKER", "localhost:9092"),
+func Load() Config {
+	return Config{
+		GRPCPort: getEnvInt("GRPC_PORT", 9088),
+		HTTPPort: getEnvInt("HTTP_PORT", 8088),
+		DB: DatabaseConfig{
+			Host:     getEnv("DB_HOST", "localhost"),
+			Port:     getEnvInt("DB_PORT", 5432),
+			User:     getEnv("DB_USER", "bib"),
+			Password: getEnv("DB_PASSWORD", ""),
+			Name:     getEnv("DB_NAME", "bib_fraud"),
+			SSLMode:  getEnv("DB_SSLMODE", "require"),
+		},
+		Kafka: KafkaConfig{
+			Brokers: []string{getEnv("KAFKA_BROKERS", "localhost:9092")},
+		},
+		ServiceName: "fraud-service",
 		Environment: getEnv("ENVIRONMENT", "development"),
 		LogLevel:    getEnv("LOG_LEVEL", "info"),
 	}
 }
 
-// GRPCAddress returns the full gRPC listen address.
-func (c *Config) GRPCAddress() string {
-	return fmt.Sprintf(":%s", c.GRPCPort)
+func (c Config) GRPCAddr() string {
+	return fmt.Sprintf(":%d", c.GRPCPort)
 }
 
-// HTTPAddress returns the full HTTP listen address.
-func (c *Config) HTTPAddress() string {
-	return fmt.Sprintf(":%s", c.HTTPPort)
+func (c Config) HTTPAddr() string {
+	return fmt.Sprintf(":%d", c.HTTPPort)
 }
 
-func getEnv(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
+func getEnv(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
 	}
-	return defaultValue
+	return fallback
+}
+
+func getEnvInt(key string, fallback int) int {
+	if v := os.Getenv(key); v != "" {
+		if i, err := strconv.Atoi(v); err == nil {
+			return i
+		}
+	}
+	return fallback
 }

@@ -10,11 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	"github.com/bibbank/bib/pkg/auth"
 	pkgkafka "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/pkg/observability"
+	pkgpostgres "github.com/bibbank/bib/pkg/postgres"
 	"github.com/bibbank/bib/services/fraud-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/fraud-service/internal/domain/service"
 	"github.com/bibbank/bib/services/fraud-service/internal/infrastructure/config"
@@ -59,23 +58,25 @@ func main() {
 	dbCtx, dbCancel := context.WithTimeout(ctx, 10*time.Second)
 	defer dbCancel()
 
-	pool, err := pgxpool.New(dbCtx, cfg.DatabaseURL)
+	pool, err := pkgpostgres.NewPool(dbCtx, pkgpostgres.Config{
+		Host:     cfg.DB.Host,
+		Port:     cfg.DB.Port,
+		User:     cfg.DB.User,
+		Password: cfg.DB.Password,
+		Database: cfg.DB.Name,
+		SSLMode:  cfg.DB.SSLMode,
+	})
 	if err != nil {
 		logger.Error("failed to connect to database", "error", err)
 		os.Exit(1)
 	}
 	defer pool.Close()
-
-	if err := pool.Ping(dbCtx); err != nil {
-		logger.Error("database ping failed", "error", err)
-		os.Exit(1)
-	}
 	logger.Info("connected to database")
 
 	// Wire infrastructure adapters.
 	assessmentRepo := postgres.NewAssessmentRepository(pool)
 	kafkaProducer := pkgkafka.NewProducer(pkgkafka.Config{
-		Brokers: []string{cfg.KafkaBroker},
+		Brokers: cfg.Kafka.Brokers,
 	})
 	defer kafkaProducer.Close()
 	eventPublisher := kafka.NewKafkaPublisher(
@@ -120,7 +121,7 @@ func main() {
 
 	// gRPC server.
 	grpcHandler := grpcpresentation.NewFraudServiceHandler(assessTransactionUC, getAssessmentUC, logger)
-	grpcServer := grpcpresentation.NewServer(grpcHandler, cfg.GRPCAddress(), logger, jwtSvc)
+	grpcServer := grpcpresentation.NewServer(grpcHandler, cfg.GRPCAddr(), logger, jwtSvc)
 
 	// HTTP server (health checks).
 	healthHandler := rest.NewHealthHandler(logger)
@@ -128,7 +129,7 @@ func main() {
 	healthHandler.RegisterRoutes(httpMux)
 
 	httpServer := &http.Server{
-		Addr:         cfg.HTTPAddress(),
+		Addr:         cfg.HTTPAddr(),
 		Handler:      httpMux,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -145,15 +146,15 @@ func main() {
 	}()
 
 	go func() {
-		logger.Info("HTTP server starting", "address", cfg.HTTPAddress())
+		logger.Info("HTTP server starting", "address", cfg.HTTPAddr())
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			errCh <- fmt.Errorf("HTTP server error: %w", err)
 		}
 	}()
 
 	logger.Info("fraud-service started",
-		"grpc_address", cfg.GRPCAddress(),
-		"http_address", cfg.HTTPAddress(),
+		"grpc_address", cfg.GRPCAddr(),
+		"http_address", cfg.HTTPAddr(),
 		"environment", cfg.Environment,
 	)
 

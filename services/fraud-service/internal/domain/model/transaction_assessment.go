@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
+	"github.com/bibbank/bib/pkg/events"
 	"github.com/bibbank/bib/services/fraud-service/internal/domain/event"
 	"github.com/bibbank/bib/services/fraud-service/internal/domain/valueobject"
 )
@@ -28,7 +29,7 @@ type TransactionAssessment struct {
 	version         int
 	createdAt       time.Time
 	updatedAt       time.Time
-	domainEvents    []interface{}
+	domainEvents    []events.DomainEvent
 }
 
 // NewTransactionAssessment creates a new assessment for an incoming transaction.
@@ -142,7 +143,7 @@ func Reconstruct(
 		version:         version,
 		createdAt:       createdAt,
 		updatedAt:       updatedAt,
-		domainEvents:    make([]interface{}, 0),
+		domainEvents:    make([]events.DomainEvent, 0),
 	}
 }
 
@@ -165,8 +166,8 @@ func (a *TransactionAssessment) CreatedAt() time.Time                   { return
 func (a *TransactionAssessment) UpdatedAt() time.Time                   { return a.updatedAt }
 
 // DomainEvents returns all accumulated domain events and clears them.
-func (a *TransactionAssessment) DomainEvents() []interface{} {
-	events := a.domainEvents
-	a.domainEvents = make([]interface{}, 0)
-	return events
+func (a *TransactionAssessment) DomainEvents() []events.DomainEvent {
+	evts := a.domainEvents
+	a.domainEvents = make([]events.DomainEvent, 0)
+	return evts
 }

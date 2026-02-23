@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 
+	"github.com/bibbank/bib/pkg/events"
 	"github.com/bibbank/bib/services/card-service/internal/domain/event"
 	"github.com/bibbank/bib/services/card-service/internal/domain/valueobject"
 )
@@ -30,7 +31,7 @@ type Card struct {
 	version      int
 	createdAt    time.Time
 	updatedAt    time.Time
-	domainEvents []event.DomainEvent
+	domainEvents []events.DomainEvent
 }
 
 // NewCard creates a new Card aggregate in PENDING status.
@@ -133,11 +134,11 @@ func Reconstruct(
 
 // cloneEvents returns a deep copy of the domain events slice so that
 // value-receiver methods don't race on the shared backing array.
-func (c Card) cloneEvents() []event.DomainEvent {
+func (c Card) cloneEvents() []events.DomainEvent {
 	if len(c.domainEvents) == 0 {
 		return nil
 	}
-	cloned := make([]event.DomainEvent, len(c.domainEvents))
+	cloned := make([]events.DomainEvent, len(c.domainEvents))
 	copy(cloned, c.domainEvents)
 	return cloned
 }
@@ -301,8 +302,8 @@ func (c Card) CreatedAt() time.Time                  { return c.createdAt }
 func (c Card) UpdatedAt() time.Time                  { return c.updatedAt }
 
 // DomainEvents returns all uncommitted domain events.
-func (c Card) DomainEvents() []event.DomainEvent {
-	events := make([]event.DomainEvent, len(c.domainEvents))
+func (c Card) DomainEvents() []events.DomainEvent {
+	events := make([]events.DomainEvent, len(c.domainEvents))
 	copy(events, c.domainEvents)
 	return events
 }
