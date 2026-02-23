@@ -20,8 +20,8 @@ import (
 	"github.com/bibbank/bib/services/card-service/internal/domain/service"
 	"github.com/bibbank/bib/services/card-service/internal/infrastructure/adapter"
 	"github.com/bibbank/bib/services/card-service/internal/infrastructure/config"
-	"github.com/bibbank/bib/services/card-service/internal/infrastructure/messaging"
-	"github.com/bibbank/bib/services/card-service/internal/infrastructure/persistence"
+	"github.com/bibbank/bib/services/card-service/internal/infrastructure/kafka"
+	"github.com/bibbank/bib/services/card-service/internal/infrastructure/postgres"
 	grpcpresentation "github.com/bibbank/bib/services/card-service/internal/presentation/grpc"
 	"github.com/bibbank/bib/services/card-service/internal/presentation/rest"
 )
@@ -75,12 +75,12 @@ func main() {
 	logger.Info("connected to database")
 
 	// Wire infrastructure adapters.
-	cardRepo := persistence.NewPostgresCardRepository(pool)
+	cardRepo := postgres.NewPostgresCardRepository(pool)
 	kafkaProducer := pkgkafka.NewProducer(pkgkafka.Config{
 		Brokers: []string{cfg.KafkaBroker},
 	})
 	defer kafkaProducer.Close()
-	eventPublisher := messaging.NewKafkaEventPublisher(kafkaProducer, "card-events", logger)
+	eventPublisher := kafka.NewKafkaEventPublisher(kafkaProducer, "card-events", logger)
 	cardProcessor := adapter.NewStubCardProcessor(logger)
 	balanceClient := adapter.NewStubAccountBalanceClient(logger, decimal.NewFromInt(100000))
 
@@ -93,15 +93,32 @@ func main() {
 	getCardUC := usecase.NewGetCardUseCase(cardRepo)
 	freezeCardUC := usecase.NewFreezeCardUseCase(cardRepo, eventPublisher)
 
-	// JWT service for gRPC auth.
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = "dev-secret-change-in-prod" // development only
-	}
-	jwtSvc := auth.NewJWTService(auth.JWTConfig{
-		Secret: jwtSecret,
+	// JWT service for gRPC auth (validation-only: public key preferred, secret as fallback).
+	jwtCfg := auth.JWTConfig{
 		Issuer: "bib-card",
-	})
+	}
+	switch {
+	case os.Getenv("JWT_PUBLIC_KEY") != "":
+		jwtCfg.PublicKeyPEM = os.Getenv("JWT_PUBLIC_KEY")
+	case os.Getenv("JWT_PUBLIC_KEY_FILE") != "":
+		keyData, err := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
+		if err != nil {
+			logger.Error("failed to load JWT public key file", "error", err)
+			os.Exit(1)
+		}
+		jwtCfg.PublicKeyPEM = string(keyData)
+	default:
+		jwtSecret := os.Getenv("JWT_SECRET")
+		if jwtSecret == "" {
+			jwtSecret = "dev-secret-change-in-prod" // development only
+		}
+		jwtCfg.Secret = jwtSecret
+	}
+	jwtSvc, err := auth.NewJWTService(jwtCfg)
+	if err != nil {
+		logger.Error("failed to initialize JWT service", "error", err)
+		os.Exit(1)
+	}
 
 	// gRPC server.
 	grpcHandler := grpcpresentation.NewCardServiceHandler(issueCardUC, authorizeUC, getCardUC, freezeCardUC)

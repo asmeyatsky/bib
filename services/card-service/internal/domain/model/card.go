@@ -131,6 +131,17 @@ func Reconstruct(
 	}
 }
 
+// cloneEvents returns a deep copy of the domain events slice so that
+// value-receiver methods don't race on the shared backing array.
+func (c Card) cloneEvents() []event.DomainEvent {
+	if len(c.domainEvents) == 0 {
+		return nil
+	}
+	cloned := make([]event.DomainEvent, len(c.domainEvents))
+	copy(cloned, c.domainEvents)
+	return cloned
+}
+
 // Activate transitions the card from PENDING to ACTIVE.
 func (c Card) Activate(now time.Time) (Card, error) {
 	if c.status != valueobject.CardStatusPending {
@@ -141,7 +152,7 @@ func (c Card) Activate(now time.Time) (Card, error) {
 	c.updatedAt = now.UTC()
 	c.version++
 
-	c.domainEvents = append(c.domainEvents, event.NewCardActivated(
+	c.domainEvents = append(c.cloneEvents(), event.NewCardActivated(
 		c.id, c.tenantID, c.accountID, now.UTC(),
 	))
 
@@ -158,7 +169,7 @@ func (c Card) Freeze(now time.Time) (Card, error) {
 	c.updatedAt = now.UTC()
 	c.version++
 
-	c.domainEvents = append(c.domainEvents, event.NewCardFrozen(
+	c.domainEvents = append(c.cloneEvents(), event.NewCardFrozen(
 		c.id, c.tenantID, now.UTC(),
 	))
 
@@ -188,7 +199,7 @@ func (c Card) Cancel(now time.Time) (Card, error) {
 	c.updatedAt = now.UTC()
 	c.version++
 
-	c.domainEvents = append(c.domainEvents, event.NewCardCancelled(
+	c.domainEvents = append(c.cloneEvents(), event.NewCardCancelled(
 		c.id, c.tenantID, now.UTC(),
 	))
 
@@ -204,7 +215,7 @@ func (c Card) AuthorizeTransaction(
 	now time.Time,
 ) (Card, string, error) {
 	if !c.status.IsUsable() {
-		c.domainEvents = append(c.domainEvents, event.NewTransactionDeclined(
+		c.domainEvents = append(c.cloneEvents(), event.NewTransactionDeclined(
 			c.id, c.tenantID, amount, c.currency, merchantName,
 			fmt.Sprintf("card is in %s status", c.status), now.UTC(),
 		))
@@ -212,7 +223,7 @@ func (c Card) AuthorizeTransaction(
 	}
 
 	if c.cardNumber.IsExpired(now) {
-		c.domainEvents = append(c.domainEvents, event.NewTransactionDeclined(
+		c.domainEvents = append(c.cloneEvents(), event.NewTransactionDeclined(
 			c.id, c.tenantID, amount, c.currency, merchantName,
 			"card is expired", now.UTC(),
 		))
@@ -225,7 +236,7 @@ func (c Card) AuthorizeTransaction(
 
 	newDailySpent := c.dailySpent.Add(amount)
 	if newDailySpent.GreaterThan(c.dailyLimit) {
-		c.domainEvents = append(c.domainEvents, event.NewTransactionDeclined(
+		c.domainEvents = append(c.cloneEvents(), event.NewTransactionDeclined(
 			c.id, c.tenantID, amount, c.currency, merchantName,
 			"daily spending limit exceeded", now.UTC(),
 		))
@@ -235,7 +246,7 @@ func (c Card) AuthorizeTransaction(
 
 	newMonthlySpent := c.monthlySpent.Add(amount)
 	if newMonthlySpent.GreaterThan(c.monthlyLimit) {
-		c.domainEvents = append(c.domainEvents, event.NewTransactionDeclined(
+		c.domainEvents = append(c.cloneEvents(), event.NewTransactionDeclined(
 			c.id, c.tenantID, amount, c.currency, merchantName,
 			"monthly spending limit exceeded", now.UTC(),
 		))
@@ -250,7 +261,7 @@ func (c Card) AuthorizeTransaction(
 
 	authCode := generateAuthCode()
 
-	c.domainEvents = append(c.domainEvents, event.NewTransactionAuthorized(
+	c.domainEvents = append(c.cloneEvents(), event.NewTransactionAuthorized(
 		c.id, c.tenantID, c.accountID, amount, c.currency,
 		merchantName, merchantCategory, authCode, now.UTC(),
 	))

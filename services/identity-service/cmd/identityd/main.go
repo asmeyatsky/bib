@@ -15,8 +15,8 @@ import (
 	kafkapkg "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/services/identity-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/identity-service/internal/infrastructure/config"
-	"github.com/bibbank/bib/services/identity-service/internal/infrastructure/messaging"
-	"github.com/bibbank/bib/services/identity-service/internal/infrastructure/persistence"
+	"github.com/bibbank/bib/services/identity-service/internal/infrastructure/kafka"
+	"github.com/bibbank/bib/services/identity-service/internal/infrastructure/postgres"
 	"github.com/bibbank/bib/services/identity-service/internal/infrastructure/provider"
 	grpcPresentation "github.com/bibbank/bib/services/identity-service/internal/presentation/grpc"
 	"github.com/bibbank/bib/services/identity-service/internal/presentation/rest"
@@ -79,7 +79,7 @@ func main() {
 		Database: cfg.DB.Name,
 		SSLMode:  cfg.DB.SSLMode,
 	}.DSN()
-	if err := pgpkg.RunMigrations(dsn, "file://internal/infrastructure/persistence/migrations"); err != nil {
+	if err := pgpkg.RunMigrations(dsn, "file://internal/infrastructure/postgres/migrations"); err != nil {
 		logger.Warn("migration warning", "error", err)
 	}
 
@@ -90,9 +90,9 @@ func main() {
 	defer producer.Close()
 
 	// Wire dependencies (DI via constructors)
-	verificationRepo := persistence.NewVerificationRepo(pool)
+	verificationRepo := postgres.NewVerificationRepo(pool)
 	verificationProvider := provider.NewPersonaStub()
-	publisher := messaging.NewPublisher(producer)
+	publisher := kafka.NewPublisher(producer)
 
 	// Use cases
 	initiateVerificationUC := usecase.NewInitiateVerification(verificationRepo, verificationProvider, publisher)
@@ -100,15 +100,32 @@ func main() {
 	completeCheckUC := usecase.NewCompleteCheck(verificationRepo, publisher)
 	listVerificationsUC := usecase.NewListVerifications(verificationRepo)
 
-	// JWT service
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = "dev-secret-change-in-prod" // development only
-	}
-	jwtSvc := auth.NewJWTService(auth.JWTConfig{
-		Secret: jwtSecret,
+	// JWT service (validation-only: public key preferred, secret as fallback).
+	jwtCfg := auth.JWTConfig{
 		Issuer: "bib-identity",
-	})
+	}
+	switch {
+	case os.Getenv("JWT_PUBLIC_KEY") != "":
+		jwtCfg.PublicKeyPEM = os.Getenv("JWT_PUBLIC_KEY")
+	case os.Getenv("JWT_PUBLIC_KEY_FILE") != "":
+		keyData, err := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
+		if err != nil {
+			logger.Error("failed to load JWT public key file", "error", err)
+			os.Exit(1)
+		}
+		jwtCfg.PublicKeyPEM = string(keyData)
+	default:
+		jwtSecret := os.Getenv("JWT_SECRET")
+		if jwtSecret == "" {
+			jwtSecret = "dev-secret-change-in-prod" // development only
+		}
+		jwtCfg.Secret = jwtSecret
+	}
+	jwtSvc, err := auth.NewJWTService(jwtCfg)
+	if err != nil {
+		logger.Error("failed to initialize JWT service", "error", err)
+		os.Exit(1)
+	}
 
 	// gRPC server
 	handler := grpcPresentation.NewIdentityHandler(

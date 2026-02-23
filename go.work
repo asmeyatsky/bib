@@ -1,4 +1,4 @@
-go 1.23
+go 1.24.0
 
 use (
 	./pkg/money
@@ -11,6 +11,7 @@ use (
 	./pkg/residency
 	./pkg/openbanking
 	./pkg/testutil
+	./pkg/tlsutil
 
 	./services/ledger-service
 	./services/account-service
@@ -24,4 +25,6 @@ use (
 	./services/reporting-service
 
 	./gateway
+
+	./e2e
 )

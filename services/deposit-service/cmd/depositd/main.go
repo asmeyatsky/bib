@@ -16,8 +16,8 @@ import (
 	"github.com/bibbank/bib/services/deposit-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/deposit-service/internal/domain/service"
 	"github.com/bibbank/bib/services/deposit-service/internal/infrastructure/config"
-	"github.com/bibbank/bib/services/deposit-service/internal/infrastructure/messaging"
-	infraPG "github.com/bibbank/bib/services/deposit-service/internal/infrastructure/persistence/postgres"
+	"github.com/bibbank/bib/services/deposit-service/internal/infrastructure/kafka"
+	infraPG "github.com/bibbank/bib/services/deposit-service/internal/infrastructure/postgres"
 	grpcPresentation "github.com/bibbank/bib/services/deposit-service/internal/presentation/grpc"
 	"github.com/bibbank/bib/services/deposit-service/internal/presentation/rest"
 )
@@ -92,7 +92,7 @@ func main() {
 	// Wire dependencies (DI via constructors)
 	productRepo := infraPG.NewProductRepo(pool)
 	positionRepo := infraPG.NewPositionRepo(pool)
-	publisher := messaging.NewPublisher(producer)
+	publisher := kafka.NewPublisher(producer)
 	accrualEngine := service.NewAccrualEngine()
 
 	// Use cases
@@ -101,15 +101,32 @@ func main() {
 	getPositionUC := usecase.NewGetDepositPosition(positionRepo)
 	accrueInterestUC := usecase.NewAccrueInterest(productRepo, positionRepo, publisher, accrualEngine)
 
-	// JWT service
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = "dev-secret-change-in-prod" // development only
-	}
-	jwtSvc := auth.NewJWTService(auth.JWTConfig{
-		Secret: jwtSecret,
+	// JWT service (validation-only: public key preferred, secret as fallback).
+	jwtCfg := auth.JWTConfig{
 		Issuer: "bib-deposit",
-	})
+	}
+	switch {
+	case os.Getenv("JWT_PUBLIC_KEY") != "":
+		jwtCfg.PublicKeyPEM = os.Getenv("JWT_PUBLIC_KEY")
+	case os.Getenv("JWT_PUBLIC_KEY_FILE") != "":
+		keyData, err := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
+		if err != nil {
+			logger.Error("failed to load JWT public key file", "error", err)
+			os.Exit(1)
+		}
+		jwtCfg.PublicKeyPEM = string(keyData)
+	default:
+		jwtSecret := os.Getenv("JWT_SECRET")
+		if jwtSecret == "" {
+			jwtSecret = "dev-secret-change-in-prod" // development only
+		}
+		jwtCfg.Secret = jwtSecret
+	}
+	jwtSvc, err := auth.NewJWTService(jwtCfg)
+	if err != nil {
+		logger.Error("failed to initialize JWT service", "error", err)
+		os.Exit(1)
+	}
 
 	// gRPC server
 	handler := grpcPresentation.NewDepositHandler(createProductUC, openPositionUC, getPositionUC, accrueInterestUC)

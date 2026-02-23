@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -32,12 +33,32 @@ func main() {
 
 	logger.Info("starting gateway", "port", cfg.HTTPPort)
 
-	// JWT service for token validation.
-	jwtService := auth.NewJWTService(auth.JWTConfig{
-		Secret:     cfg.JWTSecret,
+	// JWT service for token signing (gateway is the issuer).
+	jwtCfg := auth.JWTConfig{
 		Issuer:     "bib-gateway",
 		Expiration: 24 * time.Hour,
-	})
+	}
+
+	// Prefer RSA private key; fall back to HMAC secret for backwards compat.
+	switch {
+	case cfg.JWTPrivateKey != "":
+		jwtCfg.PrivateKeyPEM = cfg.JWTPrivateKey
+	case cfg.JWTPrivateKeyFile != "":
+		keyData, err := auth.LoadKeyFromFile(cfg.JWTPrivateKeyFile)
+		if err != nil {
+			logger.Error("failed to load JWT private key file", "error", err)
+			os.Exit(1)
+		}
+		jwtCfg.PrivateKeyPEM = string(keyData)
+	default:
+		jwtCfg.Secret = cfg.JWTSecret
+	}
+
+	jwtService, err := auth.NewJWTService(jwtCfg)
+	if err != nil {
+		logger.Error("failed to initialize JWT service", "error", err)
+		os.Exit(1)
+	}
 
 	// Connect to backend gRPC services.
 	proxies, closers, err := dialBackends(cfg, logger)

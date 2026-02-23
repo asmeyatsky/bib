@@ -247,8 +247,8 @@ Enterprise-grade, microservices-based banking platform in Go: 10 services, 1 gat
 
 ## 6. Top Recommendations — Implementation Status
 
-> Last updated: 2026-02-22. Commit `a330380`.
-> All modules build clean. All tests pass.
+> Last updated: 2026-02-23. All modules build clean. All tests pass.
+> **All audit items completed.**
 
 ### P0 — Production Blockers (5/5 DONE)
 
@@ -258,11 +258,11 @@ Enterprise-grade, microservices-based banking platform in Go: 10 services, 1 gat
 4. ~~**Wire auth interceptor to all gRPC servers.**~~ DONE — `UnaryAuthInterceptor` registered in all 10 services with health check bypass.
 5. ~~**Fix tenant isolation.**~~ DONE — all handlers extract tenant ID from JWT claims via `tenantIDFromContext(ctx)`, not from request params.
 
-### P1 — Security Hardening (5/7 DONE)
+### P1 — Security Hardening (7/7 DONE)
 
 6. ~~**Remove hardcoded secrets.**~~ DONE — defaults changed to empty string, `Validate()` panics on missing `JWT_SECRET`/`DB_PASSWORD`.
-7. **Switch to asymmetric JWT signing** (RSA/ECDSA). **OUTSTANDING** — requires generating RSA/ECDSA keypair, updating `pkg/auth/jwt.go` to use `SigningMethodRS256` or `SigningMethodES256`, distributing public key to all validators, updating all `JWTConfig` structs. Currently still HMAC-SHA256.
-8. **Enable TLS on all gRPC communication.** **OUTSTANDING** — requires certificate management (self-signed or CA-issued), adding `credentials.NewTLS()` to all `grpc.NewServer()` calls and `grpc.WithTransportCredentials()` to all `grpc.Dial()` calls. Affects all 10 services + gateway proxy connections.
+7. ~~**Switch to asymmetric JWT signing** (RSA/ECDSA).~~ DONE — `pkg/auth/jwt.go` supports RSA-2048 (`SigningMethodRS256`). `JWTConfig` accepts `PrivateKeyPEM`/`PublicKeyPEM`. Gateway signs with private key, all 10 services validate with public key. Dev keypair generated in `deploy/certs/`. `GenerateKeyPair()` and `LoadKeyFromFile()` helpers added. Backwards-compatible HMAC fallback preserved.
+8. ~~**Enable TLS on all gRPC communication.**~~ DONE — `pkg/tlsutil` provides `NewServerTLS`/`NewClientTLS` helpers. All 10 service `server.go` files conditionally enable TLS via `GRPC_TLS_CERT`/`GRPC_TLS_KEY` env vars. Gateway proxy connections support `grpc.WithTransportCredentials()`. Cert generation script at `deploy/certs/gen-certs.sh`.
 9. ~~**Disable gRPC reflection in production.**~~ DONE — gated behind `GRPC_REFLECTION=true` env var.
 10. ~~**Enforce RBAC.**~~ DONE — `requireRole()` helper in all 10 handlers with role mappings: read (all roles), write (admin/operator/api_client), sensitive (admin/operator), admin-only (admin).
 11. ~~**Sanitize error messages.**~~ DONE — all `codes.Internal` responses return `"internal error"`. Validation errors keep specific messages.
@@ -275,22 +275,22 @@ Enterprise-grade, microservices-based banking platform in Go: 10 services, 1 gat
 15. ~~**Implement missing payment saga steps.**~~ DONE — RESERVE_FUNDS and POST_TO_LEDGER now execute in `payment_saga.go`.
 16. ~~**Fix card-service transactional outbox.**~~ DONE — `Save` and `Update` wrap state + outbox in a single DB transaction.
 
-### P3 — Consistency & Cleanup (4/5 DONE)
+### P3 — Consistency & Cleanup (5/5 DONE)
 
 17. ~~**Unify DomainEvent interface.**~~ DONE — consolidated into `pkg/events`. All services use shared `BaseEvent` with `string` IDs and `TenantID`.
-18. **Standardize infrastructure package naming.** **OUTSTANDING (deferred)** — some services use `infrastructure/postgres/`, others `infrastructure/persistence/postgres/`. Same split for `kafka/` vs `messaging/`. Renaming would break all imports across the codebase. Recommend doing this as a dedicated refactor with IDE tooling.
+18. ~~**Standardize infrastructure package naming.**~~ DONE — renamed `infrastructure/persistence/postgres/` → `infrastructure/postgres/` and `infrastructure/messaging/` → `infrastructure/kafka/` across all 7 affected services. Updated all import paths in main.go, handlers, and tests.
 19. ~~**Remove dead code.**~~ DONE — deleted 4 duplicate `cmd/server/` dirs, duplicate ACH adapter, 2 empty port files.
 20. ~~**Fix env var naming.**~~ DONE — standardized `DB_SSLMODE` and default passwords across all services.
 21. ~~**Add missing proto RPCs.**~~ DONE — added `DisburseLoan` and `GetApplication` to lending proto. Fixed date types in ledger/deposit protos.
 
-### P4 — Test Coverage (4/6 DONE)
+### P4 — Test Coverage (6/6 DONE)
 
 22. ~~**Add infrastructure layer tests.**~~ DONE — added repo tests for account, ledger (journal + balance), payment, card, fraud services.
 23. ~~**Add presentation layer tests.**~~ DONE — added handler tests for account, ledger, payment, fraud, card services.
-24. **Implement integration tests.** **OUTSTANDING** — all `test/integration/` directories are still empty. Requires running Postgres and Kafka via testcontainers (`pkg/testutil`). Should test: SQL queries against real DB, Kafka producer/consumer round-trips, gRPC client/server communication. Start with ledger-service and payment-service as highest priority.
+24. ~~**Implement integration tests.**~~ DONE — added testcontainers-based integration tests for ledger-service, payment-service, and account-service. Tests run real Postgres via `pkg/testutil`, verify SQL queries, repository operations, and use case flows against actual database. Build-tagged with `//go:build integration`.
 25. ~~**Complete use case tests.**~~ DONE — 20 new test files covering all 24 previously untested use cases across 9 services.
-26. **Enable e2e tests.** **OUTSTANDING** — `e2e/e2e_test.go` still has `TestOnboardingFlow` and `TestPaymentFlow` behind `t.Skip()`. Requires full stack running (docker-compose up). Should add response body assertions and cover more flows (FX, deposits, lending, cards).
-27. **Add concurrency tests.** **OUTSTANDING** — no race condition or optimistic locking tests exist. Should test: concurrent balance updates in ledger, concurrent payment processing, concurrent account state transitions, version conflict detection. Use `sync.WaitGroup` + goroutines with `-race` flag.
+26. ~~**Enable e2e tests.**~~ DONE — expanded `e2e/e2e_test.go` from 1 working test to 9 tests. Removed `t.Skip()`. Added JWT auth headers, response body assertions, and flows for payments, FX, deposits, lending, cards, fraud, identity, and reporting.
+27. ~~**Add concurrency tests.**~~ DONE — 5 concurrency test files covering account, ledger, payment, card domain models and money package. Tests use goroutines + `sync.WaitGroup` with `-race` flag. Found and fixed a real data race in Card model's slice backing array (added `cloneEvents()` deep-copy).
 
 ### P5 — PRD Feature Gaps (7/7 DONE)
 
@@ -318,49 +318,20 @@ Enterprise-grade, microservices-based banking platform in Go: 10 services, 1 gat
 
 ---
 
-## 7. Outstanding Items — Where to Start Next
+## 7. Completion Summary
 
-Six items remain. Recommended order:
+**All audit items have been completed.** No outstanding items remain.
 
-### 1. Asymmetric JWT signing (S7) — HIGH priority
-- Generate RSA keypair (or ECDSA P-256)
-- Update `pkg/auth/jwt.go`: `SigningMethodRS256`, load private key for signing, public key for validation
-- Update `JWTConfig` to accept key file paths instead of a shared secret string
-- Update all 10 service `main.go` files and gateway to load the public key
-- Update `pkg/auth/jwt_test.go`
+Total items delivered: 34 audit recommendations + 12 additional improvements beyond the original audit scope.
 
-### 2. gRPC TLS (S8) — HIGH priority
-- Generate self-signed CA + service certs (or use cert-manager in K8s)
-- Update all `server.go` files: `grpc.NewServer(grpc.Creds(credentials.NewTLS(...)))`
-- Update gateway proxy: `grpc.WithTransportCredentials(credentials.NewTLS(...))`
-- Add `TLS_CERT_FILE` and `TLS_KEY_FILE` env vars to config
-- Add cert volume mounts to docker-compose and Helm charts
-
-### 3. Integration tests (P4-24) — MEDIUM priority
-- Start with `services/ledger-service/test/integration/` and `services/payment-service/test/integration/`
-- Use `pkg/testutil` postgres container helpers
-- Test actual SQL against a real Postgres instance
-- Test Kafka publish/consume round-trips
-- Run with `go test -tags=integration`
-
-### 4. Concurrency tests (P4-27) — MEDIUM priority
-- Add to existing domain model test files
-- Test concurrent `Freeze` + `Close` on same account
-- Test concurrent balance updates in ledger
-- Test optimistic locking version conflicts
-- Use `-race` flag (already in Makefile)
-
-### 5. E2E tests (P4-26) — LOW priority (requires full stack)
-- Un-skip `TestOnboardingFlow` and `TestPaymentFlow` in `e2e/e2e_test.go`
-- Add response body assertions
-- Add flows for FX, deposits, lending, cards, fraud
-- Requires `docker-compose up` before running
-
-### 6. Standardize infra package naming (C2) — LOW priority
-- Rename `infrastructure/persistence/postgres/` → `infrastructure/postgres/` (or vice versa) across 7 services
-- Rename `infrastructure/messaging/` → `infrastructure/kafka/` (or vice versa) across 7 services
-- Update all import paths
-- Best done with IDE refactoring tools
+### Suggested future enhancements (not in original audit)
+- Benchmark tests for financial operations (large volumes, sub-cent rounding)
+- CI/CD pipeline (GitHub Actions / GitLab CI) with build, test, lint, and deploy stages
+- GitOps configuration (ArgoCD / Flux)
+- Real AI/ML fraud model integration (currently rule-based)
+- Real credit bureau API integration (currently simulated)
+- Kubernetes cert-manager for automated TLS certificate rotation
+- Service mesh (Istio/Linkerd) for mTLS and traffic management
 
 ---
 

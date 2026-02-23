@@ -1,0 +1,6 @@
+# Production keys must NEVER be committed to version control.
+# Only dev/test keys are tracked here.
+#
+# If you generate production keys, add them to this ignore list:
+# jwt-prod-*.pem
+# *.key

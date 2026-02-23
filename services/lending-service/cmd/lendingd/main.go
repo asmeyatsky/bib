@@ -19,8 +19,8 @@ import (
 	"github.com/bibbank/bib/services/lending-service/internal/domain/service"
 	"github.com/bibbank/bib/services/lending-service/internal/infrastructure/adapter"
 	"github.com/bibbank/bib/services/lending-service/internal/infrastructure/config"
-	"github.com/bibbank/bib/services/lending-service/internal/infrastructure/messaging"
-	pgRepo "github.com/bibbank/bib/services/lending-service/internal/infrastructure/persistence/postgres"
+	"github.com/bibbank/bib/services/lending-service/internal/infrastructure/kafka"
+	pgRepo "github.com/bibbank/bib/services/lending-service/internal/infrastructure/postgres"
 	grpcPresentation "github.com/bibbank/bib/services/lending-service/internal/presentation/grpc"
 	"github.com/bibbank/bib/services/lending-service/internal/presentation/rest"
 )
@@ -80,7 +80,7 @@ func main() {
 		Brokers: []string{cfg.KafkaBroker},
 	})
 	defer kafkaProducer.Close()
-	publisher := messaging.NewKafkaEventPublisher(kafkaProducer, "lending-events", logger)
+	publisher := kafka.NewKafkaEventPublisher(kafkaProducer, "lending-events", logger)
 	creditClient := adapter.NewStubCreditBureauClient()
 	underwriter := service.NewUnderwritingEngine()
 
@@ -91,15 +91,32 @@ func main() {
 	getLoanUC := usecase.NewGetLoanUseCase(loanRepo)
 	getAppUC := usecase.NewGetApplicationUseCase(appRepo)
 
-	// JWT service.
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = "dev-secret-change-in-prod" // development only
-	}
-	jwtSvc := auth.NewJWTService(auth.JWTConfig{
-		Secret: jwtSecret,
+	// JWT service (validation-only: public key preferred, secret as fallback).
+	jwtCfg := auth.JWTConfig{
 		Issuer: "bib-lending",
-	})
+	}
+	switch {
+	case os.Getenv("JWT_PUBLIC_KEY") != "":
+		jwtCfg.PublicKeyPEM = os.Getenv("JWT_PUBLIC_KEY")
+	case os.Getenv("JWT_PUBLIC_KEY_FILE") != "":
+		keyData, err := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
+		if err != nil {
+			logger.Error("failed to load JWT public key file", "error", err)
+			os.Exit(1)
+		}
+		jwtCfg.PublicKeyPEM = string(keyData)
+	default:
+		jwtSecret := os.Getenv("JWT_SECRET")
+		if jwtSecret == "" {
+			jwtSecret = "dev-secret-change-in-prod" // development only
+		}
+		jwtCfg.Secret = jwtSecret
+	}
+	jwtSvc, err := auth.NewJWTService(jwtCfg)
+	if err != nil {
+		logger.Error("failed to initialize JWT service", "error", err)
+		os.Exit(1)
+	}
 
 	// gRPC server.
 	handler := grpcPresentation.NewLendingHandler(submitAppUC, disburseUC, paymentUC, getLoanUC, getAppUC)

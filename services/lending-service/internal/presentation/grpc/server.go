@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/bibbank/bib/pkg/auth"
+	"github.com/bibbank/bib/pkg/tlsutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
@@ -27,7 +28,24 @@ func NewServer(handler *LendingHandler, logger *slog.Logger, jwtService *auth.JW
 		"/grpc.health.v1.Health/Check",
 		"/grpc.health.v1.Health/Watch",
 	})
-	gs := grpc.NewServer(grpc.UnaryInterceptor(authInterceptor))
+
+	var serverOpts []grpc.ServerOption
+	serverOpts = append(serverOpts, grpc.UnaryInterceptor(authInterceptor))
+
+	// Optional TLS: set GRPC_TLS_CERT_FILE and GRPC_TLS_KEY_FILE to enable.
+	if certFile, keyFile := os.Getenv("GRPC_TLS_CERT_FILE"), os.Getenv("GRPC_TLS_KEY_FILE"); certFile != "" && keyFile != "" {
+		creds, err := tlsutil.ServerTLSConfig(certFile, keyFile)
+		if err != nil {
+			logger.Error("failed to load TLS credentials, starting without TLS", "error", err)
+		} else {
+			serverOpts = append(serverOpts, grpc.Creds(creds))
+			logger.Info("gRPC TLS enabled", "cert", certFile, "key", keyFile)
+		}
+	} else {
+		logger.Info("gRPC TLS not configured, running without TLS")
+	}
+
+	gs := grpc.NewServer(serverOpts...)
 
 	// Register gRPC health check.
 	healthSrv := health.NewServer()

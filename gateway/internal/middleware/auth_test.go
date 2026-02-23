@@ -11,11 +11,15 @@ import (
 )
 
 func newTestJWTService() *auth.JWTService {
-	return auth.NewJWTService(auth.JWTConfig{
+	svc, err := auth.NewJWTService(auth.JWTConfig{
 		Secret:     "test-secret-key",
 		Issuer:     "test",
 		Expiration: 1 * time.Hour,
 	})
+	if err != nil {
+		panic("newTestJWTService: " + err.Error())
+	}
+	return svc
 }
 
 func TestAuthMiddleware_SkipPaths(t *testing.T) {

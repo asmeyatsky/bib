@@ -7,27 +7,29 @@ import (
 
 // Config holds all configuration for the API gateway.
 type Config struct {
-	HTTPPort      int
-	LedgerAddr    string
-	AccountAddr   string
-	FXAddr        string
-	DepositAddr   string
-	IdentityAddr  string
-	PaymentAddr   string
-	LendingAddr   string
-	FraudAddr     string
-	CardAddr      string
-	ReportingAddr string
-	JWTSecret     string
-	RateLimit     int // requests per second per client
-	LogLevel      string
-	LogFormat     string
+	HTTPPort         int
+	LedgerAddr       string
+	AccountAddr      string
+	FXAddr           string
+	DepositAddr      string
+	IdentityAddr     string
+	PaymentAddr      string
+	LendingAddr      string
+	FraudAddr        string
+	CardAddr         string
+	ReportingAddr    string
+	JWTSecret        string // Deprecated: use JWTPrivateKey for RSA signing.
+	JWTPrivateKey    string // PEM-encoded RSA private key for signing tokens.
+	JWTPrivateKeyFile string // Path to PEM file containing RSA private key.
+	RateLimit        int // requests per second per client
+	LogLevel         string
+	LogFormat        string
 }
 
 // Validate checks required configuration values.
 func (c Config) Validate() {
-	if c.JWTSecret == "" {
-		panic("JWT_SECRET environment variable is required")
+	if c.JWTPrivateKey == "" && c.JWTPrivateKeyFile == "" && c.JWTSecret == "" {
+		panic("JWT_PRIVATE_KEY, JWT_PRIVATE_KEY_FILE, or JWT_SECRET environment variable is required")
 	}
 }
 
@@ -47,7 +49,9 @@ func Load() Config {
 		FraudAddr:     getEnvWithAlt("FRAUD_ADDR", "FRAUD_SERVICE_ADDR", "localhost:9088"),
 		CardAddr:      getEnvWithAlt("CARD_ADDR", "CARD_SERVICE_ADDR", "localhost:9089"),
 		ReportingAddr: getEnvWithAlt("REPORTING_ADDR", "REPORTING_SERVICE_ADDR", "localhost:9090"),
-		JWTSecret:     getEnv("JWT_SECRET", ""),
+		JWTSecret:        getEnv("JWT_SECRET", ""),
+		JWTPrivateKey:    getEnv("JWT_PRIVATE_KEY", ""),
+		JWTPrivateKeyFile: getEnv("JWT_PRIVATE_KEY_FILE", ""),
 		RateLimit:     getEnvInt("RATE_LIMIT", 100),
 		LogLevel:      getEnv("LOG_LEVEL", "info"),
 		LogFormat:     getEnv("LOG_FORMAT", "json"),

@@ -104,15 +104,32 @@ func main() {
 	backvalueUC := usecase.NewBackvalueEntry(journalRepo)
 	periodCloseUC := usecase.NewPeriodClose(periodRepo, publisher)
 
-	// JWT service
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = "dev-secret-change-in-prod" // development only
-	}
-	jwtSvc := auth.NewJWTService(auth.JWTConfig{
-		Secret: jwtSecret,
+	// JWT service (validation-only: public key preferred, secret as fallback).
+	jwtCfg := auth.JWTConfig{
 		Issuer: "bib-ledger",
-	})
+	}
+	switch {
+	case os.Getenv("JWT_PUBLIC_KEY") != "":
+		jwtCfg.PublicKeyPEM = os.Getenv("JWT_PUBLIC_KEY")
+	case os.Getenv("JWT_PUBLIC_KEY_FILE") != "":
+		keyData, err := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
+		if err != nil {
+			logger.Error("failed to load JWT public key file", "error", err)
+			os.Exit(1)
+		}
+		jwtCfg.PublicKeyPEM = string(keyData)
+	default:
+		jwtSecret := os.Getenv("JWT_SECRET")
+		if jwtSecret == "" {
+			jwtSecret = "dev-secret-change-in-prod" // development only
+		}
+		jwtCfg.Secret = jwtSecret
+	}
+	jwtSvc, err := auth.NewJWTService(jwtCfg)
+	if err != nil {
+		logger.Error("failed to initialize JWT service", "error", err)
+		os.Exit(1)
+	}
 
 	// gRPC server
 	handler := grpcPresentation.NewLedgerHandler(postEntryUC, getEntryUC, getBalanceUC, listEntriesUC, backvalueUC, periodCloseUC)

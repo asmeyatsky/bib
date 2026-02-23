@@ -17,8 +17,8 @@ import (
 	"github.com/bibbank/bib/services/payment-service/internal/domain/service"
 	"github.com/bibbank/bib/services/payment-service/internal/infrastructure/adapter/ach"
 	"github.com/bibbank/bib/services/payment-service/internal/infrastructure/config"
-	"github.com/bibbank/bib/services/payment-service/internal/infrastructure/messaging"
-	infraPG "github.com/bibbank/bib/services/payment-service/internal/infrastructure/persistence/postgres"
+	"github.com/bibbank/bib/services/payment-service/internal/infrastructure/kafka"
+	infraPG "github.com/bibbank/bib/services/payment-service/internal/infrastructure/postgres"
 	grpcPresentation "github.com/bibbank/bib/services/payment-service/internal/presentation/grpc"
 	"github.com/bibbank/bib/services/payment-service/internal/presentation/rest"
 )
@@ -80,7 +80,7 @@ func main() {
 		Database: cfg.DB.Name,
 		SSLMode:  cfg.DB.SSLMode,
 	}.DSN()
-	if err := pgpkg.RunMigrations(dsn, "internal/infrastructure/persistence/postgres/migrations"); err != nil {
+	if err := pgpkg.RunMigrations(dsn, "internal/infrastructure/postgres/migrations"); err != nil {
 		logger.Warn("migration warning", "error", err)
 	}
 
@@ -92,7 +92,7 @@ func main() {
 
 	// Wire dependencies (DI via constructors).
 	paymentRepo := infraPG.NewPaymentOrderRepo(pool)
-	publisher := messaging.NewPublisher(producer)
+	publisher := kafka.NewPublisher(producer)
 	routingEngine := service.NewRoutingEngine()
 	achAdapter := ach.NewAdapter(logger)
 
@@ -102,15 +102,32 @@ func main() {
 	listPaymentsUC := usecase.NewListPayments(paymentRepo)
 	_ = usecase.NewProcessPayment(paymentRepo, achAdapter, publisher)
 
-	// JWT service.
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = "dev-secret-change-in-prod" // development only
-	}
-	jwtSvc := auth.NewJWTService(auth.JWTConfig{
-		Secret: jwtSecret,
+	// JWT service (validation-only: public key preferred, secret as fallback).
+	jwtCfg := auth.JWTConfig{
 		Issuer: "bib-payment",
-	})
+	}
+	switch {
+	case os.Getenv("JWT_PUBLIC_KEY") != "":
+		jwtCfg.PublicKeyPEM = os.Getenv("JWT_PUBLIC_KEY")
+	case os.Getenv("JWT_PUBLIC_KEY_FILE") != "":
+		keyData, err := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
+		if err != nil {
+			logger.Error("failed to load JWT public key file", "error", err)
+			os.Exit(1)
+		}
+		jwtCfg.PublicKeyPEM = string(keyData)
+	default:
+		jwtSecret := os.Getenv("JWT_SECRET")
+		if jwtSecret == "" {
+			jwtSecret = "dev-secret-change-in-prod" // development only
+		}
+		jwtCfg.Secret = jwtSecret
+	}
+	jwtSvc, err := auth.NewJWTService(jwtCfg)
+	if err != nil {
+		logger.Error("failed to initialize JWT service", "error", err)
+		os.Exit(1)
+	}
 
 	// gRPC server.
 	handler := grpcPresentation.NewPaymentHandler(initiatePaymentUC, getPaymentUC, listPaymentsUC)
