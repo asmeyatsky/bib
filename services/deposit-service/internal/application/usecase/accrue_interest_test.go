@@ -42,18 +42,18 @@ func TestAccrueInterest_Execute(t *testing.T) {
 		)
 
 		productRepo := &mockDepositProductRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.DepositProduct, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.DepositProduct, error) {
 				return product, nil
 			},
 		}
 
 		var savedPositions []model.DepositPosition
 		positionRepo := &mockDepositPositionRepository{
-			findActiveFunc: func(ctx context.Context, tid uuid.UUID) ([]model.DepositPosition, error) {
+			findActiveFunc: func(_ context.Context, tid uuid.UUID) ([]model.DepositPosition, error) {
 				assert.Equal(t, tenantID, tid)
 				return []model.DepositPosition{position}, nil
 			},
-			saveFunc: func(ctx context.Context, pos model.DepositPosition) error {
+			saveFunc: func(_ context.Context, pos model.DepositPosition) error {
 				savedPositions = append(savedPositions, pos)
 				return nil
 			},
@@ -81,7 +81,7 @@ func TestAccrueInterest_Execute(t *testing.T) {
 
 		productRepo := &mockDepositProductRepository{}
 		positionRepo := &mockDepositPositionRepository{
-			findActiveFunc: func(ctx context.Context, tid uuid.UUID) ([]model.DepositPosition, error) {
+			findActiveFunc: func(_ context.Context, _ uuid.UUID) ([]model.DepositPosition, error) {
 				return nil, nil
 			},
 		}
@@ -100,7 +100,7 @@ func TestAccrueInterest_Execute(t *testing.T) {
 
 	t.Run("fails when fetching active positions fails", func(t *testing.T) {
 		positionRepo := &mockDepositPositionRepository{
-			findActiveFunc: func(ctx context.Context, tid uuid.UUID) ([]model.DepositPosition, error) {
+			findActiveFunc: func(_ context.Context, _ uuid.UUID) ([]model.DepositPosition, error) {
 				return nil, fmt.Errorf("database unavailable")
 			},
 		}
@@ -131,12 +131,12 @@ func TestAccrueInterest_Execute(t *testing.T) {
 		)
 
 		productRepo := &mockDepositProductRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.DepositProduct, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.DepositProduct, error) {
 				return model.DepositProduct{}, fmt.Errorf("product not found")
 			},
 		}
 		positionRepo := &mockDepositPositionRepository{
-			findActiveFunc: func(ctx context.Context, tid uuid.UUID) ([]model.DepositPosition, error) {
+			findActiveFunc: func(_ context.Context, _ uuid.UUID) ([]model.DepositPosition, error) {
 				return []model.DepositPosition{position}, nil
 			},
 		}
@@ -173,15 +173,15 @@ func TestAccrueInterest_Execute(t *testing.T) {
 		)
 
 		productRepo := &mockDepositProductRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.DepositProduct, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.DepositProduct, error) {
 				return product, nil
 			},
 		}
 		positionRepo := &mockDepositPositionRepository{
-			findActiveFunc: func(ctx context.Context, tid uuid.UUID) ([]model.DepositPosition, error) {
+			findActiveFunc: func(_ context.Context, _ uuid.UUID) ([]model.DepositPosition, error) {
 				return []model.DepositPosition{position}, nil
 			},
-			saveFunc: func(ctx context.Context, pos model.DepositPosition) error {
+			saveFunc: func(_ context.Context, _ model.DepositPosition) error {
 				return fmt.Errorf("database unavailable")
 			},
 		}
@@ -218,17 +218,17 @@ func TestAccrueInterest_Execute(t *testing.T) {
 		)
 
 		productRepo := &mockDepositProductRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.DepositProduct, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.DepositProduct, error) {
 				return product, nil
 			},
 		}
 		positionRepo := &mockDepositPositionRepository{
-			findActiveFunc: func(ctx context.Context, tid uuid.UUID) ([]model.DepositPosition, error) {
+			findActiveFunc: func(_ context.Context, _ uuid.UUID) ([]model.DepositPosition, error) {
 				return []model.DepositPosition{position}, nil
 			},
 		}
 		publisher := &mockDepositEventPublisher{
-			publishFunc: func(ctx context.Context, topic string, evts ...events.DomainEvent) error {
+			publishFunc: func(_ context.Context, _ string, _ ...events.DomainEvent) error {
 				return fmt.Errorf("kafka unavailable")
 			},
 		}

@@ -14,22 +14,22 @@ import (
 
 // TransactionAssessment is the aggregate root for fraud risk assessments.
 type TransactionAssessment struct {
+	amount          decimal.Decimal
+	assessedAt      time.Time
+	createdAt       time.Time
+	updatedAt       time.Time
+	riskSignals     []string
+	domainEvents    []events.DomainEvent
 	id              uuid.UUID
 	tenantID        uuid.UUID
 	transactionID   uuid.UUID
 	accountID       uuid.UUID
-	amount          decimal.Decimal
 	currency        string
 	transactionType string
 	riskLevel       valueobject.RiskLevel
-	riskScore       int
 	decision        valueobject.AssessmentDecision
-	riskSignals     []string
-	assessedAt      time.Time
+	riskScore       int
 	version         int
-	createdAt       time.Time
-	updatedAt       time.Time
-	domainEvents    []events.DomainEvent
 }
 
 // NewTransactionAssessment creates a new assessment for an incoming transaction.
@@ -149,21 +149,21 @@ func Reconstruct(
 
 // --- Accessors ---
 
-func (a *TransactionAssessment) ID() uuid.UUID                          { return a.id }
-func (a *TransactionAssessment) TenantID() uuid.UUID                    { return a.tenantID }
-func (a *TransactionAssessment) TransactionID() uuid.UUID               { return a.transactionID }
-func (a *TransactionAssessment) AccountID() uuid.UUID                   { return a.accountID }
-func (a *TransactionAssessment) Amount() decimal.Decimal                { return a.amount }
-func (a *TransactionAssessment) Currency() string                       { return a.currency }
-func (a *TransactionAssessment) TransactionType() string                { return a.transactionType }
-func (a *TransactionAssessment) RiskLevel() valueobject.RiskLevel       { return a.riskLevel }
-func (a *TransactionAssessment) RiskScore() int                         { return a.riskScore }
+func (a *TransactionAssessment) ID() uuid.UUID                            { return a.id }
+func (a *TransactionAssessment) TenantID() uuid.UUID                      { return a.tenantID }
+func (a *TransactionAssessment) TransactionID() uuid.UUID                 { return a.transactionID }
+func (a *TransactionAssessment) AccountID() uuid.UUID                     { return a.accountID }
+func (a *TransactionAssessment) Amount() decimal.Decimal                  { return a.amount }
+func (a *TransactionAssessment) Currency() string                         { return a.currency }
+func (a *TransactionAssessment) TransactionType() string                  { return a.transactionType }
+func (a *TransactionAssessment) RiskLevel() valueobject.RiskLevel         { return a.riskLevel }
+func (a *TransactionAssessment) RiskScore() int                           { return a.riskScore }
 func (a *TransactionAssessment) Decision() valueobject.AssessmentDecision { return a.decision }
-func (a *TransactionAssessment) RiskSignals() []string                  { return a.riskSignals }
-func (a *TransactionAssessment) AssessedAt() time.Time                  { return a.assessedAt }
-func (a *TransactionAssessment) Version() int                           { return a.version }
-func (a *TransactionAssessment) CreatedAt() time.Time                   { return a.createdAt }
-func (a *TransactionAssessment) UpdatedAt() time.Time                   { return a.updatedAt }
+func (a *TransactionAssessment) RiskSignals() []string                    { return a.riskSignals }
+func (a *TransactionAssessment) AssessedAt() time.Time                    { return a.assessedAt }
+func (a *TransactionAssessment) Version() int                             { return a.version }
+func (a *TransactionAssessment) CreatedAt() time.Time                     { return a.createdAt }
+func (a *TransactionAssessment) UpdatedAt() time.Time                     { return a.updatedAt }
 
 // DomainEvents returns all accumulated domain events and clears them.
 func (a *TransactionAssessment) DomainEvents() []events.DomainEvent {

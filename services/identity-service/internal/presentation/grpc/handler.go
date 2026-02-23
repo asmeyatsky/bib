@@ -93,6 +93,9 @@ type CompleteCheckResponse struct {
 }
 
 type VerificationMsg struct {
+	CreatedAt          *timestamppb.Timestamp
+	UpdatedAt          *timestamppb.Timestamp
+	Checks             []*CheckMsg
 	ID                 string
 	TenantID           string
 	ApplicantFirstName string
@@ -101,19 +104,16 @@ type VerificationMsg struct {
 	ApplicantDOB       string
 	ApplicantCountry   string
 	Status             string
-	Checks             []*CheckMsg
 	Version            int32
-	CreatedAt          *timestamppb.Timestamp
-	UpdatedAt          *timestamppb.Timestamp
 }
 
 type CheckMsg struct {
+	CompletedAt       *timestamppb.Timestamp
 	ID                string
 	CheckType         string
 	Status            string
 	Provider          string
 	ProviderReference string
-	CompletedAt       *timestamppb.Timestamp
 	FailureReason     string
 }
 
@@ -238,7 +238,7 @@ func toVerificationMsg(r dto.VerificationResponse) *VerificationMsg {
 		ApplicantCountry:   r.ApplicantCountry,
 		Status:             r.Status,
 		Checks:             checks,
-		Version:            int32(r.Version),
+		Version:            int32(r.Version), //nolint:gosec
 		CreatedAt:          timestamppb.New(r.CreatedAt),
 		UpdatedAt:          timestamppb.New(r.UpdatedAt),
 	}

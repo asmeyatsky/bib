@@ -273,7 +273,7 @@ func TestGetCard(t *testing.T) {
 	t.Run("happy path returns card details", func(t *testing.T) {
 		card := makeTestCard()
 		repo := &mockCardRepo{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.Card, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.Card, error) {
 				return card, nil
 			},
 		}
@@ -305,7 +305,7 @@ func TestFreezeCard(t *testing.T) {
 	t.Run("happy path freezes card", func(t *testing.T) {
 		card := makeTestCard()
 		repo := &mockCardRepo{
-			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.Card, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.Card, error) {
 				return card, nil
 			},
 		}

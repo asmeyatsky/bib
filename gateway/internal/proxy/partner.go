@@ -161,7 +161,7 @@ func (p *PartnerProxy) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req map[string]interface{}
-	if err := readJSON(r, &req); err != nil {
+	if err = readJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -196,7 +196,7 @@ func (p *PartnerProxy) InitiatePayment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req map[string]interface{}
-	if err := readJSON(r, &req); err != nil {
+	if err = readJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -318,7 +318,7 @@ func (p *PartnerProxy) ListWebhooks(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"webhooks": sanitized,
 		"count":    len(sanitized),
 	})

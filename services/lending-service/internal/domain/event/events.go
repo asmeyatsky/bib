@@ -21,14 +21,14 @@ type LoanApplicationSubmitted struct {
 	ApplicantID     string          `json:"applicant_id"`
 	RequestedAmount decimal.Decimal `json:"requested_amount"`
 	Currency        string          `json:"currency"`
-	TermMonths      int             `json:"term_months"`
 	Purpose         string          `json:"purpose"`
+	TermMonths      int             `json:"term_months"`
 }
 
 func NewLoanApplicationSubmitted(
 	applicationID, tenantID, applicantID string,
 	amount decimal.Decimal, currency string,
-	termMonths int, purpose string, now time.Time,
+	termMonths int, purpose string, _ time.Time,
 ) LoanApplicationSubmitted {
 	return LoanApplicationSubmitted{
 		BaseEvent:       events.NewBaseEvent("lending.loan_application.submitted", applicationID, "LoanApplication", tenantID),
@@ -49,7 +49,7 @@ type LoanApplicationApproved struct {
 }
 
 func NewLoanApplicationApproved(
-	applicationID, tenantID, applicantID, reason, creditScore string, now time.Time,
+	applicationID, tenantID, applicantID, reason, creditScore string, _ time.Time,
 ) LoanApplicationApproved {
 	return LoanApplicationApproved{
 		BaseEvent:   events.NewBaseEvent("lending.loan_application.approved", applicationID, "LoanApplication", tenantID),
@@ -67,7 +67,7 @@ type LoanApplicationRejected struct {
 }
 
 func NewLoanApplicationRejected(
-	applicationID, tenantID, applicantID, reason string, now time.Time,
+	applicationID, tenantID, applicantID, reason string, _ time.Time,
 ) LoanApplicationRejected {
 	return LoanApplicationRejected{
 		BaseEvent:   events.NewBaseEvent("lending.loan_application.rejected", applicationID, "LoanApplication", tenantID),
@@ -82,20 +82,20 @@ func NewLoanApplicationRejected(
 
 // LoanDisbursed is raised when funds are disbursed to the borrower.
 type LoanDisbursed struct {
+	NextPaymentDue time.Time `json:"next_payment_due"`
 	events.BaseEvent
-	ApplicationID    string          `json:"application_id"`
-	BorrowerAccount  string          `json:"borrower_account_id"`
-	Principal        decimal.Decimal `json:"principal"`
-	Currency         string          `json:"currency"`
-	InterestRateBps  int             `json:"interest_rate_bps"`
-	TermMonths       int             `json:"term_months"`
-	NextPaymentDue   time.Time       `json:"next_payment_due"`
+	ApplicationID   string          `json:"application_id"`
+	BorrowerAccount string          `json:"borrower_account_id"`
+	Principal       decimal.Decimal `json:"principal"`
+	Currency        string          `json:"currency"`
+	InterestRateBps int             `json:"interest_rate_bps"`
+	TermMonths      int             `json:"term_months"`
 }
 
 func NewLoanDisbursed(
 	loanID, tenantID, applicationID, borrowerAccount string,
 	principal decimal.Decimal, currency string,
-	rateBps, termMonths int, nextPaymentDue time.Time, now time.Time,
+	rateBps, termMonths int, nextPaymentDue time.Time, _ time.Time,
 ) LoanDisbursed {
 	return LoanDisbursed{
 		BaseEvent:       events.NewBaseEvent("lending.loan.disbursed", loanID, "Loan", tenantID),
@@ -120,7 +120,7 @@ type PaymentReceived struct {
 func NewPaymentReceived(
 	loanID, tenantID string,
 	amount decimal.Decimal, currency string,
-	outstandingBalance decimal.Decimal, now time.Time,
+	outstandingBalance decimal.Decimal, _ time.Time,
 ) PaymentReceived {
 	return PaymentReceived{
 		BaseEvent:          events.NewBaseEvent("lending.loan.payment_received", loanID, "Loan", tenantID),
@@ -136,7 +136,7 @@ type LoanDelinquent struct {
 	OutstandingBalance decimal.Decimal `json:"outstanding_balance"`
 }
 
-func NewLoanDelinquent(loanID, tenantID string, outstanding decimal.Decimal, now time.Time) LoanDelinquent {
+func NewLoanDelinquent(loanID, tenantID string, outstanding decimal.Decimal, _ time.Time) LoanDelinquent {
 	return LoanDelinquent{
 		BaseEvent:          events.NewBaseEvent("lending.loan.delinquent", loanID, "Loan", tenantID),
 		OutstandingBalance: outstanding,
@@ -149,7 +149,7 @@ type LoanDefault struct {
 	OutstandingBalance decimal.Decimal `json:"outstanding_balance"`
 }
 
-func NewLoanDefault(loanID, tenantID string, outstanding decimal.Decimal, now time.Time) LoanDefault {
+func NewLoanDefault(loanID, tenantID string, outstanding decimal.Decimal, _ time.Time) LoanDefault {
 	return LoanDefault{
 		BaseEvent:          events.NewBaseEvent("lending.loan.default", loanID, "Loan", tenantID),
 		OutstandingBalance: outstanding,
@@ -161,7 +161,7 @@ type LoanPaidOff struct {
 	events.BaseEvent
 }
 
-func NewLoanPaidOff(loanID, tenantID string, now time.Time) LoanPaidOff {
+func NewLoanPaidOff(loanID, tenantID string, _ time.Time) LoanPaidOff {
 	return LoanPaidOff{
 		BaseEvent: events.NewBaseEvent("lending.loan.paid_off", loanID, "Loan", tenantID),
 	}

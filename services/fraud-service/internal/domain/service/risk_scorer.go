@@ -8,16 +8,16 @@ import (
 // RiskInput contains the data required for risk scoring.
 type RiskInput struct {
 	Amount          decimal.Decimal
+	Metadata        map[string]string
 	Currency        string
 	AccountID       uuid.UUID
 	TransactionType string
-	Metadata        map[string]string
 }
 
 // RiskOutput contains the result of risk scoring.
 type RiskOutput struct {
-	Score   int
 	Signals []string
+	Score   int
 }
 
 // RiskScorer is a domain service that calculates risk scores using rule-based logic.

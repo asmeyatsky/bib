@@ -228,14 +228,14 @@ func TestCard_StatusTransitions(t *testing.T) {
 	assert.Equal(t, valueobject.CardStatusActive, unfrozen.Status())
 
 	// Cancel from any state.
-	cancelled, err := unfrozen.Cancel(now)
+	canceled, err := unfrozen.Cancel(now)
 	require.NoError(t, err)
-	assert.Equal(t, valueobject.CardStatusCancelled, cancelled.Status())
+	assert.Equal(t, valueobject.CardStatusCanceled, canceled.Status())
 
-	// Cannot cancel an already cancelled card.
-	_, err = cancelled.Cancel(now)
+	// Cannot cancel an already canceled card.
+	_, err = canceled.Cancel(now)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "already cancelled")
+	assert.Contains(t, err.Error(), "already canceled")
 }
 
 func TestCard_ResetSpending(t *testing.T) {

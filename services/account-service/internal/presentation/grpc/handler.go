@@ -340,7 +340,7 @@ func (h *AccountHandler) ListAccounts(ctx context.Context, req *ListAccountsRequ
 
 	return &ListAccountsResponse{
 		Accounts:   accounts,
-		TotalCount: int32(result.TotalCount),
+		TotalCount: int32(result.TotalCount), //nolint:gosec // bounded by DB query limits
 	}, nil
 }
 
@@ -356,6 +356,6 @@ func toAccountMsg(a dto.AccountResponse) *AccountMsg {
 		HolderFirstName:   a.HolderFirstName,
 		HolderLastName:    a.HolderLastName,
 		HolderEmail:       a.HolderEmail,
-		Version:           int32(a.Version),
+		Version:           int32(a.Version), //nolint:gosec // bounded by DB query limits
 	}
 }

@@ -23,7 +23,7 @@ func TestGetDepositPosition_Execute(t *testing.T) {
 		)
 
 		positionRepo := &mockDepositPositionRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.DepositPosition, error) {
+			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.DepositPosition, error) {
 				return position, nil
 			},
 		}
@@ -42,7 +42,7 @@ func TestGetDepositPosition_Execute(t *testing.T) {
 
 	t.Run("fails when position not found", func(t *testing.T) {
 		positionRepo := &mockDepositPositionRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.DepositPosition, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.DepositPosition, error) {
 				return model.DepositPosition{}, fmt.Errorf("position not found")
 			},
 		}

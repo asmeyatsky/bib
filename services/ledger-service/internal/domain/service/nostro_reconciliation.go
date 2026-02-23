@@ -45,11 +45,11 @@ type InternalLedgerEntry struct {
 // ReconciliationResult represents the outcome of comparing a single external
 // statement entry against internal records.
 type ReconciliationResult struct {
-	ExternalEntry  ExternalStatementEntry
-	InternalEntry  *InternalLedgerEntry // nil if no match found
-	Status         ReconciliationStatus
-	AmountDelta    decimal.Decimal // non-zero for AMOUNT_MISMATCH
-	Remarks        string
+	ExternalEntry ExternalStatementEntry
+	InternalEntry *InternalLedgerEntry // nil if no match found
+	Status        ReconciliationStatus
+	AmountDelta   decimal.Decimal // non-zero for AMOUNT_MISMATCH
+	Remarks       string
 }
 
 // ReconciliationSummary aggregates the results of a full reconciliation run.

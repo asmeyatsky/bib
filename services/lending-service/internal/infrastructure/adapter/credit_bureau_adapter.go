@@ -52,17 +52,17 @@ func DefaultCreditBureauConfig() CreditBureauConfig {
 
 // CreditReport represents a parsed credit report from a bureau.
 type CreditReport struct {
-	Bureau         Bureau
-	ApplicantID    string
-	Score          int
-	ScoreModel     string // e.g. "FICO8", "VantageScore3"
 	ReportDate     time.Time
-	AccountCount   int
-	TotalDebt      string // decimal string
 	OldestAccount  time.Time
 	RecentInquiry  time.Time
+	Bureau         Bureau
+	ApplicantID    string
+	ScoreModel     string
+	TotalDebt      string
+	PaymentHistory string
+	Score          int
+	AccountCount   int
 	DerogCount     int
-	PaymentHistory string // "GOOD", "FAIR", "POOR"
 }
 
 // HTTPClient defines the interface for making HTTP requests to credit bureaus.
@@ -77,8 +77,8 @@ type HTTPClient interface {
 // swapped with a real HTTP-based implementation when integrating with
 // Experian, TransUnion, or Equifax APIs.
 type CreditBureauAdapter struct {
+	client HTTPClient
 	config CreditBureauConfig
-	client HTTPClient // nil = use simulated responses
 }
 
 // NewCreditBureauAdapter creates a new adapter with the given configuration.
@@ -136,8 +136,8 @@ func (a *CreditBureauAdapter) fetchWithRetry(ctx context.Context, applicantID st
 	for attempt := 0; attempt <= a.config.MaxRetries; attempt++ {
 		if attempt > 0 {
 			// Exponential backoff with jitter.
-			backoff := time.Duration(a.config.RetryBackoffMs) * time.Millisecond * (1 << uint(attempt-1))
-			jitter := time.Duration(rand.Int63n(int64(backoff) / 2))
+			backoff := time.Duration(a.config.RetryBackoffMs) * time.Millisecond * (1 << uint(attempt-1)) //nolint:gosec // retry count is small
+			jitter := time.Duration(rand.Int63n(int64(backoff) / 2))                                      //nolint:gosec // jitter doesn't need crypto random
 			select {
 			case <-ctx.Done():
 				return CreditReport{}, ctx.Err()

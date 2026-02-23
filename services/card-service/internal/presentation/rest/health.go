@@ -31,7 +31,7 @@ func (h *HealthHandler) RegisterRoutes(mux *http.ServeMux) {
 }
 
 // Health is the liveness probe endpoint.
-func (h *HealthHandler) Health(w http.ResponseWriter, r *http.Request) {
+func (h *HealthHandler) Health(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
@@ -46,7 +46,7 @@ func (h *HealthHandler) Health(w http.ResponseWriter, r *http.Request) {
 }
 
 // Ready is the readiness probe endpoint.
-func (h *HealthHandler) Ready(w http.ResponseWriter, r *http.Request) {
+func (h *HealthHandler) Ready(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 

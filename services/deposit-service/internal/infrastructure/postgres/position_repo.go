@@ -32,7 +32,7 @@ func (r *PositionRepo) Save(ctx context.Context, position model.DepositPosition)
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback(ctx) //nolint:errcheck
 
 	// Upsert deposit position
 	_, err = tx.Exec(ctx, `

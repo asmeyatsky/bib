@@ -1,6 +1,6 @@
 module github.com/bibbank/bib/services/ledger-service
 
-go 1.23
+go 1.24.0
 
 require (
 	github.com/bibbank/bib/pkg/auth v0.0.0-00010101000000-000000000000

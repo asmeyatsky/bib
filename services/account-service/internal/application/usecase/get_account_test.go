@@ -30,7 +30,7 @@ func TestGetAccountUseCase_Execute(t *testing.T) {
 		)
 
 		repo := &mockAccountRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.CustomerAccount, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.CustomerAccount, error) {
 				return account, nil
 			},
 		}
@@ -55,7 +55,7 @@ func TestGetAccountUseCase_Execute(t *testing.T) {
 
 	t.Run("fails when account not found", func(t *testing.T) {
 		repo := &mockAccountRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.CustomerAccount, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.CustomerAccount, error) {
 				return model.CustomerAccount{}, fmt.Errorf("account not found")
 			},
 		}

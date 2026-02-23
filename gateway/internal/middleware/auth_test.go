@@ -26,7 +26,7 @@ func TestAuthMiddleware_SkipPaths(t *testing.T) {
 	jwtSvc := newTestJWTService()
 	mw := AuthMiddleware(jwtSvc, []string{"/healthz", "/readyz"})
 
-	handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := mw(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
@@ -44,7 +44,7 @@ func TestAuthMiddleware_MissingHeader(t *testing.T) {
 	jwtSvc := newTestJWTService()
 	mw := AuthMiddleware(jwtSvc, nil)
 
-	handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := mw(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
@@ -61,7 +61,7 @@ func TestAuthMiddleware_InvalidFormat(t *testing.T) {
 	jwtSvc := newTestJWTService()
 	mw := AuthMiddleware(jwtSvc, nil)
 
-	handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := mw(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
@@ -79,7 +79,7 @@ func TestAuthMiddleware_InvalidToken(t *testing.T) {
 	jwtSvc := newTestJWTService()
 	mw := AuthMiddleware(jwtSvc, nil)
 
-	handler := mw(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := mw(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 

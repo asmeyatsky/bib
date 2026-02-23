@@ -43,7 +43,7 @@ func RegisterDepositServiceServer(s *grpclib.Server, srv DepositServiceServer) {
 	s.RegisterService(&_DepositService_serviceDesc, srv)
 }
 
-var _DepositService_serviceDesc = grpclib.ServiceDesc{
+var _DepositService_serviceDesc = grpclib.ServiceDesc{ //nolint:revive // gRPC handler registration
 	ServiceName: "bib.deposit.v1.DepositService",
 	HandlerType: (*DepositServiceServer)(nil),
 	Methods: []grpclib.MethodDesc{
@@ -55,7 +55,7 @@ var _DepositService_serviceDesc = grpclib.ServiceDesc{
 	Streams: []grpclib.StreamDesc{},
 }
 
-func _DepositService_CreateDepositProduct_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+func _DepositService_CreateDepositProduct_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
 	req := new(CreateDepositProductRequest)
 	if err := dec(req); err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func _DepositService_CreateDepositProduct_Handler(srv interface{}, ctx context.C
 	return srv.(DepositServiceServer).CreateDepositProduct(ctx, req)
 }
 
-func _DepositService_OpenDepositPosition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+func _DepositService_OpenDepositPosition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
 	req := new(OpenDepositPositionRequest)
 	if err := dec(req); err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func _DepositService_OpenDepositPosition_Handler(srv interface{}, ctx context.Co
 	return srv.(DepositServiceServer).OpenDepositPosition(ctx, req)
 }
 
-func _DepositService_GetDepositPosition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+func _DepositService_GetDepositPosition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
 	req := new(GetDepositPositionRequest)
 	if err := dec(req); err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func _DepositService_GetDepositPosition_Handler(srv interface{}, ctx context.Con
 	return srv.(DepositServiceServer).GetDepositPosition(ctx, req)
 }
 
-func _DepositService_AccrueInterest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+func _DepositService_AccrueInterest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
 	req := new(AccrueInterestRequest)
 	if err := dec(req); err != nil {
 		return nil, err

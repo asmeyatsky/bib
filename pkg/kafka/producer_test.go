@@ -74,10 +74,7 @@ func TestMessageConstruction(t *testing.T) {
 }
 
 func TestMessageNilHeaders(t *testing.T) {
-	msg := Message{
-		Key:   []byte("key"),
-		Value: []byte("value"),
-	}
+	msg := Message{}
 
 	if msg.Headers != nil {
 		t.Error("expected nil headers when not set")

@@ -34,7 +34,7 @@ func run() error {
 	// Load configuration.
 	cfg := config.Load()
 
-	// Initialise structured logger.
+	// Initialize structured logger.
 	logger := observability.InitLogger(observability.LogConfig{
 		Level:  cfg.LogLevel,
 		Format: cfg.LogFormat,
@@ -94,9 +94,9 @@ func run() error {
 	case os.Getenv("JWT_PUBLIC_KEY") != "":
 		jwtCfg.PublicKeyPEM = os.Getenv("JWT_PUBLIC_KEY")
 	case os.Getenv("JWT_PUBLIC_KEY_FILE") != "":
-		keyData, err := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
-		if err != nil {
-			return fmt.Errorf("load JWT public key file: %w", err)
+		keyData, loadErr := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
+		if loadErr != nil {
+			return fmt.Errorf("load JWT public key file: %w", loadErr)
 		}
 		jwtCfg.PublicKeyPEM = string(keyData)
 	default:

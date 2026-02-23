@@ -20,7 +20,7 @@ func (c CreditTransferInitiation) ToXML() ([]byte, error) {
 		Xmlns:   "urn:iso:std:iso:20022:tech:xsd:pain.001.001.12",
 		CstmrCdtTrfInitn: pain001CstmrCdtTrfInitn{
 			GrpHdr: pain001GrpHdr{
-				MsgId:   c.Header.MessageID,
+				MsgID:   c.Header.MessageID,
 				CreDtTm: c.Header.CreationDate.Format(time.RFC3339),
 				NbOfTxs: countTransactions(c.PaymentInfo),
 			},
@@ -62,7 +62,7 @@ type pain001CstmrCdtTrfInitn struct {
 }
 
 type pain001GrpHdr struct {
-	MsgId   string `xml:"MsgId"`
+	MsgID   string `xml:"MsgId"`
 	CreDtTm string `xml:"CreDtTm"`
 	NbOfTxs string `xml:"NbOfTxs"`
 }

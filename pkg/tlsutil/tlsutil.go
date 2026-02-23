@@ -90,15 +90,15 @@ func GenerateSelfSignedCert(hosts []string, outDir string) error {
 		return fmt.Errorf("tlsutil: create CA cert: %w", err)
 	}
 
-	if err := writePEM(filepath.Join(outDir, "ca.pem"), "CERTIFICATE", caDER); err != nil {
-		return err
+	if writeErr := writePEM(filepath.Join(outDir, "ca.pem"), "CERTIFICATE", caDER); writeErr != nil {
+		return writeErr
 	}
 	caKeyBytes, err := x509.MarshalECPrivateKey(caKey)
 	if err != nil {
 		return fmt.Errorf("tlsutil: marshal CA key: %w", err)
 	}
-	if err := writePEM(filepath.Join(outDir, "ca-key.pem"), "EC PRIVATE KEY", caKeyBytes); err != nil {
-		return err
+	if writeErr := writePEM(filepath.Join(outDir, "ca-key.pem"), "EC PRIVATE KEY", caKeyBytes); writeErr != nil {
+		return writeErr
 	}
 
 	caCert, err := x509.ParseCertificate(caDER)
@@ -134,8 +134,8 @@ func GenerateSelfSignedCert(hosts []string, outDir string) error {
 		return fmt.Errorf("tlsutil: create server cert: %w", err)
 	}
 
-	if err := writePEM(filepath.Join(outDir, "server.pem"), "CERTIFICATE", serverDER); err != nil {
-		return err
+	if writeErr := writePEM(filepath.Join(outDir, "server.pem"), "CERTIFICATE", serverDER); writeErr != nil {
+		return writeErr
 	}
 	serverKeyBytes, err := x509.MarshalECPrivateKey(serverKey)
 	if err != nil {

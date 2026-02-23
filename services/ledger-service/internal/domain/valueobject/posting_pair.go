@@ -43,9 +43,9 @@ func NewPostingPair(debit, credit AccountCode, amount decimal.Decimal, currency,
 
 func (p PostingPair) DebitAccount() AccountCode  { return p.debitAccount }
 func (p PostingPair) CreditAccount() AccountCode { return p.creditAccount }
-func (p PostingPair) Amount() decimal.Decimal     { return p.amount }
-func (p PostingPair) Currency() string            { return p.currency }
-func (p PostingPair) Description() string         { return p.description }
+func (p PostingPair) Amount() decimal.Decimal    { return p.amount }
+func (p PostingPair) Currency() string           { return p.currency }
+func (p PostingPair) Description() string        { return p.description }
 
 func (p PostingPair) String() string {
 	return fmt.Sprintf("DR %s / CR %s: %s %s", p.debitAccount, p.creditAccount, p.amount, p.currency)

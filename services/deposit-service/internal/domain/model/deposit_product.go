@@ -143,16 +143,16 @@ func (p DepositProduct) IsTermDeposit() bool {
 }
 
 // Accessors
-func (p DepositProduct) ID() uuid.UUID                      { return p.id }
-func (p DepositProduct) TenantID() uuid.UUID                { return p.tenantID }
-func (p DepositProduct) Name() string                       { return p.name }
-func (p DepositProduct) Currency() string                   { return p.currency }
-func (p DepositProduct) Tiers() []valueobject.InterestTier  { return copyTiers(p.tiers) }
-func (p DepositProduct) TermDays() int                      { return p.termDays }
-func (p DepositProduct) IsActive() bool                     { return p.isActive }
-func (p DepositProduct) Version() int                       { return p.version }
-func (p DepositProduct) CreatedAt() time.Time               { return p.createdAt }
-func (p DepositProduct) UpdatedAt() time.Time               { return p.updatedAt }
+func (p DepositProduct) ID() uuid.UUID                     { return p.id }
+func (p DepositProduct) TenantID() uuid.UUID               { return p.tenantID }
+func (p DepositProduct) Name() string                      { return p.name }
+func (p DepositProduct) Currency() string                  { return p.currency }
+func (p DepositProduct) Tiers() []valueobject.InterestTier { return copyTiers(p.tiers) }
+func (p DepositProduct) TermDays() int                     { return p.termDays }
+func (p DepositProduct) IsActive() bool                    { return p.isActive }
+func (p DepositProduct) Version() int                      { return p.version }
+func (p DepositProduct) CreatedAt() time.Time              { return p.createdAt }
+func (p DepositProduct) UpdatedAt() time.Time              { return p.updatedAt }
 
 // validateNoTierOverlap ensures no two tiers have overlapping balance ranges.
 func validateNoTierOverlap(tiers []valueobject.InterestTier) error {

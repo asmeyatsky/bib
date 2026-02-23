@@ -1,3 +1,3 @@
 module github.com/bibbank/bib/pkg/residency
 
-go 1.23
+go 1.24

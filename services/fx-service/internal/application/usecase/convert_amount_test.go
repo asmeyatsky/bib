@@ -58,7 +58,7 @@ func TestConvertAmount_Execute(t *testing.T) {
 		)
 
 		rateRepo := &mockExchangeRateRepository{
-			findByPairFunc: func(ctx context.Context, tid uuid.UUID, p valueobject.CurrencyPair) (model.ExchangeRate, error) {
+			findByPairFunc: func(_ context.Context, _ uuid.UUID, _ valueobject.CurrencyPair) (model.ExchangeRate, error) {
 				return exRate, nil
 			},
 		}
@@ -95,14 +95,14 @@ func TestConvertAmount_Execute(t *testing.T) {
 		)
 
 		rateRepo := &mockExchangeRateRepository{
-			findByPairFunc: func(ctx context.Context, tid uuid.UUID, p valueobject.CurrencyPair) (model.ExchangeRate, error) {
+			findByPairFunc: func(_ context.Context, _ uuid.UUID, _ valueobject.CurrencyPair) (model.ExchangeRate, error) {
 				return expiredRate, nil
 			},
 		}
 
 		providerRate, _ := valueobject.NewSpotRate(decimal.NewFromFloat(0.93))
 		provider := &mockRateProvider{
-			fetchRateFunc: func(ctx context.Context, base, quote string) (valueobject.SpotRate, error) {
+			fetchRateFunc: func(_ context.Context, _, _ string) (valueobject.SpotRate, error) {
 				return providerRate, nil
 			},
 		}
@@ -126,14 +126,14 @@ func TestConvertAmount_Execute(t *testing.T) {
 
 	t.Run("falls back to external provider when rate not in repo", func(t *testing.T) {
 		rateRepo := &mockExchangeRateRepository{
-			findByPairFunc: func(ctx context.Context, tid uuid.UUID, p valueobject.CurrencyPair) (model.ExchangeRate, error) {
+			findByPairFunc: func(_ context.Context, _ uuid.UUID, _ valueobject.CurrencyPair) (model.ExchangeRate, error) {
 				return model.ExchangeRate{}, fmt.Errorf("rate not found")
 			},
 		}
 
 		providerRate, _ := valueobject.NewSpotRate(decimal.NewFromFloat(1.25))
 		provider := &mockRateProvider{
-			fetchRateFunc: func(ctx context.Context, base, quote string) (valueobject.SpotRate, error) {
+			fetchRateFunc: func(_ context.Context, _, _ string) (valueobject.SpotRate, error) {
 				return providerRate, nil
 			},
 		}
@@ -190,12 +190,12 @@ func TestConvertAmount_Execute(t *testing.T) {
 
 	t.Run("fails when external provider is unavailable", func(t *testing.T) {
 		rateRepo := &mockExchangeRateRepository{
-			findByPairFunc: func(ctx context.Context, tid uuid.UUID, p valueobject.CurrencyPair) (model.ExchangeRate, error) {
+			findByPairFunc: func(_ context.Context, _ uuid.UUID, _ valueobject.CurrencyPair) (model.ExchangeRate, error) {
 				return model.ExchangeRate{}, fmt.Errorf("rate not found")
 			},
 		}
 		provider := &mockRateProvider{
-			fetchRateFunc: func(ctx context.Context, base, quote string) (valueobject.SpotRate, error) {
+			fetchRateFunc: func(_ context.Context, _, _ string) (valueobject.SpotRate, error) {
 				return valueobject.SpotRate{}, fmt.Errorf("provider unavailable")
 			},
 		}

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"math"
 	"os"
 	"strconv"
 )
@@ -55,8 +56,8 @@ func Load() Config {
 			Password: getEnv("DB_PASSWORD", ""),
 			Name:     getEnv("DB_NAME", "bib_ledger"),
 			SSLMode:  getEnv("DB_SSLMODE", "require"),
-			MaxConns: int32(getEnvInt("DB_MAX_CONNS", 20)),
-			MinConns: int32(getEnvInt("DB_MIN_CONNS", 5)),
+			MaxConns: int32(min(getEnvInt("DB_MAX_CONNS", 20), math.MaxInt32)), // #nosec G115
+			MinConns: int32(min(getEnvInt("DB_MIN_CONNS", 5), math.MaxInt32)),  // #nosec G115
 		},
 		Kafka: KafkaConfig{
 			Brokers: []string{getEnv("KAFKA_BROKERS", "localhost:9092")},

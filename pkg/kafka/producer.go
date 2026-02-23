@@ -15,17 +15,17 @@ import (
 
 // Message represents a Kafka message.
 type Message struct {
+	Headers map[string]string
 	Key     []byte
 	Value   []byte
-	Headers map[string]string
 }
 
 // Producer wraps kafka-go writer for publishing messages.
 type Producer struct {
-	mu        sync.Mutex
 	writers   map[string]*kafkago.Writer
-	brokers   []string
 	transport *kafkago.Transport
+	brokers   []string
+	mu        sync.Mutex
 }
 
 // NewProducer creates a new Producer with the given configuration.

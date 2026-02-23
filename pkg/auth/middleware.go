@@ -54,10 +54,7 @@ func UnaryAuthInterceptor(jwtService *JWTService, skipMethods []string) grpc.Una
 			return nil, status.Error(codes.Unauthenticated, "missing authorization header")
 		}
 
-		tokenString := authHeader[0]
-		if strings.HasPrefix(tokenString, "Bearer ") {
-			tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-		}
+		tokenString := strings.TrimPrefix(authHeader[0], "Bearer ")
 
 		// Validate the token.
 		claims, err := jwtService.ValidateToken(tokenString)
@@ -76,7 +73,7 @@ func RequireRole(roles ...string) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
 		req interface{},
-		info *grpc.UnaryServerInfo,
+		_ *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
 		claims, ok := ClaimsFromContext(ctx)

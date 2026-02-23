@@ -32,7 +32,7 @@ func TestDisburseLoan_Execute(t *testing.T) {
 	t.Run("successfully disburses a loan", func(t *testing.T) {
 		app := approvedApplication()
 		appRepo := &mockLoanApplicationRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.LoanApplication, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.LoanApplication, error) {
 				return app, nil
 			},
 		}
@@ -65,7 +65,7 @@ func TestDisburseLoan_Execute(t *testing.T) {
 
 	t.Run("fails when application not found", func(t *testing.T) {
 		appRepo := &mockLoanApplicationRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.LoanApplication, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.LoanApplication, error) {
 				return model.LoanApplication{}, fmt.Errorf("application not found")
 			},
 		}
@@ -97,7 +97,7 @@ func TestDisburseLoan_Execute(t *testing.T) {
 		)
 
 		appRepo := &mockLoanApplicationRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.LoanApplication, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.LoanApplication, error) {
 				return rejectedApp, nil
 			},
 		}
@@ -121,12 +121,12 @@ func TestDisburseLoan_Execute(t *testing.T) {
 	t.Run("fails when loan save fails", func(t *testing.T) {
 		app := approvedApplication()
 		appRepo := &mockLoanApplicationRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.LoanApplication, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.LoanApplication, error) {
 				return app, nil
 			},
 		}
 		loanRepo := &mockLoanRepository{
-			saveFunc: func(ctx context.Context, loan model.Loan) error {
+			saveFunc: func(_ context.Context, _ model.Loan) error {
 				return fmt.Errorf("database unavailable")
 			},
 		}
@@ -149,13 +149,13 @@ func TestDisburseLoan_Execute(t *testing.T) {
 	t.Run("fails when event publishing fails", func(t *testing.T) {
 		app := approvedApplication()
 		appRepo := &mockLoanApplicationRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.LoanApplication, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.LoanApplication, error) {
 				return app, nil
 			},
 		}
 		loanRepo := &mockLoanRepository{}
 		publisher := &mockLendingEventPublisher{
-			publishFunc: func(ctx context.Context, evts ...event.DomainEvent) error {
+			publishFunc: func(_ context.Context, _ ...event.DomainEvent) error {
 				return fmt.Errorf("kafka unavailable")
 			},
 		}

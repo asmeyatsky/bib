@@ -196,27 +196,25 @@ func (p DepositPosition) TotalBalance() decimal.Decimal {
 }
 
 // Accessors
-func (p DepositPosition) ID() uuid.UUID                        { return p.id }
-func (p DepositPosition) TenantID() uuid.UUID                  { return p.tenantID }
-func (p DepositPosition) AccountID() uuid.UUID                 { return p.accountID }
-func (p DepositPosition) ProductID() uuid.UUID                 { return p.productID }
-func (p DepositPosition) Principal() decimal.Decimal            { return p.principal }
-func (p DepositPosition) Currency() string                     { return p.currency }
-func (p DepositPosition) AccruedInterest() decimal.Decimal      { return p.accruedInterest }
-func (p DepositPosition) Status() PositionStatus               { return p.status }
-func (p DepositPosition) OpenedAt() time.Time                  { return p.openedAt }
-func (p DepositPosition) MaturityDate() *time.Time             { return p.maturityDate }
-func (p DepositPosition) LastAccrualDate() time.Time           { return p.lastAccrualDate }
-func (p DepositPosition) Version() int                         { return p.version }
-func (p DepositPosition) CreatedAt() time.Time                 { return p.createdAt }
-func (p DepositPosition) UpdatedAt() time.Time                 { return p.updatedAt }
-func (p DepositPosition) DomainEvents() []events.DomainEvent   { return p.domainEvents }
+func (p DepositPosition) ID() uuid.UUID                       { return p.id }
+func (p DepositPosition) TenantID() uuid.UUID                 { return p.tenantID }
+func (p DepositPosition) AccountID() uuid.UUID                { return p.accountID }
+func (p DepositPosition) ProductID() uuid.UUID                { return p.productID }
+func (p DepositPosition) Principal() decimal.Decimal           { return p.principal }
+func (p DepositPosition) Currency() string                    { return p.currency }
+func (p DepositPosition) AccruedInterest() decimal.Decimal     { return p.accruedInterest }
+func (p DepositPosition) Status() PositionStatus              { return p.status }
+func (p DepositPosition) OpenedAt() time.Time                 { return p.openedAt }
+func (p DepositPosition) MaturityDate() *time.Time            { return p.maturityDate }
+func (p DepositPosition) LastAccrualDate() time.Time          { return p.lastAccrualDate }
+func (p DepositPosition) Version() int                        { return p.version }
+func (p DepositPosition) CreatedAt() time.Time                { return p.createdAt }
+func (p DepositPosition) UpdatedAt() time.Time                { return p.updatedAt }
+func (p DepositPosition) DomainEvents() []events.DomainEvent  { return p.domainEvents }
 
-// ClearDomainEvents returns the collected events and clears the internal slice.
+// ClearDomainEvents returns the collected domain events.
 func (p DepositPosition) ClearDomainEvents() []events.DomainEvent {
-	evts := p.domainEvents
-	p.domainEvents = nil
-	return evts
+	return p.domainEvents
 }
 
 // daysBetween calculates the number of calendar days between two times.

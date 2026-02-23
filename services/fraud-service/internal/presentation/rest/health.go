@@ -9,8 +9,8 @@ import (
 
 // HealthHandler provides HTTP health check endpoints for the fraud service.
 type HealthHandler struct {
-	logger    *slog.Logger
 	startTime time.Time
+	logger    *slog.Logger
 }
 
 // NewHealthHandler creates a new health check handler.
@@ -30,9 +30,9 @@ type HealthResponse struct {
 
 // ReadinessResponse is the JSON response for readiness checks.
 type ReadinessResponse struct {
-	Status   string            `json:"status"`
-	Service  string            `json:"service"`
-	Checks   map[string]string `json:"checks"`
+	Checks  map[string]string `json:"checks"`
+	Status  string            `json:"status"`
+	Service string            `json:"service"`
 }
 
 // RegisterRoutes registers health endpoints on the provided ServeMux.
@@ -42,7 +42,7 @@ func (h *HealthHandler) RegisterRoutes(mux *http.ServeMux) {
 }
 
 // Healthz handles liveness probe requests.
-func (h *HealthHandler) Healthz(w http.ResponseWriter, r *http.Request) {
+func (h *HealthHandler) Healthz(w http.ResponseWriter, _ *http.Request) {
 	resp := HealthResponse{
 		Status:  "healthy",
 		Service: "fraud-service",
@@ -51,11 +51,11 @@ func (h *HealthHandler) Healthz(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // Readyz handles readiness probe requests.
-func (h *HealthHandler) Readyz(w http.ResponseWriter, r *http.Request) {
+func (h *HealthHandler) Readyz(w http.ResponseWriter, _ *http.Request) {
 	checks := map[string]string{
 		"database": "ok",
 		"kafka":    "ok",
@@ -69,5 +69,5 @@ func (h *HealthHandler) Readyz(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(resp)
+	_ = json.NewEncoder(w).Encode(resp)
 }

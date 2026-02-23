@@ -112,8 +112,8 @@ type ConvertAmountResponse struct {
 // ListExchangeRatesRequest represents the proto ListExchangeRatesRequest message.
 type ListExchangeRatesRequest struct {
 	BaseCurrency string `json:"base_currency"`
-	PageSize     int32  `json:"page_size"`
 	PageToken    string `json:"page_token"`
+	PageSize     int32  `json:"page_size"`
 }
 
 // ListExchangeRatesResponse represents the proto ListExchangeRatesResponse message.
@@ -132,8 +132,8 @@ type RevaluateRequest struct {
 
 // RevaluateResponse represents the proto RevaluateResponse message.
 type RevaluateResponse struct {
-	AccountsProcessed int32     `json:"accounts_processed"`
 	TotalGainLoss     *MoneyMsg `json:"total_gain_loss"`
+	AccountsProcessed int32     `json:"accounts_processed"`
 }
 
 // GetExchangeRate returns the current exchange rate for a currency pair.
@@ -320,7 +320,7 @@ func (h *Handler) Revaluate(ctx context.Context, req *RevaluateRequest) (*Revalu
 		"entries", len(resp.Entries),
 	)
 	return &RevaluateResponse{
-		AccountsProcessed: int32(len(resp.Entries)),
+		AccountsProcessed: int32(len(resp.Entries)), //nolint:gosec // bounded by slice length
 		TotalGainLoss: &MoneyMsg{
 			Amount:   resp.TotalGainLoss.String(),
 			Currency: req.FunctionalCurrency,

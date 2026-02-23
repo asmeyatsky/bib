@@ -31,7 +31,7 @@ func (r *AccountRepository) Save(ctx context.Context, account model.CustomerAcco
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback(ctx) //nolint:errcheck
 
 	// Upsert customer_accounts with optimistic locking.
 	const upsertAccountSQL = `

@@ -44,9 +44,9 @@ func (m *mockDepositProductRepository) ListByTenant(_ context.Context, _ uuid.UU
 }
 
 type mockDepositPositionRepository struct {
-	savedPosition *model.DepositPosition
-	saveFunc      func(ctx context.Context, position model.DepositPosition) error
-	findByIDFunc  func(ctx context.Context, id uuid.UUID) (model.DepositPosition, error)
+	savedPosition  *model.DepositPosition
+	saveFunc       func(ctx context.Context, position model.DepositPosition) error
+	findByIDFunc   func(ctx context.Context, id uuid.UUID) (model.DepositPosition, error)
 	findActiveFunc func(ctx context.Context, tenantID uuid.UUID) ([]model.DepositPosition, error)
 }
 
@@ -171,7 +171,7 @@ func TestCreateDepositProduct_Execute(t *testing.T) {
 
 	t.Run("fails when repository save fails", func(t *testing.T) {
 		repo := &mockDepositProductRepository{
-			saveFunc: func(ctx context.Context, product model.DepositProduct) error {
+			saveFunc: func(_ context.Context, _ model.DepositProduct) error {
 				return fmt.Errorf("database unavailable")
 			},
 		}

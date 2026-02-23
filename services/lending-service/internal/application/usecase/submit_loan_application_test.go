@@ -19,9 +19,9 @@ import (
 // --- Mock implementations ---
 
 type mockLoanApplicationRepository struct {
-	savedApps    []model.LoanApplication
 	saveFunc     func(ctx context.Context, app model.LoanApplication) error
 	findByIDFunc func(ctx context.Context, tenantID, id string) (model.LoanApplication, error)
+	savedApps    []model.LoanApplication
 }
 
 func (m *mockLoanApplicationRepository) Save(ctx context.Context, app model.LoanApplication) error {
@@ -44,9 +44,9 @@ func (m *mockLoanApplicationRepository) FindByApplicantID(_ context.Context, _, 
 }
 
 type mockLoanRepository struct {
-	savedLoans   []model.Loan
 	saveFunc     func(ctx context.Context, loan model.Loan) error
 	findByIDFunc func(ctx context.Context, tenantID, id string) (model.Loan, error)
+	savedLoans   []model.Loan
 }
 
 func (m *mockLoanRepository) Save(ctx context.Context, loan model.Loan) error {
@@ -73,8 +73,8 @@ func (m *mockLoanRepository) FindByBorrowerAccountID(_ context.Context, _, _ str
 }
 
 type mockLendingEventPublisher struct {
-	publishedEvents []event.DomainEvent
 	publishFunc     func(ctx context.Context, events ...event.DomainEvent) error
+	publishedEvents []event.DomainEvent
 }
 
 func (m *mockLendingEventPublisher) Publish(ctx context.Context, evts ...event.DomainEvent) error {
@@ -114,7 +114,7 @@ func TestSubmitLoanApplication_Execute(t *testing.T) {
 		appRepo := &mockLoanApplicationRepository{}
 		publisher := &mockLendingEventPublisher{}
 		creditClient := &mockCreditBureauClient{
-			getCreditScoreFunc: func(ctx context.Context, applicantID string) (string, error) {
+			getCreditScoreFunc: func(_ context.Context, applicantID string) (string, error) {
 				return "750", nil
 			},
 		}
@@ -139,7 +139,7 @@ func TestSubmitLoanApplication_Execute(t *testing.T) {
 		appRepo := &mockLoanApplicationRepository{}
 		publisher := &mockLendingEventPublisher{}
 		creditClient := &mockCreditBureauClient{
-			getCreditScoreFunc: func(ctx context.Context, applicantID string) (string, error) {
+			getCreditScoreFunc: func(_ context.Context, applicantID string) (string, error) {
 				return "500", nil // below threshold
 			},
 		}
@@ -175,7 +175,7 @@ func TestSubmitLoanApplication_Execute(t *testing.T) {
 		appRepo := &mockLoanApplicationRepository{}
 		publisher := &mockLendingEventPublisher{}
 		creditClient := &mockCreditBureauClient{
-			getCreditScoreFunc: func(ctx context.Context, applicantID string) (string, error) {
+			getCreditScoreFunc: func(_ context.Context, _ string) (string, error) {
 				return "", fmt.Errorf("credit bureau unavailable")
 			},
 		}
@@ -192,7 +192,7 @@ func TestSubmitLoanApplication_Execute(t *testing.T) {
 
 	t.Run("fails when repository save fails", func(t *testing.T) {
 		appRepo := &mockLoanApplicationRepository{
-			saveFunc: func(ctx context.Context, app model.LoanApplication) error {
+			saveFunc: func(_ context.Context, _ model.LoanApplication) error {
 				return fmt.Errorf("database unavailable")
 			},
 		}
@@ -212,7 +212,7 @@ func TestSubmitLoanApplication_Execute(t *testing.T) {
 	t.Run("fails when event publishing fails", func(t *testing.T) {
 		appRepo := &mockLoanApplicationRepository{}
 		publisher := &mockLendingEventPublisher{
-			publishFunc: func(ctx context.Context, evts ...event.DomainEvent) error {
+			publishFunc: func(_ context.Context, _ ...event.DomainEvent) error {
 				return fmt.Errorf("kafka unavailable")
 			},
 		}

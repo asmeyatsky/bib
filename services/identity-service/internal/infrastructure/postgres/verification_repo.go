@@ -32,7 +32,7 @@ func (r *VerificationRepo) Save(ctx context.Context, v model.IdentityVerificatio
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback(ctx) //nolint:errcheck
 
 	// Upsert identity verification
 	_, err = tx.Exec(ctx, `

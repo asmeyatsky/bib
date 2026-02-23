@@ -47,9 +47,9 @@ func (m *mockVerificationRepository) ListByTenant(_ context.Context, _ uuid.UUID
 
 // mockVerificationProvider implements port.VerificationProvider for testing.
 type mockVerificationProvider struct {
+	initiatedChecks    []initiatedCheck
 	initiateCheckFunc  func(ctx context.Context, checkType valueobject.CheckType, applicant port.ApplicantInfo) (string, error)
 	getCheckResultFunc func(ctx context.Context, providerRef string) (valueobject.VerificationStatus, string, error)
-	initiatedChecks    []initiatedCheck
 }
 
 type initiatedCheck struct {

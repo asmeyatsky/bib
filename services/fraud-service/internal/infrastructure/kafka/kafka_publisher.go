@@ -10,16 +10,16 @@ import (
 	pkgkafka "github.com/bibbank/bib/pkg/kafka"
 )
 
-// KafkaPublisher implements port.EventPublisher using Kafka.
-type KafkaPublisher struct {
-	producer *pkgkafka.Producer
+// Publisher implements port.EventPublisher using Kafka.
+type Publisher struct {
 	topic    string
+	producer *pkgkafka.Producer
 	logger   *slog.Logger
 }
 
-// NewKafkaPublisher creates a new Kafka event publisher.
-func NewKafkaPublisher(producer *pkgkafka.Producer, topic string, logger *slog.Logger) *KafkaPublisher {
-	return &KafkaPublisher{
+// NewPublisher creates a new Kafka event publisher.
+func NewPublisher(producer *pkgkafka.Producer, topic string, logger *slog.Logger) *Publisher {
+	return &Publisher{
 		producer: producer,
 		topic:    topic,
 		logger:   logger,
@@ -27,7 +27,7 @@ func NewKafkaPublisher(producer *pkgkafka.Producer, topic string, logger *slog.L
 }
 
 // Publish sends domain events to Kafka.
-func (p *KafkaPublisher) Publish(ctx context.Context, domainEvents ...events.DomainEvent) error {
+func (p *Publisher) Publish(ctx context.Context, domainEvents ...events.DomainEvent) error {
 	messages := make([]pkgkafka.Message, 0, len(domainEvents))
 	for _, evt := range domainEvents {
 		eventType := evt.EventType()

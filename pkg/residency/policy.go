@@ -85,7 +85,7 @@ func (pe *PolicyEngine) ValidateStorage(
 // permitted under the jurisdiction's rules.
 func (pe *PolicyEngine) ValidateProcessing(
 	jurisdiction Jurisdiction,
-	classification DataClassification,
+	_ DataClassification,
 	processingRegion Region,
 ) PolicyResult {
 	result := PolicyResult{Allowed: true}

@@ -12,11 +12,11 @@ import (
 
 // UnderwritingResult holds the outcome of the underwriting evaluation.
 type UnderwritingResult struct {
-	Approved      bool
 	Reason        string
 	CreditScore   string
 	MaxAmount     decimal.Decimal
-	SuggestedRate int // basis points
+	SuggestedRate int
+	Approved      bool
 }
 
 // UnderwritingEngine encapsulates rule-based credit decisioning.

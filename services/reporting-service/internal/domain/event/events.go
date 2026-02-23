@@ -18,7 +18,7 @@ type ReportGenerated struct {
 	ReportingPeriod string `json:"reporting_period"`
 }
 
-func NewReportGenerated(id, tenantID uuid.UUID, reportType, reportingPeriod string, now time.Time) ReportGenerated {
+func NewReportGenerated(id, tenantID uuid.UUID, reportType, reportingPeriod string, _ time.Time) ReportGenerated {
 	return ReportGenerated{
 		BaseEvent:       events.NewBaseEvent("report.generated", id.String(), "ReportSubmission", tenantID.String()),
 		ReportType:      reportType,
@@ -33,7 +33,7 @@ type ReportSubmitted struct {
 	ReportingPeriod string `json:"reporting_period"`
 }
 
-func NewReportSubmitted(id, tenantID uuid.UUID, reportType, reportingPeriod string, now time.Time) ReportSubmitted {
+func NewReportSubmitted(id, tenantID uuid.UUID, reportType, reportingPeriod string, _ time.Time) ReportSubmitted {
 	return ReportSubmitted{
 		BaseEvent:       events.NewBaseEvent("report.submitted", id.String(), "ReportSubmission", tenantID.String()),
 		ReportType:      reportType,
@@ -48,7 +48,7 @@ type ReportAccepted struct {
 	ReportingPeriod string `json:"reporting_period"`
 }
 
-func NewReportAccepted(id, tenantID uuid.UUID, reportType, reportingPeriod string, now time.Time) ReportAccepted {
+func NewReportAccepted(id, tenantID uuid.UUID, reportType, reportingPeriod string, _ time.Time) ReportAccepted {
 	return ReportAccepted{
 		BaseEvent:       events.NewBaseEvent("report.accepted", id.String(), "ReportSubmission", tenantID.String()),
 		ReportType:      reportType,
@@ -64,7 +64,7 @@ type ReportRejected struct {
 	ValidationErrors []string `json:"validation_errors"`
 }
 
-func NewReportRejected(id, tenantID uuid.UUID, reportType, reportingPeriod string, validationErrors []string, now time.Time) ReportRejected {
+func NewReportRejected(id, tenantID uuid.UUID, reportType, reportingPeriod string, validationErrors []string, _ time.Time) ReportRejected {
 	return ReportRejected{
 		BaseEvent:        events.NewBaseEvent("report.rejected", id.String(), "ReportSubmission", tenantID.String()),
 		ReportType:       reportType,

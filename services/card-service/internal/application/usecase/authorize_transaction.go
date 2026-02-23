@@ -72,7 +72,7 @@ func (uc *AuthorizeTransactionUseCase) Execute(ctx context.Context, req dto.Auth
 	)
 	if err != nil {
 		// Publish decline events even on failure.
-		_ = uc.eventPublisher.Publish(ctx, updatedCard.DomainEvents())
+		_ = uc.eventPublisher.Publish(ctx, updatedCard.DomainEvents()) //nolint:errcheck
 		return dto.AuthorizeTransactionResponse{
 			Approved: false,
 			Reason:   err.Error(),

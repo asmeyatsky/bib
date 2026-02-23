@@ -10,22 +10,22 @@ import (
 	"github.com/bibbank/bib/services/reporting-service/internal/domain/event"
 )
 
-// KafkaPublisher publishes domain events to Kafka topics.
-type KafkaPublisher struct {
+// Publisher publishes domain events to Kafka topics.
+type Publisher struct {
 	producer *pkgkafka.Producer
 	logger   *slog.Logger
 }
 
-// NewKafkaPublisher creates a new KafkaPublisher.
-func NewKafkaPublisher(producer *pkgkafka.Producer, logger *slog.Logger) *KafkaPublisher {
-	return &KafkaPublisher{
+// NewPublisher creates a new Publisher.
+func NewPublisher(producer *pkgkafka.Producer, logger *slog.Logger) *Publisher {
+	return &Publisher{
 		producer: producer,
 		logger:   logger,
 	}
 }
 
 // Publish publishes one or more domain events to Kafka.
-func (p *KafkaPublisher) Publish(ctx context.Context, events ...event.DomainEvent) error {
+func (p *Publisher) Publish(ctx context.Context, events ...event.DomainEvent) error {
 	for _, evt := range events {
 		payload, err := json.Marshal(evt)
 		if err != nil {

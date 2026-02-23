@@ -17,8 +17,8 @@ type VerificationCheck struct {
 	status            valueobject.VerificationStatus
 	provider          string
 	providerReference string
-	completedAt       *time.Time
 	failureReason     string
+	completedAt       *time.Time
 }
 
 // NewVerificationCheck creates a new check in PENDING status.

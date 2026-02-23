@@ -17,9 +17,9 @@ import (
 	"github.com/bibbank/bib/services/account-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/account-service/internal/infrastructure/config"
 	infraKafka "github.com/bibbank/bib/services/account-service/internal/infrastructure/kafka"
+	infraPostgres "github.com/bibbank/bib/services/account-service/internal/infrastructure/postgres"
 	grpcPresentation "github.com/bibbank/bib/services/account-service/internal/presentation/grpc"
 	"github.com/bibbank/bib/services/account-service/internal/presentation/rest"
-	infraPostgres "github.com/bibbank/bib/services/account-service/internal/infrastructure/postgres"
 )
 
 func main() {
@@ -52,8 +52,8 @@ func main() {
 	defer pool.Close()
 
 	// Verify database connection.
-	if err := pool.Ping(ctx); err != nil {
-		logger.Error("failed to ping database", "error", err)
+	if pingErr := pool.Ping(ctx); pingErr != nil {
+		logger.Error("failed to ping database", "error", pingErr)
 		os.Exit(1)
 	}
 	logger.Info("connected to database", "database", cfg.Database.Database)
@@ -82,9 +82,9 @@ func main() {
 	case os.Getenv("JWT_PUBLIC_KEY") != "":
 		jwtCfg.PublicKeyPEM = os.Getenv("JWT_PUBLIC_KEY")
 	case os.Getenv("JWT_PUBLIC_KEY_FILE") != "":
-		keyData, err := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
-		if err != nil {
-			logger.Error("failed to load JWT public key file", "error", err)
+		keyData, loadErr := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
+		if loadErr != nil {
+			logger.Error("failed to load JWT public key file", "error", loadErr)
 			os.Exit(1)
 		}
 		jwtCfg.PublicKeyPEM = string(keyData)
@@ -117,8 +117,9 @@ func main() {
 	healthHandler.RegisterRoutes(httpMux)
 
 	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.HTTPPort),
-		Handler: httpMux,
+		Addr:              fmt.Sprintf(":%d", cfg.HTTPPort),
+		Handler:           httpMux,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	// Start servers in goroutines.

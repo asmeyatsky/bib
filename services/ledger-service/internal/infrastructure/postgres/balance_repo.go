@@ -23,7 +23,7 @@ func NewBalanceRepo(pool *pgxpool.Pool) *BalanceRepo {
 	return &BalanceRepo{pool: pool}
 }
 
-func (r *BalanceRepo) GetBalance(ctx context.Context, accountCode valueobject.AccountCode, currency string, asOf time.Time) (decimal.Decimal, error) {
+func (r *BalanceRepo) GetBalance(ctx context.Context, accountCode valueobject.AccountCode, currency string, _ time.Time) (decimal.Decimal, error) {
 	var balance decimal.Decimal
 	err := r.pool.QueryRow(ctx, `
 		SELECT COALESCE(balance, 0) FROM account_balances

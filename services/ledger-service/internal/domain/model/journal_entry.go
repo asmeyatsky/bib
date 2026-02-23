@@ -133,13 +133,16 @@ func (je JournalEntry) Reverse(now time.Time, reason string) (reversed JournalEn
 	// Create reversal entry (swap debit/credit in each posting)
 	var reversalPostings []valueobject.PostingPair
 	for _, p := range je.postings {
-		rp, _ := valueobject.NewPostingPair(
+		rp, rpErr := valueobject.NewPostingPair(
 			p.CreditAccount(), // swap
 			p.DebitAccount(),  // swap
 			p.Amount(),
 			p.Currency(),
 			fmt.Sprintf("Reversal: %s", p.Description()),
 		)
+		if rpErr != nil {
+			return JournalEntry{}, JournalEntry{}, fmt.Errorf("failed to create reversal posting: %w", rpErr)
+		}
 		reversalPostings = append(reversalPostings, rp)
 	}
 
@@ -179,17 +182,17 @@ func (je JournalEntry) Backvalue(newDate time.Time, now time.Time) (JournalEntry
 }
 
 // Accessors
-func (je JournalEntry) ID() uuid.UUID                          { return je.id }
-func (je JournalEntry) TenantID() uuid.UUID                    { return je.tenantID }
-func (je JournalEntry) EffectiveDate() time.Time               { return je.effectiveDate }
-func (je JournalEntry) Postings() []valueobject.PostingPair    { return je.postings }
-func (je JournalEntry) Status() EntryStatus                    { return je.status }
-func (je JournalEntry) Description() string                    { return je.description }
-func (je JournalEntry) Reference() string                      { return je.reference }
-func (je JournalEntry) Version() int                           { return je.version }
-func (je JournalEntry) CreatedAt() time.Time                   { return je.createdAt }
-func (je JournalEntry) UpdatedAt() time.Time                   { return je.updatedAt }
-func (je JournalEntry) DomainEvents() []events.DomainEvent     { return je.domainEvents }
+func (je JournalEntry) ID() uuid.UUID                       { return je.id }
+func (je JournalEntry) TenantID() uuid.UUID                 { return je.tenantID }
+func (je JournalEntry) EffectiveDate() time.Time            { return je.effectiveDate }
+func (je JournalEntry) Postings() []valueobject.PostingPair { return je.postings }
+func (je JournalEntry) Status() EntryStatus                 { return je.status }
+func (je JournalEntry) Description() string                 { return je.description }
+func (je JournalEntry) Reference() string                   { return je.reference }
+func (je JournalEntry) Version() int                        { return je.version }
+func (je JournalEntry) CreatedAt() time.Time                { return je.createdAt }
+func (je JournalEntry) UpdatedAt() time.Time                { return je.updatedAt }
+func (je JournalEntry) DomainEvents() []events.DomainEvent  { return je.domainEvents }
 // ClearDomainEvents returns the collected domain events and a new JournalEntry with events cleared.
 func (je JournalEntry) ClearDomainEvents() ([]events.DomainEvent, JournalEntry) {
 	evts := je.domainEvents

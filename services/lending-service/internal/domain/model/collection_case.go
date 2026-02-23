@@ -15,14 +15,14 @@ import (
 
 // CollectionCase tracks collections activity for a delinquent or defaulted loan.
 type CollectionCase struct {
+	createdAt  time.Time
+	updatedAt  time.Time
 	id         string
 	loanID     string
 	tenantID   string
 	status     valueobject.CollectionCaseStatus
 	assignedTo string
 	notes      []string
-	createdAt  time.Time
-	updatedAt  time.Time
 }
 
 // ---------------------------------------------------------------------------
@@ -121,13 +121,13 @@ func (c CollectionCase) Close(now time.Time) (CollectionCase, error) {
 // Accessors
 // ---------------------------------------------------------------------------
 
-func (c CollectionCase) ID() string                                { return c.id }
-func (c CollectionCase) LoanID() string                            { return c.loanID }
-func (c CollectionCase) TenantID() string                          { return c.tenantID }
-func (c CollectionCase) Status() valueobject.CollectionCaseStatus  { return c.status }
-func (c CollectionCase) AssignedTo() string                        { return c.assignedTo }
-func (c CollectionCase) CreatedAt() time.Time                      { return c.createdAt }
-func (c CollectionCase) UpdatedAt() time.Time                      { return c.updatedAt }
+func (c CollectionCase) ID() string                               { return c.id }
+func (c CollectionCase) LoanID() string                           { return c.loanID }
+func (c CollectionCase) TenantID() string                         { return c.tenantID }
+func (c CollectionCase) Status() valueobject.CollectionCaseStatus { return c.status }
+func (c CollectionCase) AssignedTo() string                       { return c.assignedTo }
+func (c CollectionCase) CreatedAt() time.Time                     { return c.createdAt }
+func (c CollectionCase) UpdatedAt() time.Time                     { return c.updatedAt }
 
 // Notes returns a defensive copy.
 func (c CollectionCase) Notes() []string {

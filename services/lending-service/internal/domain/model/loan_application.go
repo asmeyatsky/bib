@@ -18,20 +18,20 @@ import (
 
 // LoanApplication is an immutable aggregate. Every mutation returns a new copy.
 type LoanApplication struct {
-	id              string
-	tenantID        string
-	applicantID     string
+	createdAt       time.Time
+	updatedAt       time.Time
+	purpose         string
 	requestedAmount decimal.Decimal
 	currency        string
-	termMonths      int
-	purpose         string
+	id              string
 	status          valueobject.LoanApplicationStatus
 	decisionReason  string
 	creditScore     string
-	version         int
-	createdAt       time.Time
-	updatedAt       time.Time
+	applicantID     string
+	tenantID        string
 	domainEvents    []events.DomainEvent
+	termMonths      int
+	version         int
 }
 
 // ---------------------------------------------------------------------------
@@ -179,20 +179,20 @@ func (a LoanApplication) MarkDisbursed(now time.Time) (LoanApplication, error) {
 // Accessors
 // ---------------------------------------------------------------------------
 
-func (a LoanApplication) ID() string                                   { return a.id }
-func (a LoanApplication) TenantID() string                             { return a.tenantID }
-func (a LoanApplication) ApplicantID() string                          { return a.applicantID }
-func (a LoanApplication) RequestedAmount() decimal.Decimal              { return a.requestedAmount }
-func (a LoanApplication) Currency() string                             { return a.currency }
-func (a LoanApplication) TermMonths() int                              { return a.termMonths }
-func (a LoanApplication) Purpose() string                              { return a.purpose }
-func (a LoanApplication) Status() valueobject.LoanApplicationStatus    { return a.status }
-func (a LoanApplication) DecisionReason() string                       { return a.decisionReason }
-func (a LoanApplication) CreditScore() string                          { return a.creditScore }
-func (a LoanApplication) Version() int                                 { return a.version }
-func (a LoanApplication) CreatedAt() time.Time                         { return a.createdAt }
-func (a LoanApplication) UpdatedAt() time.Time                         { return a.updatedAt }
-func (a LoanApplication) DomainEvents() []events.DomainEvent            { return a.domainEvents }
+func (a LoanApplication) ID() string                                { return a.id }
+func (a LoanApplication) TenantID() string                          { return a.tenantID }
+func (a LoanApplication) ApplicantID() string                       { return a.applicantID }
+func (a LoanApplication) RequestedAmount() decimal.Decimal          { return a.requestedAmount }
+func (a LoanApplication) Currency() string                          { return a.currency }
+func (a LoanApplication) TermMonths() int                           { return a.termMonths }
+func (a LoanApplication) Purpose() string                           { return a.purpose }
+func (a LoanApplication) Status() valueobject.LoanApplicationStatus { return a.status }
+func (a LoanApplication) DecisionReason() string                    { return a.decisionReason }
+func (a LoanApplication) CreditScore() string                       { return a.creditScore }
+func (a LoanApplication) Version() int                              { return a.version }
+func (a LoanApplication) CreatedAt() time.Time                      { return a.createdAt }
+func (a LoanApplication) UpdatedAt() time.Time                      { return a.updatedAt }
+func (a LoanApplication) DomainEvents() []events.DomainEvent        { return a.domainEvents }
 
 // ClearEvents returns a copy with an empty event list (call after publishing).
 func (a LoanApplication) ClearEvents() LoanApplication {

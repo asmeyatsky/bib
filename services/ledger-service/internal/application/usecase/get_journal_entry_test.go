@@ -37,7 +37,7 @@ func TestGetJournalEntry_Execute(t *testing.T) {
 	t.Run("successfully retrieves a journal entry", func(t *testing.T) {
 		entry := sampleJournalEntry()
 		repo := &mockJournalRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.JournalEntry, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.JournalEntry, error) {
 				return entry, nil
 			},
 		}
@@ -56,7 +56,7 @@ func TestGetJournalEntry_Execute(t *testing.T) {
 
 	t.Run("fails when entry not found", func(t *testing.T) {
 		repo := &mockJournalRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.JournalEntry, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.JournalEntry, error) {
 				return model.JournalEntry{}, fmt.Errorf("entry not found")
 			},
 		}

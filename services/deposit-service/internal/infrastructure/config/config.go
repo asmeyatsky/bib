@@ -58,8 +58,8 @@ func Load() Config {
 			Password: getEnv("DB_PASSWORD", ""),
 			Name:     getEnv("DB_NAME", "bib_deposit"),
 			SSLMode:  getEnv("DB_SSLMODE", "require"),
-			MaxConns: int32(getEnvInt("DB_MAX_CONNS", 20)),
-			MinConns: int32(getEnvInt("DB_MIN_CONNS", 5)),
+			MaxConns: int32(getEnvInt("DB_MAX_CONNS", 20)), //nolint:gosec // bounded by env config
+			MinConns: int32(getEnvInt("DB_MIN_CONNS", 5)),  //nolint:gosec // bounded by env config
 		},
 		Kafka: KafkaConfig{
 			Brokers: []string{getEnv("KAFKA_BROKERS", "localhost:9092")},

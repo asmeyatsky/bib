@@ -18,7 +18,7 @@ func NewStubModelClient(logger *slog.Logger) *StubModelClient {
 
 // Predict returns a default risk score. This is a stub implementation.
 // In production, this would send features to an ML model and receive a prediction.
-func (c *StubModelClient) Predict(ctx context.Context, features map[string]interface{}) (float64, error) {
+func (c *StubModelClient) Predict(_ context.Context, features map[string]interface{}) (float64, error) {
 	c.logger.Debug("stub ML model prediction requested",
 		slog.Int("feature_count", len(features)),
 	)

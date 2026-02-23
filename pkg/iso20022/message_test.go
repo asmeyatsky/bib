@@ -60,8 +60,8 @@ func TestCreditTransferInitiationToXML(t *testing.T) {
 	}
 
 	// Verify message ID
-	if doc.CstmrCdtTrfInitn.GrpHdr.MsgId != "MSG-001" {
-		t.Errorf("expected MsgId MSG-001, got %s", doc.CstmrCdtTrfInitn.GrpHdr.MsgId)
+	if doc.CstmrCdtTrfInitn.GrpHdr.MsgID != "MSG-001" {
+		t.Errorf("expected MsgId MSG-001, got %s", doc.CstmrCdtTrfInitn.GrpHdr.MsgID)
 	}
 
 	// Verify transaction count
@@ -129,8 +129,8 @@ func TestFIToFICreditTransferToXML(t *testing.T) {
 	}
 
 	// Verify message ID
-	if doc.FIToFICstmrCdtTrf.GrpHdr.MsgId != "PACS-001" {
-		t.Errorf("expected MsgId PACS-001, got %s", doc.FIToFICstmrCdtTrf.GrpHdr.MsgId)
+	if doc.FIToFICstmrCdtTrf.GrpHdr.MsgID != "PACS-001" {
+		t.Errorf("expected MsgId PACS-001, got %s", doc.FIToFICstmrCdtTrf.GrpHdr.MsgID)
 	}
 
 	// Verify transaction count

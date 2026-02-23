@@ -16,7 +16,7 @@ type MetricsConfig struct {
 
 // InitMetrics initializes the Prometheus metrics exporter.
 // Returns the MeterProvider and an HTTP handler for /metrics endpoint.
-func InitMetrics(cfg MetricsConfig) (*sdkmetric.MeterProvider, http.Handler, error) {
+func InitMetrics(_ MetricsConfig) (*sdkmetric.MeterProvider, http.Handler, error) {
 	exporter, err := promexporter.New()
 	if err != nil {
 		return nil, nil, err

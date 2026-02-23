@@ -52,7 +52,7 @@ func main() {
 	if err != nil {
 		logger.Warn("failed to initialize tracer, continuing without tracing", "error", err)
 	} else {
-		defer shutdown(ctx)
+		defer func() { _ = shutdown(ctx) }()
 	}
 
 	// Database connection.
@@ -80,7 +80,7 @@ func main() {
 		Brokers: cfg.Kafka.Brokers,
 	})
 	defer kafkaProducer.Close()
-	eventPublisher := kafka.NewKafkaPublisher(kafkaProducer, logger)
+	eventPublisher := kafka.NewPublisher(kafkaProducer, logger)
 	ledgerClient := client.NewStubLedgerDataClient()
 	xbrlGenerator := service.NewXBRLGenerator()
 
@@ -97,9 +97,9 @@ func main() {
 	case os.Getenv("JWT_PUBLIC_KEY") != "":
 		jwtCfg.PublicKeyPEM = os.Getenv("JWT_PUBLIC_KEY")
 	case os.Getenv("JWT_PUBLIC_KEY_FILE") != "":
-		keyData, err := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
-		if err != nil {
-			logger.Error("failed to load JWT public key file", "error", err)
+		keyData, loadErr := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
+		if loadErr != nil {
+			logger.Error("failed to load JWT public key file", "error", loadErr)
 			os.Exit(1)
 		}
 		jwtCfg.PublicKeyPEM = string(keyData)

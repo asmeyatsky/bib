@@ -35,7 +35,7 @@ func (r *ExchangeRateRepo) Save(ctx context.Context, rate model.ExchangeRate) er
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback(ctx) //nolint:errcheck
 
 	_, err = tx.Exec(ctx, `
 		INSERT INTO exchange_rates (id, tenant_id, base_currency, quote_currency, rate, inverse_rate, provider, effective_at, expires_at, version, created_at)

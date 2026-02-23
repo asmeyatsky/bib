@@ -79,13 +79,13 @@ func (g *XBRLGenerator) generateCOREP(data ReportData) string {
 	b.WriteString("\n")
 	b.WriteString(`  </xbrli:context>`)
 	b.WriteString("\n")
-	b.WriteString(fmt.Sprintf(`  <xbrli:unit id="u_EUR">
+	b.WriteString(`  <xbrli:unit id="u_EUR">
     <xbrli:measure>iso4217:EUR</xbrli:measure>
-  </xbrli:unit>`))
+  </xbrli:unit>`)
 	b.WriteString("\n")
-	b.WriteString(fmt.Sprintf(`  <xbrli:unit id="u_pure">
+	b.WriteString(`  <xbrli:unit id="u_pure">
     <xbrli:measure>xbrli:pure</xbrli:measure>
-  </xbrli:unit>`))
+  </xbrli:unit>`)
 	b.WriteString("\n")
 	b.WriteString(fmt.Sprintf(`  <corep:RiskWeightedAssets contextRef="ctx_%s" unitRef="u_EUR" decimals="0">%s</corep:RiskWeightedAssets>`,
 		data.Period, data.RiskWeightedAssets.StringFixed(0)))
@@ -132,9 +132,9 @@ func (g *XBRLGenerator) generateFINREP(data ReportData) string {
 	b.WriteString("\n")
 	b.WriteString(`  </xbrli:context>`)
 	b.WriteString("\n")
-	b.WriteString(fmt.Sprintf(`  <xbrli:unit id="u_EUR">
+	b.WriteString(`  <xbrli:unit id="u_EUR">
     <xbrli:measure>iso4217:EUR</xbrli:measure>
-  </xbrli:unit>`))
+  </xbrli:unit>`)
 	b.WriteString("\n")
 	b.WriteString(fmt.Sprintf(`  <finrep:TotalAssets contextRef="ctx_%s" unitRef="u_EUR" decimals="0">%s</finrep:TotalAssets>`,
 		data.Period, data.TotalAssets.StringFixed(0)))
@@ -181,13 +181,13 @@ func (g *XBRLGenerator) generateMREL(data ReportData) string {
 	b.WriteString("\n")
 	b.WriteString(`  </xbrli:context>`)
 	b.WriteString("\n")
-	b.WriteString(fmt.Sprintf(`  <xbrli:unit id="u_EUR">
+	b.WriteString(`  <xbrli:unit id="u_EUR">
     <xbrli:measure>iso4217:EUR</xbrli:measure>
-  </xbrli:unit>`))
+  </xbrli:unit>`)
 	b.WriteString("\n")
-	b.WriteString(fmt.Sprintf(`  <xbrli:unit id="u_pure">
+	b.WriteString(`  <xbrli:unit id="u_pure">
     <xbrli:measure>xbrli:pure</xbrli:measure>
-  </xbrli:unit>`))
+  </xbrli:unit>`)
 	b.WriteString("\n")
 	b.WriteString(fmt.Sprintf(`  <mrel:TotalEquity contextRef="ctx_%s" unitRef="u_EUR" decimals="0">%s</mrel:TotalEquity>`,
 		data.Period, data.TotalEquity.StringFixed(0)))
@@ -233,9 +233,9 @@ func (g *XBRLGenerator) generateCustom(data ReportData) string {
 	b.WriteString("\n")
 	b.WriteString(`  </xbrli:context>`)
 	b.WriteString("\n")
-	b.WriteString(fmt.Sprintf(`  <xbrli:unit id="u_EUR">
+	b.WriteString(`  <xbrli:unit id="u_EUR">
     <xbrli:measure>iso4217:EUR</xbrli:measure>
-  </xbrli:unit>`))
+  </xbrli:unit>`)
 	b.WriteString("\n")
 	b.WriteString(fmt.Sprintf(`  <custom:TotalAssets contextRef="ctx_%s" unitRef="u_EUR" decimals="0">%s</custom:TotalAssets>`,
 		data.Period, data.TotalAssets.StringFixed(0)))

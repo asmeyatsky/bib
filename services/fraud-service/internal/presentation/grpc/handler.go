@@ -65,12 +65,12 @@ func NewFraudServiceHandler(
 
 // AssessTransactionRequest represents the proto AssessTransactionRequest message.
 type AssessTransactionRequest struct {
+	Metadata        map[string]string `json:"metadata"`
 	TenantID        string            `json:"tenant_id"`
 	TransactionID   string            `json:"transaction_id"`
 	AccountID       string            `json:"account_id"`
-	Amount          *MoneyMsg         `json:"amount"`
 	TransactionType string            `json:"transaction_type"`
-	Metadata        map[string]string `json:"metadata"`
+	Amount          *MoneyMsg         `json:"amount"`
 }
 
 // MoneyMsg represents the proto Money message.
@@ -81,16 +81,16 @@ type MoneyMsg struct {
 
 // TransactionAssessmentMsg represents the proto TransactionAssessment message.
 type TransactionAssessmentMsg struct {
+	RiskSignals     []string  `json:"risk_signals"`
 	ID              string    `json:"id"`
 	TenantID        string    `json:"tenant_id"`
 	TransactionID   string    `json:"transaction_id"`
 	AccountID       string    `json:"account_id"`
-	Amount          *MoneyMsg `json:"amount"`
 	TransactionType string    `json:"transaction_type"`
 	RiskLevel       string    `json:"risk_level"`
-	RiskScore       int32     `json:"risk_score"`
 	Decision        string    `json:"decision"`
-	RiskSignals     []string  `json:"risk_signals"`
+	Amount          *MoneyMsg `json:"amount"`
+	RiskScore       int32     `json:"risk_score"`
 }
 
 // AssessTransactionResponse represents the proto AssessTransactionResponse message.
@@ -174,7 +174,7 @@ func (h *FraudServiceHandler) AssessTransaction(ctx context.Context, req *Assess
 			Amount:          req.Amount,
 			TransactionType: req.TransactionType,
 			RiskLevel:       result.RiskLevel,
-			RiskScore:       int32(result.RiskScore),
+			RiskScore:       int32(result.RiskScore), //nolint:gosec
 			Decision:        result.Decision,
 			RiskSignals:     result.RiskSignals,
 		},
@@ -217,7 +217,7 @@ func (h *FraudServiceHandler) GetAssessment(ctx context.Context, req *GetAssessm
 			Amount:          &MoneyMsg{Amount: result.Amount, Currency: result.Currency},
 			TransactionType: result.TransactionType,
 			RiskLevel:       result.RiskLevel,
-			RiskScore:       int32(result.RiskScore),
+			RiskScore:       int32(result.RiskScore), //nolint:gosec
 			Decision:        result.Decision,
 			RiskSignals:     result.RiskSignals,
 		},

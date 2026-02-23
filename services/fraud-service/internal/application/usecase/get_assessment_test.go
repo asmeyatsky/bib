@@ -31,7 +31,7 @@ func TestGetAssessment_Execute(t *testing.T) {
 		)
 
 		repo := &mockAssessmentRepository{
-			findByIDFunc: func(ctx context.Context, tid, id uuid.UUID) (*model.TransactionAssessment, error) {
+			findByIDFunc: func(_ context.Context, tid, id uuid.UUID) (*model.TransactionAssessment, error) {
 				assert.Equal(t, tenantID, tid)
 				assert.Equal(t, assessmentID, id)
 				return assessment, nil
@@ -52,7 +52,7 @@ func TestGetAssessment_Execute(t *testing.T) {
 
 	t.Run("fails when assessment not found", func(t *testing.T) {
 		repo := &mockAssessmentRepository{
-			findByIDFunc: func(ctx context.Context, tid, id uuid.UUID) (*model.TransactionAssessment, error) {
+			findByIDFunc: func(_ context.Context, _, _ uuid.UUID) (*model.TransactionAssessment, error) {
 				return nil, fmt.Errorf("not found")
 			},
 		}
@@ -68,7 +68,7 @@ func TestGetAssessment_Execute(t *testing.T) {
 
 	t.Run("fails when assessment is nil", func(t *testing.T) {
 		repo := &mockAssessmentRepository{
-			findByIDFunc: func(ctx context.Context, tid, id uuid.UUID) (*model.TransactionAssessment, error) {
+			findByIDFunc: func(_ context.Context, _, _ uuid.UUID) (*model.TransactionAssessment, error) {
 				return nil, nil
 			},
 		}

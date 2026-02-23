@@ -16,7 +16,7 @@ const (
 	CampaignStatusDraft     CampaignStatus = "DRAFT"
 	CampaignStatusActive    CampaignStatus = "ACTIVE"
 	CampaignStatusExpired   CampaignStatus = "EXPIRED"
-	CampaignStatusCancelled CampaignStatus = "CANCELLED"
+	CampaignStatusCanceled CampaignStatus = "CANCELED"
 )
 
 // TargetAudience defines the audience segment for a campaign.
@@ -158,16 +158,16 @@ func (c Campaign) Expire(now time.Time) (Campaign, error) {
 	return expired, nil
 }
 
-// Cancel transitions the campaign from DRAFT or ACTIVE to CANCELLED.
+// Cancel transitions the campaign from DRAFT or ACTIVE to CANCELED.
 func (c Campaign) Cancel(now time.Time) (Campaign, error) {
 	if c.status != CampaignStatusDraft && c.status != CampaignStatusActive {
 		return Campaign{}, fmt.Errorf("can only cancel DRAFT or ACTIVE campaigns, current: %s", c.status)
 	}
-	cancelled := c
-	cancelled.status = CampaignStatusCancelled
-	cancelled.updatedAt = now
-	cancelled.version++
-	return cancelled, nil
+	canceled := c
+	canceled.status = CampaignStatusCanceled
+	canceled.updatedAt = now
+	canceled.version++
+	return canceled, nil
 }
 
 // RecordEnrollment increments enrollment count and adds to the total deposit value.
@@ -188,18 +188,18 @@ func (c Campaign) IsActiveAt(t time.Time) bool {
 }
 
 // Accessors
-func (c Campaign) ID() uuid.UUID                            { return c.id }
-func (c Campaign) TenantID() uuid.UUID                      { return c.tenantID }
-func (c Campaign) Name() string                              { return c.name }
-func (c Campaign) Description() string                       { return c.description }
-func (c Campaign) ProductID() uuid.UUID                      { return c.productID }
+func (c Campaign) ID() uuid.UUID                               { return c.id }
+func (c Campaign) TenantID() uuid.UUID                         { return c.tenantID }
+func (c Campaign) Name() string                                { return c.name }
+func (c Campaign) Description() string                         { return c.description }
+func (c Campaign) ProductID() uuid.UUID                        { return c.productID }
 func (c Campaign) PromotionalRate() valueobject.PromotionalRate { return c.promotionalRate }
-func (c Campaign) TargetAudience() TargetAudience            { return c.targetAudience }
-func (c Campaign) StartDate() time.Time                      { return c.startDate }
-func (c Campaign) EndDate() time.Time                        { return c.endDate }
-func (c Campaign) Status() CampaignStatus                    { return c.status }
-func (c Campaign) TotalEnrollments() int                     { return c.totalEnrollments }
-func (c Campaign) TotalDepositValue() string                 { return c.totalDepositValue }
-func (c Campaign) Version() int                              { return c.version }
-func (c Campaign) CreatedAt() time.Time                      { return c.createdAt }
-func (c Campaign) UpdatedAt() time.Time                      { return c.updatedAt }
+func (c Campaign) TargetAudience() TargetAudience              { return c.targetAudience }
+func (c Campaign) StartDate() time.Time                        { return c.startDate }
+func (c Campaign) EndDate() time.Time                          { return c.endDate }
+func (c Campaign) Status() CampaignStatus                      { return c.status }
+func (c Campaign) TotalEnrollments() int                       { return c.totalEnrollments }
+func (c Campaign) TotalDepositValue() string                   { return c.totalDepositValue }
+func (c Campaign) Version() int                                { return c.version }
+func (c Campaign) CreatedAt() time.Time                        { return c.createdAt }
+func (c Campaign) UpdatedAt() time.Time                        { return c.updatedAt }

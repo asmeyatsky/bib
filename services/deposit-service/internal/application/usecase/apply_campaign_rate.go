@@ -21,12 +21,12 @@ type ApplyCampaignRateRequest struct {
 
 // ApplyCampaignRateResponse is the output DTO for the campaign rate application.
 type ApplyCampaignRateResponse struct {
-	PositionID      uuid.UUID
-	CampaignID      uuid.UUID
-	BonusInterest   decimal.Decimal
-	StandardRate    int // bps
-	BonusRate       int // bps
-	EffectiveRate   int // bps (standard + bonus)
+	PositionID    uuid.UUID
+	CampaignID    uuid.UUID
+	BonusInterest decimal.Decimal
+	StandardRate  int // bps
+	BonusRate     int // bps
+	EffectiveRate int // bps (standard + bonus)
 }
 
 // ApplyCampaignRate applies a promotional campaign rate to a deposit position.

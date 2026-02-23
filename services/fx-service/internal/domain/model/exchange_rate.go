@@ -142,18 +142,16 @@ func (er ExchangeRate) Convert(amount decimal.Decimal) decimal.Decimal {
 func (er ExchangeRate) ID() uuid.UUID                      { return er.id }
 func (er ExchangeRate) TenantID() uuid.UUID                { return er.tenantID }
 func (er ExchangeRate) Pair() valueobject.CurrencyPair     { return er.pair }
-func (er ExchangeRate) Rate() valueobject.SpotRate          { return er.rate }
-func (er ExchangeRate) InverseRate() valueobject.SpotRate   { return er.inverseRate }
-func (er ExchangeRate) Provider() string                    { return er.provider }
-func (er ExchangeRate) EffectiveAt() time.Time              { return er.effectiveAt }
-func (er ExchangeRate) ExpiresAt() time.Time                { return er.expiresAt }
-func (er ExchangeRate) Version() int                        { return er.version }
-func (er ExchangeRate) CreatedAt() time.Time                { return er.createdAt }
-func (er ExchangeRate) DomainEvents() []events.DomainEvent  { return er.domainEvents }
+func (er ExchangeRate) Rate() valueobject.SpotRate         { return er.rate }
+func (er ExchangeRate) InverseRate() valueobject.SpotRate  { return er.inverseRate }
+func (er ExchangeRate) Provider() string                   { return er.provider }
+func (er ExchangeRate) EffectiveAt() time.Time             { return er.effectiveAt }
+func (er ExchangeRate) ExpiresAt() time.Time               { return er.expiresAt }
+func (er ExchangeRate) Version() int                       { return er.version }
+func (er ExchangeRate) CreatedAt() time.Time               { return er.createdAt }
+func (er ExchangeRate) DomainEvents() []events.DomainEvent { return er.domainEvents }
 
 // ClearDomainEvents returns collected domain events and clears them from the aggregate.
 func (er ExchangeRate) ClearDomainEvents() []events.DomainEvent {
-	evts := er.domainEvents
-	er.domainEvents = nil
-	return evts
+	return er.domainEvents
 }

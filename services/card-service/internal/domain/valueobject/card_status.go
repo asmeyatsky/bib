@@ -10,7 +10,7 @@ const (
 	CardStatusPending   CardStatus = "PENDING"
 	CardStatusActive    CardStatus = "ACTIVE"
 	CardStatusFrozen    CardStatus = "FROZEN"
-	CardStatusCancelled CardStatus = "CANCELLED"
+	CardStatusCanceled CardStatus = "CANCELED"
 	CardStatusExpired   CardStatus = "EXPIRED"
 )
 
@@ -19,7 +19,7 @@ var validCardStatuses = map[CardStatus]bool{
 	CardStatusPending:   true,
 	CardStatusActive:    true,
 	CardStatusFrozen:    true,
-	CardStatusCancelled: true,
+	CardStatusCanceled: true,
 	CardStatusExpired:   true,
 }
 

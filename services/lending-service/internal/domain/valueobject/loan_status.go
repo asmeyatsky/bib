@@ -50,7 +50,7 @@ func NewLoanApplicationStatus(s string) (LoanApplicationStatus, error) {
 // String returns the string representation of the status.
 func (s LoanApplicationStatus) String() string { return s.value }
 
-// IsZero returns true if the status has not been initialised.
+// IsZero returns true if the status has not been initialized.
 func (s LoanApplicationStatus) IsZero() bool { return s.value == "" }
 
 // Equal returns true when both statuses carry the same value.
@@ -103,7 +103,7 @@ func NewLoanStatus(s string) (LoanStatus, error) {
 // String returns the string representation of the status.
 func (s LoanStatus) String() string { return s.value }
 
-// IsZero returns true if the status has not been initialised.
+// IsZero returns true if the status has not been initialized.
 func (s LoanStatus) IsZero() bool { return s.value == "" }
 
 // Equal returns true when both statuses carry the same value.
@@ -151,7 +151,7 @@ func NewCollectionCaseStatus(s string) (CollectionCaseStatus, error) {
 // String returns the string representation.
 func (s CollectionCaseStatus) String() string { return s.value }
 
-// IsZero returns true when not initialised.
+// IsZero returns true when not initialized.
 func (s CollectionCaseStatus) IsZero() bool { return s.value == "" }
 
 // Equal returns true when both statuses match.

@@ -1,6 +1,6 @@
 module github.com/bibbank/bib/services/reporting-service
 
-go 1.23
+go 1.24
 
 require (
 	github.com/bibbank/bib/pkg/events v0.0.0

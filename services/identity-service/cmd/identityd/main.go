@@ -8,11 +8,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/bibbank/bib/pkg/auth"
+	kafkapkg "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/pkg/observability"
 	pgpkg "github.com/bibbank/bib/pkg/postgres"
-	kafkapkg "github.com/bibbank/bib/pkg/kafka"
 	"github.com/bibbank/bib/services/identity-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/identity-service/internal/infrastructure/config"
 	"github.com/bibbank/bib/services/identity-service/internal/infrastructure/kafka"
@@ -50,7 +51,7 @@ func main() {
 	if err != nil {
 		logger.Warn("failed to initialize tracer, continuing without tracing", "error", err)
 	} else {
-		defer shutdown(ctx)
+		defer func() { _ = shutdown(ctx) }()
 	}
 
 	// Initialize database
@@ -79,8 +80,8 @@ func main() {
 		Database: cfg.DB.Name,
 		SSLMode:  cfg.DB.SSLMode,
 	}.DSN()
-	if err := pgpkg.RunMigrations(dsn, "file://internal/infrastructure/postgres/migrations"); err != nil {
-		logger.Warn("migration warning", "error", err)
+	if migErr := pgpkg.RunMigrations(dsn, "file://internal/infrastructure/postgres/migrations"); migErr != nil {
+		logger.Warn("migration warning", "error", migErr)
 	}
 
 	// Initialize Kafka producer
@@ -108,9 +109,9 @@ func main() {
 	case os.Getenv("JWT_PUBLIC_KEY") != "":
 		jwtCfg.PublicKeyPEM = os.Getenv("JWT_PUBLIC_KEY")
 	case os.Getenv("JWT_PUBLIC_KEY_FILE") != "":
-		keyData, err := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
-		if err != nil {
-			logger.Error("failed to load JWT public key file", "error", err)
+		keyData, keyErr := auth.LoadKeyFromFile(os.Getenv("JWT_PUBLIC_KEY_FILE"))
+		if keyErr != nil {
+			logger.Error("failed to load JWT public key file", "error", keyErr)
 			os.Exit(1)
 		}
 		jwtCfg.PublicKeyPEM = string(keyData)
@@ -142,8 +143,9 @@ func main() {
 	healthHandler.RegisterRoutes(mux)
 
 	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.HTTPPort),
-		Handler: mux,
+		Addr:              fmt.Sprintf(":%d", cfg.HTTPPort),
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	// Start servers
@@ -169,7 +171,7 @@ func main() {
 	}
 
 	// Graceful shutdown
-	httpServer.Shutdown(context.Background())
+	_ = httpServer.Shutdown(context.Background())
 	grpcServer.Stop()
 	logger.Info("identity-service stopped")
 }

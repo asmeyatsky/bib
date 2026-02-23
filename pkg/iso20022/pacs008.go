@@ -20,7 +20,7 @@ func (f FIToFICreditTransfer) ToXML() ([]byte, error) {
 		Xmlns:   "urn:iso:std:iso:20022:tech:xsd:pacs.008.001.12",
 		FIToFICstmrCdtTrf: pacs008FIToFICstmrCdtTrf{
 			GrpHdr: pacs008GrpHdr{
-				MsgId:   f.Header.MessageID,
+				MsgID:   f.Header.MessageID,
 				CreDtTm: f.Header.CreationDate.Format(time.RFC3339),
 				NbOfTxs: fmt.Sprintf("%d", len(f.Transactions)),
 				SttlmInf: pacs008SttlmInf{
@@ -58,7 +58,7 @@ type pacs008FIToFICstmrCdtTrf struct {
 }
 
 type pacs008GrpHdr struct {
-	MsgId    string          `xml:"MsgId"`
+	MsgID    string          `xml:"MsgId"`
 	CreDtTm  string          `xml:"CreDtTm"`
 	NbOfTxs  string          `xml:"NbOfTxs"`
 	SttlmInf pacs008SttlmInf `xml:"SttlmInf"`

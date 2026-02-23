@@ -86,8 +86,9 @@ func main() {
 	h = middleware.AuthMiddleware(jwtService, []string{"/healthz", "/readyz"})(h)
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.HTTPPort),
-		Handler: h,
+		Addr:              fmt.Sprintf(":%d", cfg.HTTPPort),
+		Handler:           h,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	errCh := make(chan error, 1)

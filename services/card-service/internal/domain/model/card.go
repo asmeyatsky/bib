@@ -190,17 +190,17 @@ func (c Card) Unfreeze(now time.Time) (Card, error) {
 	return c, nil
 }
 
-// Cancel transitions the card to CANCELLED from any status.
+// Cancel transitions the card to CANCELED from any status.
 func (c Card) Cancel(now time.Time) (Card, error) {
-	if c.status == valueobject.CardStatusCancelled {
-		return c, fmt.Errorf("card is already cancelled")
+	if c.status == valueobject.CardStatusCanceled {
+		return c, fmt.Errorf("card is already canceled")
 	}
 
-	c.status = valueobject.CardStatusCancelled
+	c.status = valueobject.CardStatusCanceled
 	c.updatedAt = now.UTC()
 	c.version++
 
-	c.domainEvents = append(c.cloneEvents(), event.NewCardCancelled(
+	c.domainEvents = append(c.cloneEvents(), event.NewCardCanceled(
 		c.id, c.tenantID, now.UTC(),
 	))
 
@@ -286,20 +286,20 @@ func (c Card) ResetMonthlySpend(now time.Time) Card {
 
 // --- Getters ---
 
-func (c Card) ID() uuid.UUID                       { return c.id }
-func (c Card) TenantID() uuid.UUID                  { return c.tenantID }
-func (c Card) AccountID() uuid.UUID                  { return c.accountID }
-func (c Card) CardType() valueobject.CardType        { return c.cardType }
-func (c Card) Status() valueobject.CardStatus        { return c.status }
-func (c Card) CardNumber() valueobject.CardNumber     { return c.cardNumber }
-func (c Card) Currency() string                      { return c.currency }
-func (c Card) DailyLimit() decimal.Decimal           { return c.dailyLimit }
-func (c Card) MonthlyLimit() decimal.Decimal         { return c.monthlyLimit }
-func (c Card) DailySpent() decimal.Decimal           { return c.dailySpent }
-func (c Card) MonthlySpent() decimal.Decimal         { return c.monthlySpent }
-func (c Card) Version() int                          { return c.version }
-func (c Card) CreatedAt() time.Time                  { return c.createdAt }
-func (c Card) UpdatedAt() time.Time                  { return c.updatedAt }
+func (c Card) ID() uuid.UUID                     { return c.id }
+func (c Card) TenantID() uuid.UUID                { return c.tenantID }
+func (c Card) AccountID() uuid.UUID               { return c.accountID }
+func (c Card) CardType() valueobject.CardType     { return c.cardType }
+func (c Card) Status() valueobject.CardStatus     { return c.status }
+func (c Card) CardNumber() valueobject.CardNumber { return c.cardNumber }
+func (c Card) Currency() string                   { return c.currency }
+func (c Card) DailyLimit() decimal.Decimal        { return c.dailyLimit }
+func (c Card) MonthlyLimit() decimal.Decimal      { return c.monthlyLimit }
+func (c Card) DailySpent() decimal.Decimal        { return c.dailySpent }
+func (c Card) MonthlySpent() decimal.Decimal      { return c.monthlySpent }
+func (c Card) Version() int                       { return c.version }
+func (c Card) CreatedAt() time.Time               { return c.createdAt }
+func (c Card) UpdatedAt() time.Time               { return c.updatedAt }
 
 // DomainEvents returns all uncommitted domain events.
 func (c Card) DomainEvents() []events.DomainEvent {

@@ -135,7 +135,7 @@ func (s *stubPlaidClient) GetAccounts(_ context.Context, accessToken string) ([]
 }
 
 func (s *stubPlaidClient) GetBalances(_ context.Context, accessToken string) ([]openbanking.BankAccount, error) {
-	return s.GetAccounts(nil, accessToken)
+	return s.GetAccounts(context.TODO(), accessToken)
 }
 
 func (s *stubPlaidClient) SyncTransactions(_ context.Context, _ string, _ string) (openbanking.TransactionSyncResult, error) {

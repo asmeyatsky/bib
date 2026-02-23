@@ -7,8 +7,8 @@ import (
 func TestConfig_DSN(t *testing.T) {
 	tests := []struct {
 		name string
-		cfg  Config
 		want string
+		cfg  Config
 	}{
 		{
 			name: "basic config with explicit sslmode",

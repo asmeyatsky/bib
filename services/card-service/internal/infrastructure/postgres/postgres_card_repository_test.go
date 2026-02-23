@@ -6,10 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestNewPostgresCardRepository tests the constructor.
-func TestNewPostgresCardRepository(t *testing.T) {
+// TestNewCardRepository tests the constructor.
+func TestNewCardRepository(t *testing.T) {
 	t.Run("creates repository with nil pool", func(t *testing.T) {
-		repo := NewPostgresCardRepository(nil)
+		repo := NewCardRepository(nil)
 		assert.NotNil(t, repo)
 		assert.Nil(t, repo.pool)
 	})

@@ -30,7 +30,7 @@ func (r *AssessmentRepository) Save(ctx context.Context, assessment *model.Trans
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback(ctx) //nolint:errcheck
 
 	// Upsert the assessment.
 	query := `

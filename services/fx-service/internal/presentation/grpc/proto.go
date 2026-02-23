@@ -43,7 +43,7 @@ func RegisterFXServiceServer(s *grpclib.Server, srv FXServiceServer) {
 	s.RegisterService(&_FXService_serviceDesc, srv)
 }
 
-var _FXService_serviceDesc = grpclib.ServiceDesc{
+var _FXService_serviceDesc = grpclib.ServiceDesc{ //nolint:revive // gRPC handler registration
 	ServiceName: "bib.fx.v1.FXService",
 	HandlerType: (*FXServiceServer)(nil),
 	Methods: []grpclib.MethodDesc{
@@ -55,7 +55,8 @@ var _FXService_serviceDesc = grpclib.ServiceDesc{
 	Streams: []grpclib.StreamDesc{},
 }
 
-func _FXService_GetExchangeRate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+//nolint:revive // gRPC handler registration
+func _FXService_GetExchangeRate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:errcheck
 	req := new(GetExchangeRateRequest)
 	if err := dec(req); err != nil {
 		return nil, err
@@ -63,7 +64,8 @@ func _FXService_GetExchangeRate_Handler(srv interface{}, ctx context.Context, de
 	return srv.(FXServiceServer).GetExchangeRate(ctx, req)
 }
 
-func _FXService_ConvertAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+//nolint:revive // gRPC handler registration
+func _FXService_ConvertAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:errcheck
 	req := new(ConvertAmountRequest)
 	if err := dec(req); err != nil {
 		return nil, err
@@ -71,7 +73,8 @@ func _FXService_ConvertAmount_Handler(srv interface{}, ctx context.Context, dec 
 	return srv.(FXServiceServer).ConvertAmount(ctx, req)
 }
 
-func _FXService_ListExchangeRates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+//nolint:revive // gRPC handler registration
+func _FXService_ListExchangeRates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:errcheck
 	req := new(ListExchangeRatesRequest)
 	if err := dec(req); err != nil {
 		return nil, err
@@ -79,7 +82,8 @@ func _FXService_ListExchangeRates_Handler(srv interface{}, ctx context.Context, 
 	return srv.(FXServiceServer).ListExchangeRates(ctx, req)
 }
 
-func _FXService_Revaluate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+//nolint:revive // gRPC handler registration
+func _FXService_Revaluate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:errcheck
 	req := new(RevaluateRequest)
 	if err := dec(req); err != nil {
 		return nil, err

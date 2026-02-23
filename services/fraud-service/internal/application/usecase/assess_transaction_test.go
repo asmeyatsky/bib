@@ -130,7 +130,7 @@ func TestAssessTransaction_Execute(t *testing.T) {
 
 	t.Run("fails when repository save fails", func(t *testing.T) {
 		repo := &mockAssessmentRepository{
-			saveFunc: func(ctx context.Context, assessment *model.TransactionAssessment) error {
+			saveFunc: func(_ context.Context, _ *model.TransactionAssessment) error {
 				return fmt.Errorf("database unavailable")
 			},
 		}
@@ -149,7 +149,7 @@ func TestAssessTransaction_Execute(t *testing.T) {
 	t.Run("fails when event publishing fails", func(t *testing.T) {
 		repo := &mockAssessmentRepository{}
 		publisher := &mockFraudEventPublisher{
-			publishFunc: func(ctx context.Context, evts ...events.DomainEvent) error {
+			publishFunc: func(_ context.Context, _ ...events.DomainEvent) error {
 				return fmt.Errorf("kafka unavailable")
 			},
 		}

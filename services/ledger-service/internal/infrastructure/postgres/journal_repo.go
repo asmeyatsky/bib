@@ -33,6 +33,7 @@ func (r *JournalRepo) Save(ctx context.Context, entry model.JournalEntry) error 
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
+	//nolint:errcheck
 	defer tx.Rollback(ctx)
 
 	// Upsert journal entry
@@ -130,9 +131,18 @@ func (r *JournalRepo) FindByID(ctx context.Context, id uuid.UUID) (model.Journal
 		if err := rows.Scan(&debitStr, &creditStr, &amount, &currency, &desc); err != nil {
 			return model.JournalEntry{}, fmt.Errorf("scan posting pair: %w", err)
 		}
-		debit, _ := valueobject.NewAccountCode(debitStr)
-		credit, _ := valueobject.NewAccountCode(creditStr)
-		pair, _ := valueobject.NewPostingPair(debit, credit, amount, currency, desc)
+		debit, debitErr := valueobject.NewAccountCode(debitStr)
+		if debitErr != nil {
+			return model.JournalEntry{}, fmt.Errorf("invalid debit account code %q: %w", debitStr, debitErr)
+		}
+		credit, creditErr := valueobject.NewAccountCode(creditStr)
+		if creditErr != nil {
+			return model.JournalEntry{}, fmt.Errorf("invalid credit account code %q: %w", creditStr, creditErr)
+		}
+		pair, pairErr := valueobject.NewPostingPair(debit, credit, amount, currency, desc)
+		if pairErr != nil {
+			return model.JournalEntry{}, fmt.Errorf("invalid posting pair: %w", pairErr)
+		}
 		postings = append(postings, pair)
 	}
 

@@ -34,7 +34,7 @@ func TestMakePayment_Execute(t *testing.T) {
 	t.Run("successfully makes a payment", func(t *testing.T) {
 		loan := activeLoan()
 		loanRepo := &mockLoanRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.Loan, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.Loan, error) {
 				return loan, nil
 			},
 		}
@@ -62,7 +62,7 @@ func TestMakePayment_Execute(t *testing.T) {
 	t.Run("pays off loan completely", func(t *testing.T) {
 		loan := activeLoan()
 		loanRepo := &mockLoanRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.Loan, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.Loan, error) {
 				return loan, nil
 			},
 		}
@@ -84,7 +84,7 @@ func TestMakePayment_Execute(t *testing.T) {
 
 	t.Run("fails when loan not found", func(t *testing.T) {
 		loanRepo := &mockLoanRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.Loan, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.Loan, error) {
 				return model.Loan{}, fmt.Errorf("loan not found")
 			},
 		}
@@ -102,7 +102,7 @@ func TestMakePayment_Execute(t *testing.T) {
 	t.Run("fails when payment exceeds balance", func(t *testing.T) {
 		loan := activeLoan()
 		loanRepo := &mockLoanRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.Loan, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.Loan, error) {
 				return loan, nil
 			},
 		}
@@ -124,10 +124,10 @@ func TestMakePayment_Execute(t *testing.T) {
 	t.Run("fails when loan save fails", func(t *testing.T) {
 		loan := activeLoan()
 		loanRepo := &mockLoanRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.Loan, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.Loan, error) {
 				return loan, nil
 			},
-			saveFunc: func(ctx context.Context, l model.Loan) error {
+			saveFunc: func(_ context.Context, _ model.Loan) error {
 				return fmt.Errorf("database unavailable")
 			},
 		}
@@ -145,12 +145,12 @@ func TestMakePayment_Execute(t *testing.T) {
 	t.Run("fails when event publishing fails", func(t *testing.T) {
 		loan := activeLoan()
 		loanRepo := &mockLoanRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.Loan, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.Loan, error) {
 				return loan, nil
 			},
 		}
 		publisher := &mockLendingEventPublisher{
-			publishFunc: func(ctx context.Context, evts ...event.DomainEvent) error {
+			publishFunc: func(_ context.Context, _ ...event.DomainEvent) error {
 				return fmt.Errorf("kafka unavailable")
 			},
 		}

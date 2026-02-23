@@ -117,17 +117,17 @@ func NewCardFrozen(cardID, tenantID uuid.UUID, frozenAt time.Time) CardFrozen {
 	}
 }
 
-// CardCancelled is emitted when a card is cancelled.
-type CardCancelled struct {
+// CardCanceled is emitted when a card is canceled.
+type CardCanceled struct {
 	events.BaseEvent
-	CardID      uuid.UUID `json:"card_id"`
-	CancelledAt time.Time `json:"cancelled_at"`
+	CardID     uuid.UUID `json:"card_id"`
+	CanceledAt time.Time `json:"canceled_at"`
 }
 
-func NewCardCancelled(cardID, tenantID uuid.UUID, cancelledAt time.Time) CardCancelled {
-	return CardCancelled{
-		BaseEvent:   events.NewBaseEvent("card.cancelled", cardID.String(), "Card", tenantID.String()),
-		CardID:      cardID,
-		CancelledAt: cancelledAt,
+func NewCardCanceled(cardID, tenantID uuid.UUID, canceledAt time.Time) CardCanceled {
+	return CardCanceled{
+		BaseEvent:  events.NewBaseEvent("card.cancelled", cardID.String(), "Card", tenantID.String()),
+		CardID:     cardID,
+		CanceledAt: canceledAt,
 	}
 }

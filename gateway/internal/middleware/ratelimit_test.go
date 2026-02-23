@@ -69,7 +69,7 @@ func TestRateLimiter_MaxTokensCapped(t *testing.T) {
 func TestRateLimitMiddleware_Rejects(t *testing.T) {
 	rl := NewRateLimiter(1)
 
-	handler := RateLimitMiddleware(rl)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := RateLimitMiddleware(rl)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
@@ -113,7 +113,7 @@ func TestPerClientRateLimiter_IsolatesClients(t *testing.T) {
 func TestPerClientRateLimitMiddleware_KeysByIP(t *testing.T) {
 	pcrl := NewPerClientRateLimiter(1)
 
-	handler := PerClientRateLimitMiddleware(pcrl)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := PerClientRateLimitMiddleware(pcrl)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 

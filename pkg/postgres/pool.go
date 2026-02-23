@@ -11,11 +11,11 @@ import (
 // Config holds PostgreSQL connection parameters.
 type Config struct {
 	Host     string
-	Port     int
 	User     string
 	Password string
 	Database string
 	SSLMode  string
+	Port     int
 	MaxConns int32
 	MinConns int32
 }

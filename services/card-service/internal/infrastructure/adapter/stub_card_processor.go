@@ -24,7 +24,7 @@ func NewStubCardProcessor(logger *slog.Logger) *StubCardProcessor {
 }
 
 // IssuePhysicalCard simulates requesting a physical card from the processor.
-func (p *StubCardProcessor) IssuePhysicalCard(ctx context.Context, card model.Card) error {
+func (p *StubCardProcessor) IssuePhysicalCard(_ context.Context, card model.Card) error {
 	p.logger.Info("stub: issuing physical card",
 		slog.String("card_id", card.ID().String()),
 		slog.String("tenant_id", card.TenantID().String()),
@@ -35,7 +35,7 @@ func (p *StubCardProcessor) IssuePhysicalCard(ctx context.Context, card model.Ca
 }
 
 // GetCardDetails simulates retrieving card details from the processor.
-func (p *StubCardProcessor) GetCardDetails(ctx context.Context, cardID uuid.UUID) error {
+func (p *StubCardProcessor) GetCardDetails(_ context.Context, cardID uuid.UUID) error {
 	p.logger.Info("stub: getting card details",
 		slog.String("card_id", cardID.String()),
 	)

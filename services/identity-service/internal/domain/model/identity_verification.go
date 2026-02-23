@@ -14,6 +14,10 @@ import (
 // IdentityVerification is the root aggregate for the identity bounded context.
 // It orchestrates KYC/AML verification for an applicant.
 type IdentityVerification struct {
+	createdAt          time.Time
+	updatedAt          time.Time
+	checks             []VerificationCheck
+	domainEvents       []events.DomainEvent
 	id                 uuid.UUID
 	tenantID           uuid.UUID
 	applicantFirstName string
@@ -22,11 +26,7 @@ type IdentityVerification struct {
 	applicantDOB       string
 	applicantCountry   string
 	status             valueobject.VerificationStatus
-	checks             []VerificationCheck
 	version            int
-	createdAt          time.Time
-	updatedAt          time.Time
-	domainEvents       []events.DomainEvent
 }
 
 // NewIdentityVerification creates a new verification in PENDING status
@@ -273,7 +273,5 @@ func (v IdentityVerification) Checks() []VerificationCheck {
 }
 
 func (v IdentityVerification) ClearDomainEvents() []events.DomainEvent {
-	evts := v.domainEvents
-	v.domainEvents = nil
-	return evts
+	return v.domainEvents
 }

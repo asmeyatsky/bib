@@ -40,7 +40,7 @@ func RegisterCardServiceServer(s *grpclib.Server, srv CardServiceServer) {
 	s.RegisterService(&_CardService_serviceDesc, srv)
 }
 
-var _CardService_serviceDesc = grpclib.ServiceDesc{
+var _CardService_serviceDesc = grpclib.ServiceDesc{ //nolint:revive
 	ServiceName: "bib.card.v1.CardService",
 	HandlerType: (*CardServiceServer)(nil),
 	Methods: []grpclib.MethodDesc{
@@ -51,7 +51,7 @@ var _CardService_serviceDesc = grpclib.ServiceDesc{
 	Streams: []grpclib.StreamDesc{},
 }
 
-func _CardService_IssueCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+func _CardService_IssueCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
 	req := new(IssueCardRequest)
 	if err := dec(req); err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func _CardService_IssueCard_Handler(srv interface{}, ctx context.Context, dec fu
 	return srv.(CardServiceServer).IssueCard(ctx, req)
 }
 
-func _CardService_AuthorizeTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+func _CardService_AuthorizeTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
 	req := new(AuthorizeTransactionRequest)
 	if err := dec(req); err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func _CardService_AuthorizeTransaction_Handler(srv interface{}, ctx context.Cont
 	return srv.(CardServiceServer).AuthorizeTransaction(ctx, req)
 }
 
-func _CardService_GetCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+func _CardService_GetCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
 	req := new(GetCardRequest)
 	if err := dec(req); err != nil {
 		return nil, err

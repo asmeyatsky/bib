@@ -260,7 +260,7 @@ func TestFreezeAccount(t *testing.T) {
 		h, repo := buildTestHandler()
 		account := makeActiveAccount(uuid.New())
 
-		repo.findByIDFunc = func(_ context.Context, id uuid.UUID) (model.CustomerAccount, error) {
+		repo.findByIDFunc = func(_ context.Context, _ uuid.UUID) (model.CustomerAccount, error) {
 			return account, nil
 		}
 
@@ -291,7 +291,7 @@ func TestCloseAccount(t *testing.T) {
 		h, repo := buildTestHandler()
 		account := makeActiveAccount(uuid.New())
 
-		repo.findByIDFunc = func(_ context.Context, id uuid.UUID) (model.CustomerAccount, error) {
+		repo.findByIDFunc = func(_ context.Context, _ uuid.UUID) (model.CustomerAccount, error) {
 			return account, nil
 		}
 

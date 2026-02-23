@@ -146,6 +146,6 @@ func generateLedgerCode(accountType string) string {
 	if !ok {
 		prefix = "2900"
 	}
-	suffix := rand.Intn(900) + 100 // 100-999
+	suffix := rand.Intn(900) + 100 //nolint:gosec // account suffix doesn't need crypto random
 	return fmt.Sprintf("%s-%03d", prefix, suffix)
 }

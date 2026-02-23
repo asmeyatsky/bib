@@ -26,7 +26,7 @@ func NewStubAccountBalanceClient(logger *slog.Logger, defaultBalance decimal.Dec
 
 // GetAvailableBalance returns the available balance for the given account.
 // The stub always returns the configured default balance.
-func (c *StubAccountBalanceClient) GetAvailableBalance(ctx context.Context, accountID uuid.UUID) (decimal.Decimal, error) {
+func (c *StubAccountBalanceClient) GetAvailableBalance(_ context.Context, accountID uuid.UUID) (decimal.Decimal, error) {
 	c.logger.Info("stub: getting available balance",
 		slog.String("account_id", accountID.String()),
 		slog.String("balance", c.balance.String()),

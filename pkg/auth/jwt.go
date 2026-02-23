@@ -76,7 +76,7 @@ func NewJWTService(cfg JWTConfig) (*JWTService, error) {
 		svc.useRSA = false
 
 	default:
-		return nil, fmt.Errorf("JWT configuration requires PrivateKeyPEM, PublicKeyPEM, or Secret")
+		return nil, fmt.Errorf("jwt configuration requires PrivateKeyPEM, PublicKeyPEM, or Secret")
 	}
 
 	return svc, nil

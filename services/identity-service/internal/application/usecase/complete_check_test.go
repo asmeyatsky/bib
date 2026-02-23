@@ -52,7 +52,7 @@ func TestCompleteCheck_Execute(t *testing.T) {
 		checkID := checks[0].ID()
 
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
 				return v, nil
 			},
 		}
@@ -91,7 +91,7 @@ func TestCompleteCheck_Execute(t *testing.T) {
 
 	t.Run("fails when verification not found", func(t *testing.T) {
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
 				return model.IdentityVerification{}, fmt.Errorf("not found")
 			},
 		}
@@ -113,7 +113,7 @@ func TestCompleteCheck_Execute(t *testing.T) {
 	t.Run("fails when check not found in verification", func(t *testing.T) {
 		v := inProgressVerification()
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
 				return v, nil
 			},
 		}
@@ -138,10 +138,10 @@ func TestCompleteCheck_Execute(t *testing.T) {
 		checkID := checks[0].ID()
 
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
 				return v, nil
 			},
-			saveFunc: func(ctx context.Context, ver model.IdentityVerification) error {
+			saveFunc: func(_ context.Context, _ model.IdentityVerification) error {
 				return fmt.Errorf("database unavailable")
 			},
 		}
@@ -166,12 +166,12 @@ func TestCompleteCheck_Execute(t *testing.T) {
 		checkID := checks[0].ID()
 
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
 				return v, nil
 			},
 		}
 		publisher := &mockIdentityEventPublisher{
-			publishFunc: func(ctx context.Context, topic string, evts ...events.DomainEvent) error {
+			publishFunc: func(_ context.Context, _ string, _ ...events.DomainEvent) error {
 				return fmt.Errorf("kafka unavailable")
 			},
 		}
@@ -199,7 +199,7 @@ func TestCompleteCheck_Execute(t *testing.T) {
 		checkID := checks[0].ID()
 
 		repo := &mockVerificationRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.IdentityVerification, error) {
+			findByIDFunc: func(_ context.Context, id uuid.UUID) (model.IdentityVerification, error) {
 				return v, nil
 			},
 		}

@@ -10,24 +10,19 @@ import (
 
 // AlternativeScoringResult holds the outcome of alternative credit scoring.
 type AlternativeScoringResult struct {
-	// Score is the computed alternative credit score (300-850 range).
-	Score int
-	// Confidence indicates how reliable the score is (LOW, MEDIUM, HIGH).
 	Confidence string
-	// Factors lists the contributing factors and their impact.
-	Factors []ScoringFactor
-	// Eligible indicates if the applicant qualifies for alternative scoring.
-	Eligible bool
-	// Reason provides a human-readable explanation.
-	Reason string
+	Reason     string
+	Factors    []ScoringFactor
+	Score      int
+	Eligible   bool
 }
 
 // ScoringFactor represents a single factor in the scoring model.
 type ScoringFactor struct {
 	Name   string
 	Weight decimal.Decimal
+	Impact string
 	Score  int
-	Impact string // "POSITIVE", "NEUTRAL", "NEGATIVE"
 }
 
 // AlternativeScoring is a domain service that computes credit scores from

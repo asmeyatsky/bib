@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"math"
 	"regexp"
 	"time"
 
@@ -98,9 +99,9 @@ type JournalEntryMsg struct {
 	Status        string
 	Description   string
 	Reference     string
-	Version       int32
 	CreatedAt     *timestamppb.Timestamp
 	UpdatedAt     *timestamppb.Timestamp
+	Version       int32
 }
 
 type PostJournalEntryResponse struct {
@@ -138,7 +139,8 @@ func (h *LedgerHandler) HandlePostJournalEntry(ctx context.Context, req *PostJou
 		if p.CreditAccount == "" {
 			return nil, status.Errorf(codes.InvalidArgument, "posting[%d]: credit_account is required", i)
 		}
-		amount, err := decimal.NewFromString(p.Amount)
+		var amount decimal.Decimal
+		amount, err = decimal.NewFromString(p.Amount)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "posting[%d]: invalid amount: %v", i, err)
 		}
@@ -252,7 +254,7 @@ func toJournalEntryMsg(r dto.JournalEntryResponse) *JournalEntryMsg {
 		Status:        r.Status,
 		Description:   r.Description,
 		Reference:     r.Reference,
-		Version:       int32(r.Version),
+		Version:       int32(min(r.Version, math.MaxInt32)), // #nosec G115
 		CreatedAt:     timestamppb.New(r.CreatedAt),
 		UpdatedAt:     timestamppb.New(r.UpdatedAt),
 	}

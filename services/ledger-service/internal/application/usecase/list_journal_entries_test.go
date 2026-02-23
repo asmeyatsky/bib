@@ -49,7 +49,7 @@ func TestListJournalEntries_Execute(t *testing.T) {
 		entry := sampleJournalEntry()
 
 		repo := &listMockJournalRepository{
-			listByTenantFunc: func(ctx context.Context, tid uuid.UUID, from, to time.Time, limit, offset int) ([]model.JournalEntry, int, error) {
+			listByTenantFunc: func(_ context.Context, tid uuid.UUID, _, _ time.Time, _, _ int) ([]model.JournalEntry, int, error) {
 				assert.Equal(t, tenantID, tid)
 				return []model.JournalEntry{entry}, 1, nil
 			},
@@ -73,7 +73,7 @@ func TestListJournalEntries_Execute(t *testing.T) {
 		entry := sampleJournalEntry()
 
 		repo := &listMockJournalRepository{
-			listByAccountFunc: func(ctx context.Context, tid uuid.UUID, account valueobject.AccountCode, from, to time.Time, limit, offset int) ([]model.JournalEntry, int, error) {
+			listByAccountFunc: func(_ context.Context, _ uuid.UUID, account valueobject.AccountCode, _, _ time.Time, _, _ int) ([]model.JournalEntry, int, error) {
 				assert.Equal(t, "1000", account.Code())
 				return []model.JournalEntry{entry}, 1, nil
 			},
@@ -97,7 +97,7 @@ func TestListJournalEntries_Execute(t *testing.T) {
 		tenantID := uuid.New()
 
 		repo := &listMockJournalRepository{
-			listByTenantFunc: func(ctx context.Context, tid uuid.UUID, from, to time.Time, limit, offset int) ([]model.JournalEntry, int, error) {
+			listByTenantFunc: func(_ context.Context, _ uuid.UUID, _, _ time.Time, limit, _ int) ([]model.JournalEntry, int, error) {
 				assert.Equal(t, 50, limit)
 				return nil, 0, nil
 			},
@@ -115,7 +115,7 @@ func TestListJournalEntries_Execute(t *testing.T) {
 		tenantID := uuid.New()
 
 		repo := &listMockJournalRepository{
-			listByTenantFunc: func(ctx context.Context, tid uuid.UUID, from, to time.Time, limit, offset int) ([]model.JournalEntry, int, error) {
+			listByTenantFunc: func(_ context.Context, _ uuid.UUID, _, _ time.Time, limit, _ int) ([]model.JournalEntry, int, error) {
 				assert.Equal(t, 1000, limit)
 				return nil, 0, nil
 			},
@@ -146,7 +146,7 @@ func TestListJournalEntries_Execute(t *testing.T) {
 
 	t.Run("fails when repository returns error", func(t *testing.T) {
 		repo := &listMockJournalRepository{
-			listByTenantFunc: func(ctx context.Context, tid uuid.UUID, from, to time.Time, limit, offset int) ([]model.JournalEntry, int, error) {
+			listByTenantFunc: func(_ context.Context, _ uuid.UUID, _, _ time.Time, _, _ int) ([]model.JournalEntry, int, error) {
 				return nil, 0, fmt.Errorf("database unavailable")
 			},
 		}

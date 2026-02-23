@@ -91,7 +91,7 @@ func (r *CollectionCaseRepo) FindByLoanID(ctx context.Context, tenantID, loanID 
 
 func scanCollectionCase(s scannable) (model.CollectionCase, error) {
 	var (
-		id, loanID, tenantID string
+		id, loanID, tenantID  string
 		statusStr, assignedTo string
 		notesJSON             []byte
 		createdAt, updatedAt  time.Time

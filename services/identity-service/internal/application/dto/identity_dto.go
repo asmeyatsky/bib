@@ -38,17 +38,20 @@ type ListVerificationsRequest struct {
 
 // VerificationCheckDTO transfers check data across layer boundaries.
 type VerificationCheckDTO struct {
+	CompletedAt       *time.Time
 	ID                uuid.UUID
 	CheckType         string
 	Status            string
 	Provider          string
 	ProviderReference string
-	CompletedAt       *time.Time
 	FailureReason     string
 }
 
 // VerificationResponse is the output DTO for a verification.
 type VerificationResponse struct {
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
+	Checks             []VerificationCheckDTO
 	ID                 uuid.UUID
 	TenantID           uuid.UUID
 	ApplicantFirstName string
@@ -57,10 +60,7 @@ type VerificationResponse struct {
 	ApplicantDOB       string
 	ApplicantCountry   string
 	Status             string
-	Checks             []VerificationCheckDTO
 	Version            int
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
 }
 
 // ListVerificationsResponse is the output DTO for listing verifications.

@@ -10,16 +10,16 @@ import (
 	"github.com/bibbank/bib/services/card-service/internal/domain/event"
 )
 
-// KafkaEventPublisher implements the EventPublisher port using Kafka.
-type KafkaEventPublisher struct {
+// EventPublisher implements the EventPublisher port using Kafka.
+type EventPublisher struct {
 	producer *pkgkafka.Producer
 	topic    string
 	logger   *slog.Logger
 }
 
-// NewKafkaEventPublisher creates a new KafkaEventPublisher.
-func NewKafkaEventPublisher(producer *pkgkafka.Producer, topic string, logger *slog.Logger) *KafkaEventPublisher {
-	return &KafkaEventPublisher{
+// NewEventPublisher creates a new EventPublisher.
+func NewEventPublisher(producer *pkgkafka.Producer, topic string, logger *slog.Logger) *EventPublisher {
+	return &EventPublisher{
 		producer: producer,
 		topic:    topic,
 		logger:   logger,
@@ -27,7 +27,7 @@ func NewKafkaEventPublisher(producer *pkgkafka.Producer, topic string, logger *s
 }
 
 // Publish sends domain events to Kafka.
-func (p *KafkaEventPublisher) Publish(ctx context.Context, events []event.DomainEvent) error {
+func (p *EventPublisher) Publish(ctx context.Context, events []event.DomainEvent) error {
 	messages := make([]pkgkafka.Message, 0, len(events))
 	for _, evt := range events {
 		payload, err := json.Marshal(evt)

@@ -53,9 +53,9 @@ func (m *mockJournalRepository) ListByTenant(_ context.Context, _ uuid.UUID, _, 
 
 // mockBalanceRepository implements port.BalanceRepository for testing.
 type mockBalanceRepository struct {
-	updates         []balanceUpdate
-	updateFunc      func(ctx context.Context, account valueobject.AccountCode, currency string, delta decimal.Decimal) error
-	getBalanceFunc  func(ctx context.Context, account valueobject.AccountCode, currency string, asOf time.Time) (decimal.Decimal, error)
+	updates        []balanceUpdate
+	updateFunc     func(ctx context.Context, account valueobject.AccountCode, currency string, delta decimal.Decimal) error
+	getBalanceFunc func(ctx context.Context, account valueobject.AccountCode, currency string, asOf time.Time) (decimal.Decimal, error)
 }
 
 type balanceUpdate struct {

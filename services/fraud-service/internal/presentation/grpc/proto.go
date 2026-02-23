@@ -35,7 +35,7 @@ func RegisterFraudServiceServer(s *grpclib.Server, srv FraudServiceServer) {
 	s.RegisterService(&_FraudService_serviceDesc, srv)
 }
 
-var _FraudService_serviceDesc = grpclib.ServiceDesc{
+var _FraudService_serviceDesc = grpclib.ServiceDesc{ //nolint:revive
 	ServiceName: "bib.fraud.v1.FraudService",
 	HandlerType: (*FraudServiceServer)(nil),
 	Methods: []grpclib.MethodDesc{
@@ -45,18 +45,18 @@ var _FraudService_serviceDesc = grpclib.ServiceDesc{
 	Streams: []grpclib.StreamDesc{},
 }
 
-func _FraudService_AssessTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+func _FraudService_AssessTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
 	req := new(AssessTransactionRequest)
 	if err := dec(req); err != nil {
 		return nil, err
 	}
-	return srv.(FraudServiceServer).AssessTransaction(ctx, req)
+	return srv.(FraudServiceServer).AssessTransaction(ctx, req) //nolint:errcheck
 }
 
-func _FraudService_GetAssessment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
+func _FraudService_GetAssessment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
 	req := new(GetAssessmentRequest)
 	if err := dec(req); err != nil {
 		return nil, err
 	}
-	return srv.(FraudServiceServer).GetAssessment(ctx, req)
+	return srv.(FraudServiceServer).GetAssessment(ctx, req) //nolint:errcheck
 }

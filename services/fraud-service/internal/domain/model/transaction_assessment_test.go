@@ -50,13 +50,13 @@ func TestNewTransactionAssessment_Validation(t *testing.T) {
 		wantErr   string
 	}{
 		{
-			name:    "nil tenant ID",
-			txnID:   uuid.New(),
+			name:      "nil tenant ID",
+			txnID:     uuid.New(),
 			accountID: uuid.New(),
-			amount:  decimal.NewFromInt(100),
-			currency: "USD",
-			txnType: "transfer",
-			wantErr: "tenant ID is required",
+			amount:    decimal.NewFromInt(100),
+			currency:  "USD",
+			txnType:   "transfer",
+			wantErr:   "tenant ID is required",
 		},
 		{
 			name:      "nil transaction ID",

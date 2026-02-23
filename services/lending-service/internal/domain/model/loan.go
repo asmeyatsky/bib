@@ -18,22 +18,22 @@ import (
 
 // Loan is an immutable aggregate. Mutations return a new copy.
 type Loan struct {
-	id                string
-	tenantID          string
-	applicationID     string
-	borrowerAccountID string
-	principal         decimal.Decimal
-	currency          string
-	interestRateBps   int
-	termMonths        int
-	status            valueobject.LoanStatus
-	schedule          []AmortizationEntry
+	nextPaymentDue     time.Time
+	updatedAt          time.Time
+	createdAt          time.Time
+	status             valueobject.LoanStatus
+	principal          decimal.Decimal
+	currency           string
+	id                 string
 	outstandingBalance decimal.Decimal
-	nextPaymentDue    time.Time
-	version           int
-	createdAt         time.Time
-	updatedAt         time.Time
-	domainEvents      []events.DomainEvent
+	borrowerAccountID  string
+	applicationID      string
+	tenantID           string
+	schedule           []AmortizationEntry
+	domainEvents       []events.DomainEvent
+	interestRateBps    int
+	termMonths         int
+	version            int
 }
 
 // ---------------------------------------------------------------------------
@@ -227,17 +227,17 @@ func (l Loan) ID() string                          { return l.id }
 func (l Loan) TenantID() string                    { return l.tenantID }
 func (l Loan) ApplicationID() string               { return l.applicationID }
 func (l Loan) BorrowerAccountID() string           { return l.borrowerAccountID }
-func (l Loan) Principal() decimal.Decimal           { return l.principal }
+func (l Loan) Principal() decimal.Decimal          { return l.principal }
 func (l Loan) Currency() string                    { return l.currency }
 func (l Loan) InterestRateBps() int                { return l.interestRateBps }
 func (l Loan) TermMonths() int                     { return l.termMonths }
 func (l Loan) Status() valueobject.LoanStatus      { return l.status }
-func (l Loan) OutstandingBalance() decimal.Decimal  { return l.outstandingBalance }
+func (l Loan) OutstandingBalance() decimal.Decimal { return l.outstandingBalance }
 func (l Loan) NextPaymentDue() time.Time           { return l.nextPaymentDue }
 func (l Loan) Version() int                        { return l.version }
 func (l Loan) CreatedAt() time.Time                { return l.createdAt }
 func (l Loan) UpdatedAt() time.Time                { return l.updatedAt }
-func (l Loan) DomainEvents() []events.DomainEvent   { return l.domainEvents }
+func (l Loan) DomainEvents() []events.DomainEvent  { return l.domainEvents }
 
 // Schedule returns a defensive copy of the amortization schedule.
 func (l Loan) Schedule() []AmortizationEntry {

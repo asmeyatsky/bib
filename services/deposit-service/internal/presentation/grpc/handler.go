@@ -152,13 +152,13 @@ func (h *DepositHandler) CreateDepositProduct(ctx context.Context, req *CreateDe
 
 	var tiers []dto.InterestTierDTO
 	for _, t := range req.Tiers {
-		minBal, err := decimal.NewFromString(t.MinBalance)
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid min_balance: %v", err)
+		minBal, parseErr := decimal.NewFromString(t.MinBalance)
+		if parseErr != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid min_balance: %v", parseErr)
 		}
-		maxBal, err := decimal.NewFromString(t.MaxBalance)
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid max_balance: %v", err)
+		maxBal, parseErr := decimal.NewFromString(t.MaxBalance)
+		if parseErr != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid max_balance: %v", parseErr)
 		}
 		if minBal.IsNegative() {
 			return nil, status.Error(codes.InvalidArgument, "min_balance must not be negative")
@@ -168,9 +168,9 @@ func (h *DepositHandler) CreateDepositProduct(ctx context.Context, req *CreateDe
 		}
 		rateBps := 0
 		if t.RateBps != "" {
-			d, err := decimal.NewFromString(t.RateBps)
-			if err != nil {
-				return nil, status.Errorf(codes.InvalidArgument, "invalid rate_bps: %v", err)
+			d, parseErr := decimal.NewFromString(t.RateBps)
+			if parseErr != nil {
+				return nil, status.Errorf(codes.InvalidArgument, "invalid rate_bps: %v", parseErr)
 			}
 			rateBps = int(d.IntPart())
 		}
@@ -301,7 +301,7 @@ func (h *DepositHandler) AccrueInterest(ctx context.Context, req *AccrueInterest
 	}
 
 	return &AccrueInterestResponse{
-		PositionsProcessed: int32(result.PositionsProcessed),
+		PositionsProcessed: int32(result.PositionsProcessed), //nolint:gosec
 		TotalAccrued:       result.TotalAccrued.String(),
 	}, nil
 }
@@ -321,7 +321,7 @@ func toDepositProductMsg(r dto.DepositProductResponse) *DepositProductMsg {
 		Name:     r.Name,
 		Currency: r.Currency,
 		Tiers:    tiers,
-		TermDays: int32(r.TermDays),
+		TermDays: int32(r.TermDays), //nolint:gosec
 	}
 }
 

@@ -18,7 +18,7 @@ import (
 func TestGetBalance_Execute(t *testing.T) {
 	t.Run("successfully retrieves balance", func(t *testing.T) {
 		balanceRepo := &mockBalanceRepository{
-			getBalanceFunc: func(ctx context.Context, account valueobject.AccountCode, currency string, asOf time.Time) (decimal.Decimal, error) {
+			getBalanceFunc: func(_ context.Context, account valueobject.AccountCode, currency string, _ time.Time) (decimal.Decimal, error) {
 				assert.Equal(t, "1000", account.Code())
 				assert.Equal(t, "USD", currency)
 				return decimal.NewFromInt(5000), nil
@@ -42,7 +42,7 @@ func TestGetBalance_Execute(t *testing.T) {
 
 	t.Run("uses current time when AsOf is zero", func(t *testing.T) {
 		balanceRepo := &mockBalanceRepository{
-			getBalanceFunc: func(ctx context.Context, account valueobject.AccountCode, currency string, asOf time.Time) (decimal.Decimal, error) {
+			getBalanceFunc: func(_ context.Context, _ valueobject.AccountCode, _ string, asOf time.Time) (decimal.Decimal, error) {
 				assert.False(t, asOf.IsZero())
 				return decimal.NewFromInt(100), nil
 			},
@@ -77,7 +77,7 @@ func TestGetBalance_Execute(t *testing.T) {
 
 	t.Run("fails when repository returns error", func(t *testing.T) {
 		balanceRepo := &mockBalanceRepository{
-			getBalanceFunc: func(ctx context.Context, account valueobject.AccountCode, currency string, asOf time.Time) (decimal.Decimal, error) {
+			getBalanceFunc: func(_ context.Context, _ valueobject.AccountCode, _ string, _ time.Time) (decimal.Decimal, error) {
 				return decimal.Zero, fmt.Errorf("database unavailable")
 			},
 		}

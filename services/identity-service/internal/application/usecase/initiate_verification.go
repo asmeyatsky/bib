@@ -14,8 +14,8 @@ const TopicIdentityVerifications = "bib.identity.verifications"
 // InitiateVerification handles the creation of a new identity verification
 // and initiates checks via the external provider.
 type InitiateVerification struct {
-	repo     port.VerificationRepository
-	provider port.VerificationProvider
+	repo      port.VerificationRepository
+	provider  port.VerificationProvider
 	publisher port.EventPublisher
 }
 
@@ -55,9 +55,9 @@ func (uc *InitiateVerification) Execute(ctx context.Context, req dto.InitiateVer
 	}
 
 	for _, check := range verification.Checks() {
-		providerRef, err := uc.provider.InitiateCheck(ctx, check.CheckType(), applicant)
-		if err != nil {
-			return dto.VerificationResponse{}, fmt.Errorf("failed to initiate %s check: %w", check.CheckType().String(), err)
+		providerRef, provErr := uc.provider.InitiateCheck(ctx, check.CheckType(), applicant)
+		if provErr != nil {
+			return dto.VerificationResponse{}, fmt.Errorf("failed to initiate %s check: %w", check.CheckType().String(), provErr)
 		}
 		verification, err = verification.UpdateCheckProvider(check.ID(), "persona", providerRef)
 		if err != nil {

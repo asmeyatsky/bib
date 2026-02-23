@@ -49,8 +49,8 @@ func (uc *DisburseLoanUseCase) Execute(
 	if err != nil {
 		return dto.LoanResponse{}, fmt.Errorf("mark disbursed: %w", err)
 	}
-	if err := uc.appRepo.Save(ctx, app); err != nil {
-		return dto.LoanResponse{}, fmt.Errorf("save application: %w", err)
+	if saveErr := uc.appRepo.Save(ctx, app); saveErr != nil {
+		return dto.LoanResponse{}, fmt.Errorf("save application: %w", saveErr)
 	}
 
 	// 3. Create the Loan aggregate (generates schedule internally).

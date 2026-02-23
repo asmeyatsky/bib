@@ -32,7 +32,7 @@ func (r *ProductRepo) Save(ctx context.Context, product model.DepositProduct) er
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback(ctx) //nolint:errcheck
 
 	// Upsert deposit product
 	_, err = tx.Exec(ctx, `

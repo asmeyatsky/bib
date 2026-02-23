@@ -30,7 +30,7 @@ func TestGetLoanUseCase_Execute(t *testing.T) {
 		)
 
 		loanRepo := &mockLoanRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.Loan, error) {
+			findByIDFunc: func(_ context.Context, tenantID, id string) (model.Loan, error) {
 				assert.Equal(t, "tenant-001", tenantID)
 				assert.Equal(t, "loan-001", id)
 				return loan, nil
@@ -51,7 +51,7 @@ func TestGetLoanUseCase_Execute(t *testing.T) {
 
 	t.Run("fails when loan not found", func(t *testing.T) {
 		loanRepo := &mockLoanRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.Loan, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.Loan, error) {
 				return model.Loan{}, fmt.Errorf("loan not found")
 			},
 		}
@@ -70,7 +70,7 @@ func TestGetApplicationUseCase_Execute(t *testing.T) {
 	t.Run("successfully retrieves an application", func(t *testing.T) {
 		app := approvedApplication()
 		appRepo := &mockLoanApplicationRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.LoanApplication, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.LoanApplication, error) {
 				return app, nil
 			},
 		}
@@ -87,7 +87,7 @@ func TestGetApplicationUseCase_Execute(t *testing.T) {
 
 	t.Run("fails when application not found", func(t *testing.T) {
 		appRepo := &mockLoanApplicationRepository{
-			findByIDFunc: func(ctx context.Context, tenantID, id string) (model.LoanApplication, error) {
+			findByIDFunc: func(_ context.Context, _, _ string) (model.LoanApplication, error) {
 				return model.LoanApplication{}, fmt.Errorf("not found")
 			},
 		}

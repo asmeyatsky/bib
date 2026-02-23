@@ -26,7 +26,7 @@ type mockAccountRepository struct {
 	findByIDFunc func(ctx context.Context, id uuid.UUID) (model.CustomerAccount, error)
 }
 
-func (m *mockAccountRepository) Save(ctx context.Context, account model.CustomerAccount) error {
+func (m *mockAccountRepository) Save(_ context.Context, account model.CustomerAccount) error {
 	if m.saveErr != nil {
 		return m.saveErr
 	}
@@ -41,15 +41,15 @@ func (m *mockAccountRepository) FindByID(ctx context.Context, id uuid.UUID) (mod
 	return model.CustomerAccount{}, fmt.Errorf("account not found")
 }
 
-func (m *mockAccountRepository) FindByAccountNumber(ctx context.Context, number valueobject.AccountNumber) (model.CustomerAccount, error) {
+func (m *mockAccountRepository) FindByAccountNumber(_ context.Context, _ valueobject.AccountNumber) (model.CustomerAccount, error) {
 	return model.CustomerAccount{}, fmt.Errorf("not implemented")
 }
 
-func (m *mockAccountRepository) ListByTenant(ctx context.Context, tenantID uuid.UUID, limit, offset int) ([]model.CustomerAccount, int, error) {
+func (m *mockAccountRepository) ListByTenant(_ context.Context, _ uuid.UUID, _, _ int) ([]model.CustomerAccount, int, error) {
 	return nil, 0, fmt.Errorf("not implemented")
 }
 
-func (m *mockAccountRepository) ListByHolder(ctx context.Context, holderID uuid.UUID, limit, offset int) ([]model.CustomerAccount, int, error) {
+func (m *mockAccountRepository) ListByHolder(_ context.Context, _ uuid.UUID, _, _ int) ([]model.CustomerAccount, int, error) {
 	return nil, 0, fmt.Errorf("not implemented")
 }
 
@@ -59,7 +59,7 @@ type mockEventPublisher struct {
 	publishErr      error
 }
 
-func (m *mockEventPublisher) Publish(ctx context.Context, topic string, events ...event.DomainEvent) error {
+func (m *mockEventPublisher) Publish(_ context.Context, topic string, events ...event.DomainEvent) error {
 	if m.publishErr != nil {
 		return m.publishErr
 	}
@@ -75,7 +75,7 @@ type mockLedgerClient struct {
 	createErr       error
 }
 
-func (m *mockLedgerClient) CreateLedgerAccount(ctx context.Context, tenantID uuid.UUID, accountCode string, currency string) error {
+func (m *mockLedgerClient) CreateLedgerAccount(_ context.Context, _ uuid.UUID, accountCode string, currency string) error {
 	if m.createErr != nil {
 		return m.createErr
 	}

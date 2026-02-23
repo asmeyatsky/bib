@@ -145,10 +145,10 @@ func ParseMT950(raw string) (MT950StatementMessage, error) {
 	}
 
 	if msg.TransactionReference == "" {
-		return MT950StatementMessage{}, fmt.Errorf("missing transaction reference field :20:")
+		return MT950StatementMessage{}, fmt.Errorf("missing transaction reference field 20")
 	}
 	if msg.AccountIdentification == "" {
-		return MT950StatementMessage{}, fmt.Errorf("missing account identification field :25:")
+		return MT950StatementMessage{}, fmt.Errorf("missing account identification field 25")
 	}
 
 	return msg, nil
@@ -257,11 +257,11 @@ func parseStatementEntry(s string) (StatementEntry, error) {
 // parseSWIFTDate parses a date in YYMMDD format.
 func parseSWIFTDate(s string) (time.Time, error) {
 	if len(s) != 6 {
-		return time.Time{}, fmt.Errorf("SWIFT date must be 6 characters, got %d", len(s))
+		return time.Time{}, fmt.Errorf("swift date must be 6 characters, got %d", len(s))
 	}
 	t, err := time.Parse("060102", s)
 	if err != nil {
-		return time.Time{}, fmt.Errorf("parse SWIFT date %q: %w", s, err)
+		return time.Time{}, fmt.Errorf("parse swift date %q: %w", s, err)
 	}
 	return t, nil
 }

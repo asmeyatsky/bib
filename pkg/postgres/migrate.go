@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres" // register postgres driver
+	_ "github.com/golang-migrate/migrate/v4/source/file"       // register file source driver
 )
 
 // RunMigrations runs all pending database migrations from the given directory.

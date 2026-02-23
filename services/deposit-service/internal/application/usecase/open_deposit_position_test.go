@@ -34,7 +34,7 @@ func TestOpenDepositPosition_Execute(t *testing.T) {
 	t.Run("successfully opens a demand deposit position", func(t *testing.T) {
 		product := activeProduct()
 		productRepo := &mockDepositProductRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.DepositProduct, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.DepositProduct, error) {
 				return product, nil
 			},
 		}
@@ -67,7 +67,7 @@ func TestOpenDepositPosition_Execute(t *testing.T) {
 	t.Run("successfully opens a term deposit with maturity date", func(t *testing.T) {
 		product := termProduct()
 		productRepo := &mockDepositProductRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.DepositProduct, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.DepositProduct, error) {
 				return product, nil
 			},
 		}
@@ -90,7 +90,7 @@ func TestOpenDepositPosition_Execute(t *testing.T) {
 
 	t.Run("fails when product not found", func(t *testing.T) {
 		productRepo := &mockDepositProductRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.DepositProduct, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.DepositProduct, error) {
 				return model.DepositProduct{}, fmt.Errorf("product not found")
 			},
 		}
@@ -115,7 +115,7 @@ func TestOpenDepositPosition_Execute(t *testing.T) {
 		product := activeProduct()
 		deactivated, _ := product.Deactivate(time.Now())
 		productRepo := &mockDepositProductRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.DepositProduct, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.DepositProduct, error) {
 				return deactivated, nil
 			},
 		}
@@ -139,12 +139,12 @@ func TestOpenDepositPosition_Execute(t *testing.T) {
 	t.Run("fails when position save fails", func(t *testing.T) {
 		product := activeProduct()
 		productRepo := &mockDepositProductRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.DepositProduct, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.DepositProduct, error) {
 				return product, nil
 			},
 		}
 		positionRepo := &mockDepositPositionRepository{
-			saveFunc: func(ctx context.Context, position model.DepositPosition) error {
+			saveFunc: func(_ context.Context, _ model.DepositPosition) error {
 				return fmt.Errorf("database unavailable")
 			},
 		}
@@ -167,13 +167,13 @@ func TestOpenDepositPosition_Execute(t *testing.T) {
 	t.Run("fails when event publishing fails", func(t *testing.T) {
 		product := activeProduct()
 		productRepo := &mockDepositProductRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.DepositProduct, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.DepositProduct, error) {
 				return product, nil
 			},
 		}
 		positionRepo := &mockDepositPositionRepository{}
 		publisher := &mockDepositEventPublisher{
-			publishFunc: func(ctx context.Context, topic string, evts ...events.DomainEvent) error {
+			publishFunc: func(_ context.Context, _ string, _ ...events.DomainEvent) error {
 				return fmt.Errorf("kafka unavailable")
 			},
 		}

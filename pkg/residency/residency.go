@@ -59,12 +59,12 @@ type JurisdictionRule struct {
 	// AllowedProcessingRegions lists regions where data may be processed
 	// (may differ from storage regions for some jurisdictions).
 	AllowedProcessingRegions []Region
+	// MaxRetentionDays is the maximum data retention period (0 = no limit).
+	MaxRetentionDays int
 	// RequiresEncryptionAtRest indicates if data must be encrypted at rest.
 	RequiresEncryptionAtRest bool
 	// RequiresEncryptionInTransit indicates if data must be encrypted in transit.
 	RequiresEncryptionInTransit bool
-	// MaxRetentionDays is the maximum data retention period (0 = no limit).
-	MaxRetentionDays int
 	// RequiresAuditLog indicates if access to this data must be audit-logged.
 	RequiresAuditLog bool
 	// CrossBorderTransferAllowed indicates if data can leave the jurisdiction.
@@ -77,59 +77,59 @@ type JurisdictionRule struct {
 func DefaultJurisdictionRules() map[Jurisdiction]JurisdictionRule {
 	return map[Jurisdiction]JurisdictionRule{
 		JurisdictionUS: {
-			Jurisdiction:               JurisdictionUS,
-			AllowedRegions:             []Region{RegionUSEast1, RegionUSWest2},
-			AllowedProcessingRegions:   []Region{RegionUSEast1, RegionUSWest2},
-			RequiresEncryptionAtRest:   true,
+			Jurisdiction:                JurisdictionUS,
+			AllowedRegions:              []Region{RegionUSEast1, RegionUSWest2},
+			AllowedProcessingRegions:    []Region{RegionUSEast1, RegionUSWest2},
+			MaxRetentionDays:            0, // per-regulation basis
+			RequiresEncryptionAtRest:    true,
 			RequiresEncryptionInTransit: true,
-			MaxRetentionDays:           0, // per-regulation basis
-			RequiresAuditLog:           true,
-			CrossBorderTransferAllowed: true,
-			CrossBorderRequiresConsent: false,
+			RequiresAuditLog:            true,
+			CrossBorderTransferAllowed:  true,
+			CrossBorderRequiresConsent:  false,
 		},
 		JurisdictionEU: {
-			Jurisdiction:               JurisdictionEU,
-			AllowedRegions:             []Region{RegionEUWest1, RegionEUCentral1},
-			AllowedProcessingRegions:   []Region{RegionEUWest1, RegionEUCentral1},
-			RequiresEncryptionAtRest:   true,
+			Jurisdiction:                JurisdictionEU,
+			AllowedRegions:              []Region{RegionEUWest1, RegionEUCentral1},
+			AllowedProcessingRegions:    []Region{RegionEUWest1, RegionEUCentral1},
+			MaxRetentionDays:            0,
+			RequiresEncryptionAtRest:    true,
 			RequiresEncryptionInTransit: true,
-			MaxRetentionDays:           0,
-			RequiresAuditLog:           true,
-			CrossBorderTransferAllowed: false, // GDPR: requires adequacy decision
-			CrossBorderRequiresConsent: true,
+			RequiresAuditLog:            true,
+			CrossBorderTransferAllowed:  false, // GDPR: requires adequacy decision
+			CrossBorderRequiresConsent:  true,
 		},
 		JurisdictionUK: {
-			Jurisdiction:               JurisdictionUK,
-			AllowedRegions:             []Region{RegionUKSouth, RegionEUWest1},
-			AllowedProcessingRegions:   []Region{RegionUKSouth, RegionEUWest1},
-			RequiresEncryptionAtRest:   true,
+			Jurisdiction:                JurisdictionUK,
+			AllowedRegions:              []Region{RegionUKSouth, RegionEUWest1},
+			AllowedProcessingRegions:    []Region{RegionUKSouth, RegionEUWest1},
+			MaxRetentionDays:            0,
+			RequiresEncryptionAtRest:    true,
 			RequiresEncryptionInTransit: true,
-			MaxRetentionDays:           0,
-			RequiresAuditLog:           true,
-			CrossBorderTransferAllowed: true,
-			CrossBorderRequiresConsent: true,
+			RequiresAuditLog:            true,
+			CrossBorderTransferAllowed:  true,
+			CrossBorderRequiresConsent:  true,
 		},
 		JurisdictionSG: {
-			Jurisdiction:               JurisdictionSG,
-			AllowedRegions:             []Region{RegionAPSoutheast},
-			AllowedProcessingRegions:   []Region{RegionAPSoutheast},
-			RequiresEncryptionAtRest:   true,
+			Jurisdiction:                JurisdictionSG,
+			AllowedRegions:              []Region{RegionAPSoutheast},
+			AllowedProcessingRegions:    []Region{RegionAPSoutheast},
+			MaxRetentionDays:            0,
+			RequiresEncryptionAtRest:    true,
 			RequiresEncryptionInTransit: true,
-			MaxRetentionDays:           0,
-			RequiresAuditLog:           true,
-			CrossBorderTransferAllowed: true,
-			CrossBorderRequiresConsent: true,
+			RequiresAuditLog:            true,
+			CrossBorderTransferAllowed:  true,
+			CrossBorderRequiresConsent:  true,
 		},
 		JurisdictionIN: {
-			Jurisdiction:               JurisdictionIN,
-			AllowedRegions:             []Region{RegionAPSouth1},
-			AllowedProcessingRegions:   []Region{RegionAPSouth1},
-			RequiresEncryptionAtRest:   true,
+			Jurisdiction:                JurisdictionIN,
+			AllowedRegions:              []Region{RegionAPSouth1},
+			AllowedProcessingRegions:    []Region{RegionAPSouth1},
+			MaxRetentionDays:            0,
+			RequiresEncryptionAtRest:    true,
 			RequiresEncryptionInTransit: true,
-			MaxRetentionDays:           0,
-			RequiresAuditLog:           true,
-			CrossBorderTransferAllowed: false, // RBI data localization
-			CrossBorderRequiresConsent: false,
+			RequiresAuditLog:            true,
+			CrossBorderTransferAllowed:  false, // RBI data localization
+			CrossBorderRequiresConsent:  false,
 		},
 	}
 }

@@ -11,10 +11,10 @@ import (
 type AlternativeDataType string
 
 const (
-	AltDataUtility  AlternativeDataType = "UTILITY"
-	AltDataRent     AlternativeDataType = "RENT"
-	AltDataPayroll  AlternativeDataType = "PAYROLL"
-	AltDataTelecom  AlternativeDataType = "TELECOM"
+	AltDataUtility   AlternativeDataType = "UTILITY"
+	AltDataRent      AlternativeDataType = "RENT"
+	AltDataPayroll   AlternativeDataType = "PAYROLL"
+	AltDataTelecom   AlternativeDataType = "TELECOM"
 	AltDataInsurance AlternativeDataType = "INSURANCE"
 )
 
@@ -31,13 +31,13 @@ const (
 // AlternativeCreditRecord represents a single alternative credit data point
 // used for scoring applicants who lack traditional credit history.
 type AlternativeCreditRecord struct {
-	dataType     AlternativeDataType
-	provider     string          // e.g. "ConEd", "Verizon", "Landlord Inc"
-	monthsOnFile int             // number of months with payment history
-	onTimeRate   decimal.Decimal // percentage of on-time payments (0-100)
-	avgMonthlyAmount decimal.Decimal
 	lastPaymentDate  time.Time
-	consistency  PaymentConsistency
+	dataType         AlternativeDataType
+	provider         string
+	onTimeRate       decimal.Decimal
+	avgMonthlyAmount decimal.Decimal
+	consistency      PaymentConsistency
+	monthsOnFile     int
 }
 
 // NewAlternativeCreditRecord creates a validated alternative credit record.
@@ -123,13 +123,13 @@ type AlternativeCreditProfile struct {
 
 // TotalMonthsOfHistory returns the maximum months on file across all records.
 func (p AlternativeCreditProfile) TotalMonthsOfHistory() int {
-	max := 0
+	maxMonths := 0
 	for _, r := range p.Records {
-		if r.MonthsOnFile() > max {
-			max = r.MonthsOnFile()
+		if r.MonthsOnFile() > maxMonths {
+			maxMonths = r.MonthsOnFile()
 		}
 	}
-	return max
+	return maxMonths
 }
 
 // AverageOnTimeRate computes the weighted average on-time rate across records.

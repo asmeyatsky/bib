@@ -32,7 +32,7 @@ type healthResponse struct {
 
 // LivenessHandler returns 200 if the process is alive.
 func (h *HealthHandler) LivenessHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		resp := healthResponse{
 			Status:    "UP",
 			Service:   "fx-service",
@@ -84,5 +84,7 @@ func (h *HealthHandler) RegisterRoutes(mux *http.ServeMux) {
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(v)
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }

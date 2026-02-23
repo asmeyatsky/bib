@@ -84,7 +84,7 @@ func resolveConsumerSASL(cfg Config) sasl.Mechanism {
 	}
 }
 
-// Start begins consuming messages. Blocks until the context is cancelled.
+// Start begins consuming messages. Blocks until the context is canceled.
 func (c *Consumer) Start(ctx context.Context) error {
 	c.logger.Info("consumer starting", "topic", c.reader.Config().Topic, "group", c.reader.Config().GroupID)
 

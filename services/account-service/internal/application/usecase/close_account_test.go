@@ -20,7 +20,7 @@ func TestCloseAccountUseCase_Execute(t *testing.T) {
 	t.Run("successfully closes an active account", func(t *testing.T) {
 		account := activeAccount()
 		repo := &mockAccountRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.CustomerAccount, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.CustomerAccount, error) {
 				return account, nil
 			},
 		}
@@ -57,7 +57,7 @@ func TestCloseAccountUseCase_Execute(t *testing.T) {
 		)
 
 		repo := &mockAccountRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.CustomerAccount, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.CustomerAccount, error) {
 				return frozenAccount, nil
 			},
 		}
@@ -75,7 +75,7 @@ func TestCloseAccountUseCase_Execute(t *testing.T) {
 
 	t.Run("fails when account not found", func(t *testing.T) {
 		repo := &mockAccountRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.CustomerAccount, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.CustomerAccount, error) {
 				return model.CustomerAccount{}, fmt.Errorf("account not found")
 			},
 		}
@@ -101,7 +101,7 @@ func TestCloseAccountUseCase_Execute(t *testing.T) {
 		)
 
 		repo := &mockAccountRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.CustomerAccount, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.CustomerAccount, error) {
 				return pendingAccount, nil
 			},
 		}
@@ -120,7 +120,7 @@ func TestCloseAccountUseCase_Execute(t *testing.T) {
 	t.Run("fails when repository save fails", func(t *testing.T) {
 		account := activeAccount()
 		repo := &mockAccountRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.CustomerAccount, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.CustomerAccount, error) {
 				return account, nil
 			},
 			saveErr: fmt.Errorf("database unavailable"),
@@ -140,7 +140,7 @@ func TestCloseAccountUseCase_Execute(t *testing.T) {
 	t.Run("succeeds even when event publishing fails", func(t *testing.T) {
 		account := activeAccount()
 		repo := &mockAccountRepository{
-			findByIDFunc: func(ctx context.Context, id uuid.UUID) (model.CustomerAccount, error) {
+			findByIDFunc: func(_ context.Context, _ uuid.UUID) (model.CustomerAccount, error) {
 				return account, nil
 			},
 		}

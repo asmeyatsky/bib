@@ -48,8 +48,8 @@ type SubmitApplicationRequest struct {
 	ApplicantID     string `json:"applicant_id"`
 	RequestedAmount string `json:"requested_amount"`
 	Currency        string `json:"currency"`
-	TermMonths      int    `json:"term_months"`
 	Purpose         string `json:"purpose"`
+	TermMonths      int    `json:"term_months"`
 }
 
 // SubmitApplicationResponse represents the proto SubmitApplicationResponse message.

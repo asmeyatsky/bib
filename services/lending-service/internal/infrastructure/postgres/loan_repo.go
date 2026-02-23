@@ -29,7 +29,7 @@ func (r *LoanRepo) Save(ctx context.Context, loan model.Loan) error {
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback(ctx) //nolint:errcheck
 
 	loanQuery := `
 		INSERT INTO loans (

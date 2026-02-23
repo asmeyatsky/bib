@@ -8,11 +8,11 @@ import (
 
 type DatabaseConfig struct {
 	Host     string
-	Port     int
 	User     string
 	Password string
 	Name     string
 	SSLMode  string
+	Port     int
 }
 
 type KafkaConfig struct {
@@ -20,13 +20,13 @@ type KafkaConfig struct {
 }
 
 type Config struct {
-	GRPCPort    int
-	HTTPPort    int
 	DB          DatabaseConfig
 	Kafka       KafkaConfig
 	ServiceName string
 	Environment string
 	LogLevel    string
+	GRPCPort    int
+	HTTPPort    int
 }
 
 func (c Config) Validate() {

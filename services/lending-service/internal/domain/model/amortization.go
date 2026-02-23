@@ -10,12 +10,12 @@ import (
 // AmortizationEntry is an immutable value object representing one period in an
 // amortization schedule.
 type AmortizationEntry struct {
-	Period           int
 	DueDate          time.Time
 	Principal        decimal.Decimal
 	Interest         decimal.Decimal
 	Total            decimal.Decimal
 	RemainingBalance decimal.Decimal
+	Period           int
 }
 
 // GenerateAmortizationSchedule computes a standard fixed-payment amortization

@@ -45,22 +45,24 @@ func (UnimplementedAccountServiceServer) mustEmbedUnimplementedAccountServiceSer
 
 // RegisterAccountServiceServer registers the AccountServiceServer with the gRPC server.
 func RegisterAccountServiceServer(s *grpclib.Server, srv AccountServiceServer) {
-	s.RegisterService(&_AccountService_serviceDesc, srv)
+	s.RegisterService(&_AccountService_serviceDesc, srv) //nolint:revive // gRPC handler registration
 }
 
+//nolint:revive // gRPC handler registration
 var _AccountService_serviceDesc = grpclib.ServiceDesc{
 	ServiceName: "bib.account.v1.AccountService",
 	HandlerType: (*AccountServiceServer)(nil),
 	Methods: []grpclib.MethodDesc{
-		{MethodName: "OpenAccount", Handler: _AccountService_OpenAccount_Handler},
-		{MethodName: "GetAccount", Handler: _AccountService_GetAccount_Handler},
-		{MethodName: "FreezeAccount", Handler: _AccountService_FreezeAccount_Handler},
-		{MethodName: "CloseAccount", Handler: _AccountService_CloseAccount_Handler},
-		{MethodName: "ListAccounts", Handler: _AccountService_ListAccounts_Handler},
+		{MethodName: "OpenAccount", Handler: _AccountService_OpenAccount_Handler},   //nolint:revive // gRPC handler registration
+		{MethodName: "GetAccount", Handler: _AccountService_GetAccount_Handler},     //nolint:revive // gRPC handler registration
+		{MethodName: "FreezeAccount", Handler: _AccountService_FreezeAccount_Handler}, //nolint:revive // gRPC handler registration
+		{MethodName: "CloseAccount", Handler: _AccountService_CloseAccount_Handler}, //nolint:revive // gRPC handler registration
+		{MethodName: "ListAccounts", Handler: _AccountService_ListAccounts_Handler}, //nolint:revive // gRPC handler registration
 	},
 	Streams: []grpclib.StreamDesc{},
 }
 
+//nolint:revive,errcheck // gRPC handler registration
 func _AccountService_OpenAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
 	req := new(OpenAccountRequest)
 	if err := dec(req); err != nil {
@@ -69,6 +71,7 @@ func _AccountService_OpenAccount_Handler(srv interface{}, ctx context.Context, d
 	return srv.(AccountServiceServer).OpenAccount(ctx, req)
 }
 
+//nolint:revive,errcheck // gRPC handler registration
 func _AccountService_GetAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
 	req := new(GetAccountRequest)
 	if err := dec(req); err != nil {
@@ -77,6 +80,7 @@ func _AccountService_GetAccount_Handler(srv interface{}, ctx context.Context, de
 	return srv.(AccountServiceServer).GetAccount(ctx, req)
 }
 
+//nolint:revive,errcheck // gRPC handler registration
 func _AccountService_FreezeAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
 	req := new(FreezeAccountRequest)
 	if err := dec(req); err != nil {
@@ -85,6 +89,7 @@ func _AccountService_FreezeAccount_Handler(srv interface{}, ctx context.Context,
 	return srv.(AccountServiceServer).FreezeAccount(ctx, req)
 }
 
+//nolint:revive,errcheck // gRPC handler registration
 func _AccountService_CloseAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
 	req := new(CloseAccountRequest)
 	if err := dec(req); err != nil {
@@ -93,6 +98,7 @@ func _AccountService_CloseAccount_Handler(srv interface{}, ctx context.Context, 
 	return srv.(AccountServiceServer).CloseAccount(ctx, req)
 }
 
+//nolint:revive,errcheck // gRPC handler registration
 func _AccountService_ListAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
 	req := new(ListAccountsRequest)
 	if err := dec(req); err != nil {

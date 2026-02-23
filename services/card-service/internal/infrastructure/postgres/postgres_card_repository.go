@@ -15,23 +15,23 @@ import (
 	"github.com/bibbank/bib/services/card-service/internal/domain/valueobject"
 )
 
-// PostgresCardRepository implements the CardRepository port using PostgreSQL.
-type PostgresCardRepository struct {
+// CardRepository implements the CardRepository port using PostgreSQL.
+type CardRepository struct {
 	pool *pgxpool.Pool
 }
 
-// NewPostgresCardRepository creates a new PostgresCardRepository.
-func NewPostgresCardRepository(pool *pgxpool.Pool) *PostgresCardRepository {
-	return &PostgresCardRepository{pool: pool}
+// NewCardRepository creates a new CardRepository.
+func NewCardRepository(pool *pgxpool.Pool) *CardRepository {
+	return &CardRepository{pool: pool}
 }
 
 // Save persists a new card aggregate.
-func (r *PostgresCardRepository) Save(ctx context.Context, card model.Card) error {
+func (r *CardRepository) Save(ctx context.Context, card model.Card) error {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback(ctx) //nolint:errcheck
 
 	query := `
 		INSERT INTO cards (
@@ -77,12 +77,12 @@ func (r *PostgresCardRepository) Save(ctx context.Context, card model.Card) erro
 }
 
 // Update persists changes to an existing card aggregate with optimistic locking.
-func (r *PostgresCardRepository) Update(ctx context.Context, card model.Card) error {
+func (r *CardRepository) Update(ctx context.Context, card model.Card) error {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback(ctx) //nolint:errcheck
 
 	query := `
 		UPDATE cards SET
@@ -124,7 +124,7 @@ func (r *PostgresCardRepository) Update(ctx context.Context, card model.Card) er
 }
 
 // FindByID retrieves a card by its unique identifier.
-func (r *PostgresCardRepository) FindByID(ctx context.Context, id uuid.UUID) (model.Card, error) {
+func (r *CardRepository) FindByID(ctx context.Context, id uuid.UUID) (model.Card, error) {
 	query := `
 		SELECT id, tenant_id, account_id, card_type, status,
 			   last_four, expiry_month, expiry_year, currency,
@@ -137,7 +137,7 @@ func (r *PostgresCardRepository) FindByID(ctx context.Context, id uuid.UUID) (mo
 }
 
 // FindByAccountID retrieves all cards belonging to an account.
-func (r *PostgresCardRepository) FindByAccountID(ctx context.Context, accountID uuid.UUID) ([]model.Card, error) {
+func (r *CardRepository) FindByAccountID(ctx context.Context, accountID uuid.UUID) ([]model.Card, error) {
 	query := `
 		SELECT id, tenant_id, account_id, card_type, status,
 			   last_four, expiry_month, expiry_year, currency,
@@ -157,7 +157,7 @@ func (r *PostgresCardRepository) FindByAccountID(ctx context.Context, accountID 
 }
 
 // FindByTenantID retrieves all cards belonging to a tenant.
-func (r *PostgresCardRepository) FindByTenantID(ctx context.Context, tenantID uuid.UUID) ([]model.Card, error) {
+func (r *CardRepository) FindByTenantID(ctx context.Context, tenantID uuid.UUID) ([]model.Card, error) {
 	query := `
 		SELECT id, tenant_id, account_id, card_type, status,
 			   last_four, expiry_month, expiry_year, currency,
@@ -177,7 +177,7 @@ func (r *PostgresCardRepository) FindByTenantID(ctx context.Context, tenantID uu
 }
 
 // SaveTransaction records a card transaction.
-func (r *PostgresCardRepository) SaveTransaction(
+func (r *CardRepository) SaveTransaction(
 	ctx context.Context,
 	cardID uuid.UUID,
 	amount decimal.Decimal,
@@ -197,7 +197,7 @@ func (r *PostgresCardRepository) SaveTransaction(
 }
 
 // scanCard scans a single row into a Card aggregate.
-func (r *PostgresCardRepository) scanCard(row pgx.Row) (model.Card, error) {
+func (r *CardRepository) scanCard(row pgx.Row) (model.Card, error) {
 	var (
 		id           uuid.UUID
 		tenantID     uuid.UUID
@@ -252,7 +252,7 @@ func (r *PostgresCardRepository) scanCard(row pgx.Row) (model.Card, error) {
 }
 
 // scanCards scans multiple rows into a slice of Card aggregates.
-func (r *PostgresCardRepository) scanCards(rows pgx.Rows) ([]model.Card, error) {
+func (r *CardRepository) scanCards(rows pgx.Rows) ([]model.Card, error) {
 	var cards []model.Card
 	for rows.Next() {
 		card, err := r.scanCard(rows)
@@ -268,7 +268,7 @@ func (r *PostgresCardRepository) scanCards(rows pgx.Rows) ([]model.Card, error) 
 }
 
 // writeOutbox writes domain events to the transactional outbox table within the given transaction.
-func (r *PostgresCardRepository) writeOutbox(ctx context.Context, tx pgx.Tx, card model.Card) error {
+func (r *CardRepository) writeOutbox(ctx context.Context, tx pgx.Tx, card model.Card) error {
 	for _, evt := range card.DomainEvents() {
 		payload, err := json.Marshal(evt)
 		if err != nil {
