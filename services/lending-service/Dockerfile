@@ -13,6 +13,7 @@ COPY pkg/ /src/pkg/
 # Copy lending service module.
 COPY services/lending-service/go.mod services/lending-service/go.sum* /src/services/lending-service/
 WORKDIR /src/services/lending-service
+ENV GOWORK=off
 RUN go mod download
 
 COPY services/lending-service/ /src/services/lending-service/

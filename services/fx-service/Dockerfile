@@ -14,6 +14,7 @@ COPY pkg/ pkg/
 COPY services/fx-service/go.mod services/fx-service/go.sum* services/fx-service/
 
 WORKDIR /src/services/fx-service
+ENV GOWORK=off
 RUN go mod download
 
 # Copy source.

@@ -5,12 +5,12 @@ RUN apk add --no-cache git ca-certificates
 WORKDIR /src
 
 # Copy go workspace and shared packages first for layer caching.
-COPY go.work go.work
 COPY pkg/ pkg/
 COPY gateway/ gateway/
 
 WORKDIR /src/gateway
 
+ENV GOWORK=off
 RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /bin/gatewayd ./cmd/gatewayd
 

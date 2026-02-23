@@ -6,13 +6,13 @@ WORKDIR /build
 
 # Copy shared packages first for better caching
 COPY pkg/ pkg/
-COPY go.work go.work
 
 # Copy service
 COPY services/deposit-service/ services/deposit-service/
 
 WORKDIR /build/services/deposit-service
 
+ENV GOWORK=off
 RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/depositd ./cmd/depositd
 

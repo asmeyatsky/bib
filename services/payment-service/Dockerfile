@@ -6,13 +6,13 @@ WORKDIR /build
 
 # Copy shared packages first for better caching
 COPY pkg/ pkg/
-COPY go.work go.work
 
 # Copy service
 COPY services/payment-service/ services/payment-service/
 
 WORKDIR /build/services/payment-service
 
+ENV GOWORK=off
 RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/paymentd ./cmd/paymentd
 
