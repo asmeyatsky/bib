@@ -8,19 +8,22 @@ import (
 
 // OutboxEntry represents a domain event stored in the outbox table.
 type OutboxEntry struct {
+	Payload       []byte
+	CreatedAt     time.Time
+	PublishedAt   *time.Time
 	ID            string
 	AggregateID   string
 	AggregateType string
 	EventType     string
-	Payload       []byte
-	CreatedAt     time.Time
-	PublishedAt   *time.Time
 }
 
 // NewOutboxEntry creates an OutboxEntry from a DomainEvent.
-// The payload is produced by JSON-marshalling the event itself.
+// The payload is produced by JSON-marshaling the event itself.
 func NewOutboxEntry(event DomainEvent) OutboxEntry {
-	payload, _ := json.Marshal(event)
+	payload, err := json.Marshal(event)
+	if err != nil {
+		payload = []byte("{}")
+	}
 	return OutboxEntry{
 		ID:            event.EventID(),
 		AggregateID:   event.AggregateID(),

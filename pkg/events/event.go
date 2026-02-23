@@ -18,12 +18,12 @@ type DomainEvent interface {
 
 // BaseEvent provides a default implementation of DomainEvent.
 type BaseEvent struct {
-	ID            string    `json:"event_id"`
-	Type          string    `json:"event_type"`
-	AggregateIDV  string    `json:"aggregate_id"`
-	AggregateTypeV string   `json:"aggregate_type"`
-	Tenant        string    `json:"tenant_id"`
-	Timestamp     time.Time `json:"occurred_at"`
+	ID             string    `json:"event_id"`
+	Type           string    `json:"event_type"`
+	AggregateIDV   string    `json:"aggregate_id"`
+	AggregateTypeV string    `json:"aggregate_type"`
+	Tenant         string    `json:"tenant_id"`
+	Timestamp      time.Time `json:"occurred_at"`
 }
 
 // NewBaseEvent creates a new BaseEvent with a generated UUID and the current time.

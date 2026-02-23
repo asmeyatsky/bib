@@ -39,7 +39,7 @@ func TestNewBaseEvent(t *testing.T) {
 	}
 }
 
-func TestBaseEventImplementsDomainEvent(t *testing.T) {
+func TestBaseEventImplementsDomainEvent(_ *testing.T) {
 	var _ DomainEvent = BaseEvent{}
 }
 
@@ -66,7 +66,7 @@ func TestNewOutboxEntry(t *testing.T) {
 		t.Errorf("expected event type %q, got %q", "FundsDeposited", entry.EventType)
 	}
 
-	// Payload should be a valid JSON marshalling of the event.
+	// Payload should be a valid JSON marshaling of the event.
 	if len(entry.Payload) == 0 {
 		t.Error("expected non-empty payload")
 	}
