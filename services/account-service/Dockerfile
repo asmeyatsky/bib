@@ -18,7 +18,7 @@ RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /bin/accountd ./cmd/accountd
 
 # Runtime stage
-FROM alpine:3.19
+FROM alpine:3.20
 
 RUN apk add --no-cache ca-certificates tzdata
 

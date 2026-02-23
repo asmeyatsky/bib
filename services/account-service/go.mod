@@ -86,10 +86,7 @@ replace (
 	github.com/bibbank/bib/pkg/auth => ../../pkg/auth
 	github.com/bibbank/bib/pkg/events => ../../pkg/events
 	github.com/bibbank/bib/pkg/kafka => ../../pkg/kafka
-	github.com/bibbank/bib/pkg/money => ../../pkg/money
-	github.com/bibbank/bib/pkg/observability => ../../pkg/observability
 	github.com/bibbank/bib/pkg/openbanking => ../../pkg/openbanking
-	github.com/bibbank/bib/pkg/postgres => ../../pkg/postgres
 	github.com/bibbank/bib/pkg/testutil => ../../pkg/testutil
 	github.com/bibbank/bib/pkg/tlsutil => ../../pkg/tlsutil
 )
