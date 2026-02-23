@@ -3,23 +3,19 @@ FROM golang:1.24-alpine AS builder
 
 RUN apk add --no-cache git ca-certificates
 
-WORKDIR /app
+WORKDIR /build
 
-# Copy go mod files first for better caching.
-COPY go.mod go.sum* ./
-COPY ../../pkg/ /app/pkg/
+# Copy shared packages first for better caching
+COPY pkg/ pkg/
+
+# Copy service
+COPY services/card-service/ services/card-service/
+
+WORKDIR /build/services/card-service
 
 ENV GOWORK=off
 RUN go mod download
-
-# Copy source code.
-COPY . .
-
-# Build the binary.
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags="-w -s" \
-    -o /bin/card-service \
-    ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /bin/cardd ./cmd/cardd
 
 # Runtime stage
 FROM alpine:3.19
@@ -31,11 +27,11 @@ RUN adduser -D -g '' appuser
 
 WORKDIR /app
 
-COPY --from=builder /bin/card-service .
-COPY --from=builder /app/internal/infrastructure/persistence/migrations ./migrations
+COPY --from=builder /bin/cardd .
+COPY --from=builder /build/services/card-service/internal/infrastructure/postgres/migrations ./migrations
 
 USER appuser
 
 EXPOSE 8089 9089
 
-ENTRYPOINT ["./card-service"]
+ENTRYPOINT ["./cardd"]

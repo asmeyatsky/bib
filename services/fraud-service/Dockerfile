@@ -3,23 +3,19 @@ FROM golang:1.24-alpine AS builder
 
 RUN apk add --no-cache git ca-certificates
 
-WORKDIR /app
+WORKDIR /build
 
-# Copy go mod files first for better caching.
-COPY go.mod go.sum ./
-COPY ../../pkg/ /pkg/
+# Copy shared packages first for better caching
+COPY pkg/ pkg/
+
+# Copy service
+COPY services/fraud-service/ services/fraud-service/
+
+WORKDIR /build/services/fraud-service
 
 ENV GOWORK=off
 RUN go mod download
-
-# Copy source code.
-COPY . .
-
-# Build the binary.
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags="-w -s" \
-    -o /bin/fraud-service \
-    ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /bin/fraudd ./cmd/fraudd
 
 # Runtime stage
 FROM alpine:3.20
@@ -32,10 +28,10 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 
 # Copy binary from builder.
-COPY --from=builder /bin/fraud-service .
+COPY --from=builder /bin/fraudd .
 
 # Copy migrations.
-COPY --from=builder /app/internal/infrastructure/persistence/migration ./migrations
+COPY --from=builder /build/services/fraud-service/internal/infrastructure/postgres/migration ./migrations
 
 # Switch to non-root user.
 USER appuser
@@ -43,4 +39,4 @@ USER appuser
 # Expose gRPC and HTTP ports.
 EXPOSE 8088 9088
 
-ENTRYPOINT ["./fraud-service"]
+ENTRYPOINT ["./fraudd"]
