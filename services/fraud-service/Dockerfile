@@ -31,7 +31,7 @@ WORKDIR /app
 COPY --from=builder /bin/fraudd .
 
 # Copy migrations.
-COPY --from=builder /build/services/fraud-service/internal/infrastructure/postgres/migration ./migrations
+COPY --from=builder /build/services/fraud-service/internal/infrastructure/postgres/migrations ./migrations
 
 # Switch to non-root user.
 USER appuser

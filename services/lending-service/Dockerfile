@@ -22,7 +22,6 @@ RUN apk add --no-cache ca-certificates tzdata && \
     addgroup -S app && adduser -S app -G app
 
 COPY --from=builder /bin/lendingd /usr/local/bin/lendingd
-COPY --from=builder /build/services/lending-service/internal/infrastructure/postgres/migrations /migrations
 
 USER app
 
