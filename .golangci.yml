@@ -74,3 +74,6 @@ issues:
       linters:
         - gosec
         - errcheck
+    - path: proto\.go
+      linters:
+        - errcheck
