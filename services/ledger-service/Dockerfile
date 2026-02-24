@@ -20,8 +20,10 @@ FROM alpine:3.20
 
 RUN apk add --no-cache ca-certificates wget
 
-COPY --from=builder /bin/ledgerd /usr/local/bin/ledgerd
-COPY --from=builder /build/services/ledger-service/internal/infrastructure/postgres/migrations /migrations
+WORKDIR /app
+
+COPY --from=builder /bin/ledgerd /app/ledgerd
+COPY --from=builder /build/services/ledger-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
 
 EXPOSE 8081 9081
 

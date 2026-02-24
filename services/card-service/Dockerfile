@@ -27,11 +27,11 @@ RUN adduser -D -g '' appuser
 
 WORKDIR /app
 
-COPY --from=builder /bin/cardd .
-COPY --from=builder /build/services/card-service/internal/infrastructure/postgres/migrations ./migrations
+COPY --from=builder /bin/cardd /app/cardd
+COPY --from=builder /build/services/card-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
 
 USER appuser
 
 EXPOSE 8089 9089
 
-ENTRYPOINT ["./cardd"]
+ENTRYPOINT ["/app/cardd"]

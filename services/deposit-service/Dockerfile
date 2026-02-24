@@ -20,8 +20,10 @@ FROM alpine:3.20
 
 RUN apk add --no-cache ca-certificates wget
 
-COPY --from=builder /bin/depositd /usr/local/bin/depositd
-COPY --from=builder /build/services/deposit-service/internal/infrastructure/postgres/migrations /migrations
+WORKDIR /app
+
+COPY --from=builder /bin/depositd /app/depositd
+COPY --from=builder /build/services/deposit-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
 
 EXPOSE 8084 9084
 

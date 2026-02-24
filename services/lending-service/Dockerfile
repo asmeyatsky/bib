@@ -21,10 +21,13 @@ FROM alpine:3.20
 RUN apk add --no-cache ca-certificates tzdata wget && \
     addgroup -S app && adduser -S app -G app
 
-COPY --from=builder /bin/lendingd /usr/local/bin/lendingd
+WORKDIR /app
+
+COPY --from=builder /bin/lendingd /app/lendingd
+COPY --from=builder /build/services/lending-service/migrations /app/internal/infrastructure/postgres/migrations
 
 USER app
 
 EXPOSE 8087 9087
 
-ENTRYPOINT ["lendingd"]
+ENTRYPOINT ["/app/lendingd"]

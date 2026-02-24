@@ -32,7 +32,7 @@ WORKDIR /app
 COPY --from=builder /bin/accountd /app/accountd
 
 # Copy migrations
-COPY --from=builder /build/services/account-service/internal/infrastructure/postgres/migrations /app/migrations
+COPY --from=builder /build/services/account-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
 
 # Switch to non-root user
 USER appuser

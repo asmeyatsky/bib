@@ -20,8 +20,10 @@ FROM alpine:3.20
 
 RUN apk add --no-cache ca-certificates wget
 
-COPY --from=builder /bin/paymentd /usr/local/bin/paymentd
-COPY --from=builder /build/services/payment-service/internal/infrastructure/postgres/migrations /migrations
+WORKDIR /app
+
+COPY --from=builder /bin/paymentd /app/paymentd
+COPY --from=builder /build/services/payment-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
 
 EXPOSE 8086 9086
 

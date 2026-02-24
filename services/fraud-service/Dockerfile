@@ -28,10 +28,10 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 
 # Copy binary from builder.
-COPY --from=builder /bin/fraudd .
+COPY --from=builder /bin/fraudd /app/fraudd
 
 # Copy migrations.
-COPY --from=builder /build/services/fraud-service/internal/infrastructure/postgres/migrations ./migrations
+COPY --from=builder /build/services/fraud-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
 
 # Switch to non-root user.
 USER appuser
@@ -39,4 +39,4 @@ USER appuser
 # Expose gRPC and HTTP ports.
 EXPOSE 8088 9088
 
-ENTRYPOINT ["./fraudd"]
+ENTRYPOINT ["/app/fraudd"]

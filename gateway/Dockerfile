@@ -19,10 +19,12 @@ FROM alpine:3.20
 RUN apk add --no-cache ca-certificates tzdata wget
 RUN addgroup -S app && adduser -S app -G app
 
-COPY --from=builder /bin/gatewayd /usr/local/bin/gatewayd
+WORKDIR /app
+
+COPY --from=builder /bin/gatewayd /app/gatewayd
 
 USER app
 
 EXPOSE 8080
 
-ENTRYPOINT ["gatewayd"]
+ENTRYPOINT ["/app/gatewayd"]

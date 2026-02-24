@@ -21,8 +21,10 @@ FROM alpine:3.20
 RUN apk add --no-cache ca-certificates tzdata wget
 RUN addgroup -S app && adduser -S app -G app
 
-COPY --from=builder /bin/fxd /usr/local/bin/fxd
-COPY --from=builder /build/services/fx-service/internal/infrastructure/postgres/migrations /migrations
+WORKDIR /app
+
+COPY --from=builder /bin/fxd /app/fxd
+COPY --from=builder /build/services/fx-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
 
 USER app
 

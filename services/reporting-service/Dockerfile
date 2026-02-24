@@ -24,11 +24,13 @@ RUN apk add --no-cache ca-certificates tzdata wget
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-COPY --from=builder /bin/reportingd /bin/reportingd
-COPY --from=builder /build/services/reporting-service/internal/infrastructure/postgres/migrations /migrations
+WORKDIR /app
+
+COPY --from=builder /bin/reportingd /app/reportingd
+COPY --from=builder /build/services/reporting-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
 
 USER appuser
 
 EXPOSE 8090 9090
 
-ENTRYPOINT ["/bin/reportingd"]
+ENTRYPOINT ["/app/reportingd"]

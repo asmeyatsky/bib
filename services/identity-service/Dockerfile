@@ -20,8 +20,10 @@ FROM alpine:3.20
 
 RUN apk add --no-cache ca-certificates wget
 
-COPY --from=builder /bin/identityd /usr/local/bin/identityd
-COPY --from=builder /build/services/identity-service/internal/infrastructure/postgres/migrations /migrations
+WORKDIR /app
+
+COPY --from=builder /bin/identityd /app/identityd
+COPY --from=builder /build/services/identity-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
 
 EXPOSE 8085 9085
 
