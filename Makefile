@@ -57,8 +57,7 @@ build:
 	@for svc in $(SERVICES); do \
 		name=$$(basename $$svc); \
 		echo "  Building $$name..."; \
-		cmddir=$$(find $$svc/cmd -mindepth 1 -maxdepth 1 -type d | head -1); \
-		(cd $$svc && go build -o ../../bin/$$name ./$$cmddir) || exit 1; \
+		(cd $$svc && go build -o ../../bin/$$name ./cmd/$$(basename $$(find cmd -mindepth 1 -maxdepth 1 -type d | head -1))) || exit 1; \
 	done
 
 proto:
