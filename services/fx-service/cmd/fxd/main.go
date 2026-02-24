@@ -64,6 +64,19 @@ func run() error {
 	defer pool.Close()
 	logger.Info("database pool created")
 
+	// Run database migrations.
+	migDSN := postgres.Config{
+		Host:     cfg.DB.Host,
+		Port:     cfg.DB.Port,
+		User:     cfg.DB.User,
+		Password: cfg.DB.Password,
+		Database: cfg.DB.Name,
+		SSLMode:  cfg.DB.SSLMode,
+	}.DSN()
+	if migErr := postgres.RunMigrations(migDSN, "file://internal/infrastructure/postgres/migrations"); migErr != nil {
+		logger.Warn("migration warning", "error", migErr)
+	}
+
 	// Kafka producer.
 	kafkaProducer := kafka.NewProducer(kafka.Config{
 		Brokers: cfg.Kafka.Brokers,

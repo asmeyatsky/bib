@@ -14,6 +14,7 @@ import (
 
 	"github.com/bibbank/bib/pkg/auth"
 	pkgkafka "github.com/bibbank/bib/pkg/kafka"
+	pgpkg "github.com/bibbank/bib/pkg/postgres"
 	"github.com/bibbank/bib/services/account-service/internal/application/usecase"
 	"github.com/bibbank/bib/services/account-service/internal/infrastructure/config"
 	infraKafka "github.com/bibbank/bib/services/account-service/internal/infrastructure/kafka"
@@ -57,6 +58,19 @@ func main() {
 		os.Exit(1)
 	}
 	logger.Info("connected to database", "database", cfg.Database.Database)
+
+	// Run database migrations.
+	migDSN := pgpkg.Config{
+		Host:     cfg.Database.Host,
+		Port:     cfg.Database.Port,
+		User:     cfg.Database.User,
+		Password: cfg.Database.Password,
+		Database: cfg.Database.Database,
+		SSLMode:  cfg.Database.SSLMode,
+	}.DSN()
+	if migErr := pgpkg.RunMigrations(migDSN, "file://internal/infrastructure/postgres/migrations"); migErr != nil {
+		logger.Warn("migration warning", "error", migErr)
+	}
 
 	// Initialize infrastructure adapters.
 	accountRepo := infraPostgres.NewAccountRepository(pool)

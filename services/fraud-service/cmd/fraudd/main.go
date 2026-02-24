@@ -73,6 +73,19 @@ func main() {
 	defer pool.Close()
 	logger.Info("connected to database")
 
+	// Run database migrations.
+	migDSN := pkgpostgres.Config{
+		Host:     cfg.DB.Host,
+		Port:     cfg.DB.Port,
+		User:     cfg.DB.User,
+		Password: cfg.DB.Password,
+		Database: cfg.DB.Name,
+		SSLMode:  cfg.DB.SSLMode,
+	}.DSN()
+	if migErr := pkgpostgres.RunMigrations(migDSN, "file://internal/infrastructure/postgres/migrations"); migErr != nil {
+		logger.Warn("migration warning", "error", migErr)
+	}
+
 	// Wire infrastructure adapters.
 	assessmentRepo := postgres.NewAssessmentRepository(pool)
 	kafkaProducer := pkgkafka.NewProducer(pkgkafka.Config{
