@@ -46,7 +46,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24"
-          cache: true
+          cache: false
       - name: Run unit tests
         run: make test
       - name: Run integration tests
@@ -68,7 +68,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24"
-          cache: true
+          cache: false
       - name: Build all services
         run: make build
       - name: Build Docker images
@@ -83,13 +83,13 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24"
-          cache: true
+          cache: false
       - name: Start infrastructure
-        run: docker-compose -f docker-compose.infra.yml up -d
+        run: docker compose -f docker-compose.infra.yml up -d
       - name: Wait for infrastructure
         run: sleep 30
       - name: Run E2E tests
         run: make test-e2e
       - name: Cleanup
         if: always()
-        run: docker-compose -f docker-compose.infra.yml down -v
+        run: docker compose -f docker-compose.infra.yml down -v
