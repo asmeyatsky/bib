@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"regexp"
 
 	"github.com/google/uuid"
@@ -311,15 +310,19 @@ func (h *CardServiceHandler) GetCard(ctx context.Context, req *GetCardRequest) (
 	}, nil
 }
 
-// FreezeCard handles the gRPC request to freeze a card (extra method beyond proto).
-func (h *CardServiceHandler) FreezeCard(ctx context.Context, cardID string) (*dto.FreezeCardResponse, error) {
+// FreezeCard handles the gRPC request to freeze a card.
+func (h *CardServiceHandler) FreezeCard(ctx context.Context, req *FreezeCardGRPCRequest) (*FreezeCardGRPCResponse, error) {
 	if err := requireRole(ctx, auth.RoleAdmin, auth.RoleOperator); err != nil {
 		return nil, err
 	}
 
-	cardUUID, err := uuid.Parse(cardID)
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request is required")
+	}
+
+	cardUUID, err := uuid.Parse(req.CardID)
 	if err != nil {
-		return nil, fmt.Errorf("invalid card_id: %w", err)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid card_id: %v", err)
 	}
 
 	resp, err := h.freezeCardUC.Execute(ctx, dto.FreezeCardRequest{
@@ -329,5 +332,8 @@ func (h *CardServiceHandler) FreezeCard(ctx context.Context, cardID string) (*dt
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &resp, nil
+	return &FreezeCardGRPCResponse{
+		CardID: resp.CardID.String(),
+		Status: resp.Status,
+	}, nil
 }

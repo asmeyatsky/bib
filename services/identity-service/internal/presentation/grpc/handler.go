@@ -36,8 +36,12 @@ func tenantIDFromContext(ctx context.Context) (uuid.UUID, error) {
 	return claims.TenantID, nil
 }
 
+// Compile-time assertion that IdentityHandler implements IdentityServiceServer.
+var _ IdentityServiceServer = (*IdentityHandler)(nil)
+
 // IdentityHandler implements the gRPC IdentityService server.
 type IdentityHandler struct {
+	UnimplementedIdentityServiceServer
 	initiateVerification *usecase.InitiateVerification
 	getVerification      *usecase.GetVerification
 	completeCheck        *usecase.CompleteCheck
@@ -56,6 +60,21 @@ func NewIdentityHandler(
 		completeCheck:        completeCheck,
 		listVerifications:    listVerifications,
 	}
+}
+
+// InitiateVerification implements IdentityServiceServer by delegating to HandleInitiateVerification.
+func (h *IdentityHandler) InitiateVerification(ctx context.Context, req *InitiateVerificationRequest) (*InitiateVerificationResponse, error) {
+	return h.HandleInitiateVerification(ctx, req)
+}
+
+// GetVerification implements IdentityServiceServer by delegating to HandleGetVerification.
+func (h *IdentityHandler) GetVerification(ctx context.Context, req *GetVerificationRequest) (*GetVerificationResponse, error) {
+	return h.HandleGetVerification(ctx, req)
+}
+
+// CompleteCheck implements IdentityServiceServer by delegating to HandleCompleteCheck.
+func (h *IdentityHandler) CompleteCheck(ctx context.Context, req *CompleteCheckRequest) (*CompleteCheckResponse, error) {
+	return h.HandleCompleteCheck(ctx, req)
 }
 
 // Temporary gRPC message types until proto generation is wired.

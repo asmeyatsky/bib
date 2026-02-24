@@ -297,7 +297,7 @@ func TestGetCard(t *testing.T) {
 func TestFreezeCard(t *testing.T) {
 	t.Run("invalid card_id returns error", func(t *testing.T) {
 		h := buildTestHandler()
-		_, err := h.FreezeCard(contextWithClaims(), "bad-uuid")
+		_, err := h.FreezeCard(contextWithClaims(), &FreezeCardGRPCRequest{CardID: "bad-uuid"})
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "invalid card_id")
 	})
@@ -311,7 +311,7 @@ func TestFreezeCard(t *testing.T) {
 		}
 		h := buildHandlerWithRepo(repo)
 
-		resp, err := h.FreezeCard(contextWithClaims(), card.ID().String())
+		resp, err := h.FreezeCard(contextWithClaims(), &FreezeCardGRPCRequest{CardID: card.ID().String()})
 		require.NoError(t, err)
 		require.NotNil(t, resp)
 		assert.Equal(t, "FROZEN", resp.Status)

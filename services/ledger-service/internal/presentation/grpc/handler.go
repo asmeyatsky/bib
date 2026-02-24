@@ -44,6 +44,7 @@ func tenantIDFromContext(ctx context.Context) (uuid.UUID, error) {
 
 // LedgerHandler implements the gRPC LedgerService server.
 type LedgerHandler struct {
+	UnimplementedLedgerServiceServer
 	postEntry   *usecase.PostJournalEntry
 	getEntry    *usecase.GetJournalEntry
 	getBalance  *usecase.GetBalance
@@ -233,6 +234,31 @@ func (h *LedgerHandler) HandleGetBalance(ctx context.Context, req *GetBalanceReq
 		Currency:    result.Currency,
 		AsOf:        result.AsOf.Format("2006-01-02"),
 	}, nil
+}
+
+// GetJournalEntryRequest represents the proto GetJournalEntryRequest message.
+type GetJournalEntryRequest struct {
+	ID string `json:"id"`
+}
+
+// GetJournalEntryResponse represents the proto GetJournalEntryResponse message.
+type GetJournalEntryResponse struct {
+	Entry *JournalEntryMsg `json:"entry"`
+}
+
+// GetJournalEntry retrieves a journal entry by ID.
+func (h *LedgerHandler) GetJournalEntry(_ context.Context, _ *GetJournalEntryRequest) (*GetJournalEntryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetJournalEntry not implemented")
+}
+
+// PostJournalEntry delegates to HandlePostJournalEntry for gRPC interface compatibility.
+func (h *LedgerHandler) PostJournalEntry(ctx context.Context, req *PostJournalEntryRequest) (*PostJournalEntryResponse, error) {
+	return h.HandlePostJournalEntry(ctx, req)
+}
+
+// GetBalance delegates to HandleGetBalance for gRPC interface compatibility.
+func (h *LedgerHandler) GetBalance(ctx context.Context, req *GetBalanceRequest) (*GetBalanceResponse, error) {
+	return h.HandleGetBalance(ctx, req)
 }
 
 func toJournalEntryMsg(r dto.JournalEntryResponse) *JournalEntryMsg {

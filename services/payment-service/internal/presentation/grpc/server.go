@@ -51,6 +51,9 @@ func NewServer(handler *PaymentHandler, port int, logger *slog.Logger, jwtServic
 	grpc_health_v1.RegisterHealthServer(srv, healthSrv)
 	healthSrv.SetServingStatus("payment-service", grpc_health_v1.HealthCheckResponse_SERVING)
 
+	// Register the PaymentService handler.
+	RegisterPaymentServiceServer(srv, handler)
+
 	// Only enable reflection when GRPC_REFLECTION=true.
 	if os.Getenv("GRPC_REFLECTION") == "true" {
 		reflection.Register(srv)

@@ -40,8 +40,12 @@ func tenantIDFromContext(ctx context.Context) (uuid.UUID, error) {
 	return claims.TenantID, nil
 }
 
+// Compile-time assertion that PaymentHandler implements PaymentServiceServer.
+var _ PaymentServiceServer = (*PaymentHandler)(nil)
+
 // PaymentHandler implements the gRPC PaymentService server.
 type PaymentHandler struct {
+	UnimplementedPaymentServiceServer
 	initiatePayment *usecase.InitiatePayment
 	getPayment      *usecase.GetPayment
 	listPayments    *usecase.ListPayments
@@ -57,6 +61,21 @@ func NewPaymentHandler(
 		getPayment:      getPayment,
 		listPayments:    listPayments,
 	}
+}
+
+// InitiatePayment implements PaymentServiceServer by delegating to HandleInitiatePayment.
+func (h *PaymentHandler) InitiatePayment(ctx context.Context, req *InitiatePaymentRequest) (*InitiatePaymentResponse, error) {
+	return h.HandleInitiatePayment(ctx, req)
+}
+
+// GetPayment implements PaymentServiceServer by delegating to HandleGetPayment.
+func (h *PaymentHandler) GetPayment(ctx context.Context, req *GetPaymentRequestMsg) (*GetPaymentResponseMsg, error) {
+	return h.HandleGetPayment(ctx, req)
+}
+
+// ListPayments implements PaymentServiceServer by delegating to HandleListPayments.
+func (h *PaymentHandler) ListPayments(ctx context.Context, req *ListPaymentsRequestMsg) (*ListPaymentsResponseMsg, error) {
+	return h.HandleListPayments(ctx, req)
 }
 
 // Temporary gRPC message types until proto generation is wired.

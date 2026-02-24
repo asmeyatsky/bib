@@ -57,6 +57,9 @@ func NewServer(handler *ReportingHandler, logger *slog.Logger, jwtService *auth.
 		reflection.Register(grpcServer)
 	}
 
+	// Register the ReportingService server.
+	RegisterReportingServiceServer(grpcServer, handler)
+
 	return &Server{
 		grpcServer: grpcServer,
 		handler:    handler,

@@ -72,6 +72,7 @@ type SubmitReportResponse = dto.SubmitReportResponse
 
 // ReportingHandler handles gRPC requests for the reporting service.
 type ReportingHandler struct {
+	UnimplementedReportingServiceServer
 	generateReport *usecase.GenerateReportUseCase
 	getReport      *usecase.GetReportUseCase
 	submitReport   *usecase.SubmitReportUseCase

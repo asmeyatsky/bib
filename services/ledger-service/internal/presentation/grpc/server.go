@@ -56,6 +56,9 @@ func NewServer(handler *LedgerHandler, port int, logger *slog.Logger, jwtService
 		reflection.Register(srv)
 	}
 
+	// Register the LedgerService server.
+	RegisterLedgerServiceServer(srv, handler)
+
 	return &Server{
 		server:  srv,
 		handler: handler,

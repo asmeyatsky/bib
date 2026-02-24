@@ -51,6 +51,9 @@ func NewServer(handler *IdentityHandler, port int, logger *slog.Logger, jwtServi
 	grpc_health_v1.RegisterHealthServer(srv, healthSrv)
 	healthSrv.SetServingStatus("identity-service", grpc_health_v1.HealthCheckResponse_SERVING)
 
+	// Register the IdentityService handler.
+	RegisterIdentityServiceServer(srv, handler)
+
 	// Only enable reflection when GRPC_REFLECTION=true.
 	if os.Getenv("GRPC_REFLECTION") == "true" {
 		reflection.Register(srv)

@@ -103,6 +103,7 @@ type GetApplicationResponse = dto.LoanApplicationResponse
 
 // LendingHandler is the gRPC handler for lending operations.
 type LendingHandler struct {
+	UnimplementedLendingServiceServer
 	submitApp *usecase.SubmitLoanApplicationUseCase
 	disburse  *usecase.DisburseLoanUseCase
 	payment   *usecase.MakePaymentUseCase

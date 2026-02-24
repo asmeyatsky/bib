@@ -18,6 +18,7 @@ type CardServiceServer interface {
 	IssueCard(context.Context, *IssueCardRequest) (*IssueCardResponse, error)
 	AuthorizeTransaction(context.Context, *AuthorizeTransactionRequest) (*AuthorizeTransactionResponse, error)
 	GetCard(context.Context, *GetCardRequest) (*GetCardResponse, error)
+	FreezeCard(context.Context, *FreezeCardGRPCRequest) (*FreezeCardGRPCResponse, error)
 	mustEmbedUnimplementedCardServiceServer()
 }
 
@@ -33,7 +34,21 @@ func (UnimplementedCardServiceServer) AuthorizeTransaction(context.Context, *Aut
 func (UnimplementedCardServiceServer) GetCard(context.Context, *GetCardRequest) (*GetCardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCard not implemented")
 }
+func (UnimplementedCardServiceServer) FreezeCard(context.Context, *FreezeCardGRPCRequest) (*FreezeCardGRPCResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FreezeCard not implemented")
+}
 func (UnimplementedCardServiceServer) mustEmbedUnimplementedCardServiceServer() {}
+
+// FreezeCardGRPCRequest represents the proto FreezeCardRequest message.
+type FreezeCardGRPCRequest struct {
+	CardID string `json:"card_id"`
+}
+
+// FreezeCardGRPCResponse represents the proto FreezeCardResponse message.
+type FreezeCardGRPCResponse struct {
+	CardID string `json:"card_id"`
+	Status string `json:"status"`
+}
 
 // RegisterCardServiceServer registers the CardServiceServer with the gRPC server.
 func RegisterCardServiceServer(s *grpclib.Server, srv CardServiceServer) {
@@ -47,6 +62,7 @@ var _CardService_serviceDesc = grpclib.ServiceDesc{ //nolint:revive
 		{MethodName: "IssueCard", Handler: _CardService_IssueCard_Handler},
 		{MethodName: "AuthorizeTransaction", Handler: _CardService_AuthorizeTransaction_Handler},
 		{MethodName: "GetCard", Handler: _CardService_GetCard_Handler},
+		{MethodName: "FreezeCard", Handler: _CardService_FreezeCard_Handler},
 	},
 	Streams: []grpclib.StreamDesc{},
 }
@@ -73,4 +89,12 @@ func _CardService_GetCard_Handler(srv interface{}, ctx context.Context, dec func
 		return nil, err
 	}
 	return srv.(CardServiceServer).GetCard(ctx, req) //nolint:errcheck
+}
+
+func _CardService_FreezeCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	req := new(FreezeCardGRPCRequest)
+	if err := dec(req); err != nil {
+		return nil, err
+	}
+	return srv.(CardServiceServer).FreezeCard(ctx, req) //nolint:errcheck
 }

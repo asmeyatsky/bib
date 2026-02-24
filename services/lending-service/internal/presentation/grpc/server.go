@@ -57,8 +57,8 @@ func NewServer(handler *LendingHandler, logger *slog.Logger, jwtService *auth.JW
 		reflection.Register(gs)
 	}
 
-	// TODO: Register the generated LendingService server once proto is compiled.
-	// pb.RegisterLendingServiceServer(gs, handler)
+	// Register the LendingService server.
+	RegisterLendingServiceServer(gs, handler)
 
 	return &Server{
 		gs:      gs,
