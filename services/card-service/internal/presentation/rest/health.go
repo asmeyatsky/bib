@@ -26,8 +26,8 @@ type healthResponse struct {
 
 // RegisterRoutes registers the health check routes on the given mux.
 func (h *HealthHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/health", h.Health)
-	mux.HandleFunc("/ready", h.Ready)
+	mux.HandleFunc("/healthz", h.Health)
+	mux.HandleFunc("/readyz", h.Ready)
 }
 
 // Health is the liveness probe endpoint.
