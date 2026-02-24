@@ -1,11 +1,20 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
 	"github.com/bibbank/bib/pkg/auth"
 )
+
+type bearerTokenKey struct{}
+
+// BearerTokenFromContext retrieves the raw Bearer token stored by AuthMiddleware.
+func BearerTokenFromContext(ctx context.Context) (string, bool) {
+	token, ok := ctx.Value(bearerTokenKey{}).(string)
+	return token, ok
+}
 
 // AuthMiddleware validates JWT tokens on incoming requests.
 // Requests to paths listed in skipPaths bypass authentication.
@@ -35,14 +44,16 @@ func AuthMiddleware(jwtService *auth.JWTService, skipPaths []string) func(http.H
 				return
 			}
 
-			claims, err := jwtService.ValidateToken(parts[1])
+			rawToken := parts[1]
+			claims, err := jwtService.ValidateToken(rawToken)
 			if err != nil {
 				http.Error(w, `{"error":"invalid token"}`, http.StatusUnauthorized)
 				return
 			}
 
-			// Add claims to context using the auth package's context helper.
+			// Add claims and raw token to context for downstream use.
 			ctx := auth.ContextWithClaims(r.Context(), claims)
+			ctx = context.WithValue(ctx, bearerTokenKey{}, rawToken)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

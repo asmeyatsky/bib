@@ -16,10 +16,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/bibbank/bib/gateway/internal/middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -61,11 +63,18 @@ func (sc *ServiceConn) Close() error {
 }
 
 // Invoke calls a gRPC method on the backend service using the JSON codec.
-// Returns an appropriate error if the connection is not established.
+// It forwards the Bearer token from the HTTP context as gRPC metadata so
+// backend services can authenticate the request.
 func (sc *ServiceConn) Invoke(ctx context.Context, method string, req, resp interface{}) error {
 	if sc == nil || sc.Conn == nil {
 		return status.Error(codes.Unavailable, "backend service not connected")
 	}
+
+	// Forward the Bearer token as gRPC metadata for backend auth.
+	if token, ok := middleware.BearerTokenFromContext(ctx); ok {
+		ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "Bearer "+token)
+	}
+
 	return sc.Conn.Invoke(ctx, method, req, resp, grpcCallOption())
 }
 

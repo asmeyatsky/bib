@@ -88,7 +88,7 @@ func run() error {
 
 	// JWT service for gRPC auth (validation-only: public key preferred, secret as fallback).
 	jwtCfg := auth.JWTConfig{
-		Issuer: "bib-fx",
+		Issuer: "bib-gateway",
 	}
 	switch {
 	case os.Getenv("JWT_PUBLIC_KEY") != "":

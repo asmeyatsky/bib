@@ -91,7 +91,7 @@ func main() {
 
 	// JWT service (validation-only: public key preferred, secret as fallback).
 	jwtCfg := auth.JWTConfig{
-		Issuer: "bib-reporting",
+		Issuer: "bib-gateway",
 	}
 	switch {
 	case os.Getenv("JWT_PUBLIC_KEY") != "":
