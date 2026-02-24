@@ -42,6 +42,3 @@ tmp/
 
 # Debug binaries
 __debug_bin*
-
-# Go workspace sum
-go.work.sum
