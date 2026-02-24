@@ -75,11 +75,11 @@ docker-build:
 
 docker-up:
 	@echo "==> Starting services..."
-	docker-compose up -d
+	docker compose up -d
 
 docker-down:
 	@echo "==> Stopping services..."
-	docker-compose down
+	docker compose down
 
 test-e2e:
 	@echo "==> Running end-to-end tests..."

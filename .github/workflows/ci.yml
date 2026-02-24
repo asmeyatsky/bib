@@ -84,12 +84,17 @@ jobs:
         with:
           go-version: "1.24"
           cache: false
-      - name: Start infrastructure
-        run: docker compose -f docker-compose.infra.yml up -d
-      - name: Wait for infrastructure
-        run: sleep 30
+      - name: Build and start full stack
+        run: docker compose up -d --build --wait
+        timeout-minutes: 15
       - name: Run E2E tests
         run: make test-e2e
+        env:
+          GATEWAY_URL: http://localhost:8080
+          JWT_SECRET: test-e2e-secret
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose logs --tail=50
       - name: Cleanup
         if: always()
-        run: docker compose -f docker-compose.infra.yml down -v
+        run: docker compose down -v
