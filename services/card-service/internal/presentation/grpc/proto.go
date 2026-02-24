@@ -67,34 +67,74 @@ var _CardService_serviceDesc = grpclib.ServiceDesc{ //nolint:revive
 	Streams: []grpclib.StreamDesc{},
 }
 
-func _CardService_IssueCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
-	req := new(IssueCardRequest)
-	if err := dec(req); err != nil {
+func _CardService_IssueCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	in := new(IssueCardRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(CardServiceServer).IssueCard(ctx, req) //nolint:errcheck
+	if interceptor == nil {
+		return srv.(CardServiceServer).IssueCard(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.card.v1.CardService/IssueCard",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).IssueCard(ctx, req.(*IssueCardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _CardService_AuthorizeTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
-	req := new(AuthorizeTransactionRequest)
-	if err := dec(req); err != nil {
+func _CardService_AuthorizeTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	in := new(AuthorizeTransactionRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(CardServiceServer).AuthorizeTransaction(ctx, req) //nolint:errcheck
+	if interceptor == nil {
+		return srv.(CardServiceServer).AuthorizeTransaction(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.card.v1.CardService/AuthorizeTransaction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).AuthorizeTransaction(ctx, req.(*AuthorizeTransactionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _CardService_GetCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
-	req := new(GetCardRequest)
-	if err := dec(req); err != nil {
+func _CardService_GetCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	in := new(GetCardRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(CardServiceServer).GetCard(ctx, req) //nolint:errcheck
+	if interceptor == nil {
+		return srv.(CardServiceServer).GetCard(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.card.v1.CardService/GetCard",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).GetCard(ctx, req.(*GetCardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _CardService_FreezeCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
-	req := new(FreezeCardGRPCRequest)
-	if err := dec(req); err != nil {
+func _CardService_FreezeCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	in := new(FreezeCardGRPCRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(CardServiceServer).FreezeCard(ctx, req) //nolint:errcheck
+	if interceptor == nil {
+		return srv.(CardServiceServer).FreezeCard(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.card.v1.CardService/FreezeCard",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CardServiceServer).FreezeCard(ctx, req.(*FreezeCardGRPCRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }

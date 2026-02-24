@@ -51,26 +51,56 @@ var _PaymentService_serviceDesc = grpclib.ServiceDesc{ //nolint:revive
 	Streams: []grpclib.StreamDesc{},
 }
 
-func _PaymentService_InitiatePayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
-	req := new(InitiatePaymentRequest)
-	if err := dec(req); err != nil {
+func _PaymentService_InitiatePayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	in := new(InitiatePaymentRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(PaymentServiceServer).InitiatePayment(ctx, req) //nolint:errcheck
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).InitiatePayment(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.payment.v1.PaymentService/InitiatePayment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).InitiatePayment(ctx, req.(*InitiatePaymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _PaymentService_GetPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
-	req := new(GetPaymentRequestMsg)
-	if err := dec(req); err != nil {
+func _PaymentService_GetPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	in := new(GetPaymentRequestMsg)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(PaymentServiceServer).GetPayment(ctx, req) //nolint:errcheck
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).GetPayment(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.payment.v1.PaymentService/GetPayment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).GetPayment(ctx, req.(*GetPaymentRequestMsg))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _PaymentService_ListPayments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
-	req := new(ListPaymentsRequestMsg)
-	if err := dec(req); err != nil {
+func _PaymentService_ListPayments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	in := new(ListPaymentsRequestMsg)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(PaymentServiceServer).ListPayments(ctx, req) //nolint:errcheck
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).ListPayments(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.payment.v1.PaymentService/ListPayments",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).ListPayments(ctx, req.(*ListPaymentsRequestMsg))
+	}
+	return interceptor(ctx, in, info, handler)
 }

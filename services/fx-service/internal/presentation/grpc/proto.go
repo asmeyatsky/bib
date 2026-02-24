@@ -56,37 +56,77 @@ var _FXService_serviceDesc = grpclib.ServiceDesc{ //nolint:revive // gRPC handle
 }
 
 //nolint:revive // gRPC handler registration
-func _FXService_GetExchangeRate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:errcheck
-	req := new(GetExchangeRateRequest)
-	if err := dec(req); err != nil {
+func _FXService_GetExchangeRate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:errcheck
+	in := new(GetExchangeRateRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(FXServiceServer).GetExchangeRate(ctx, req) //nolint:errcheck // gRPC type assertion
+	if interceptor == nil {
+		return srv.(FXServiceServer).GetExchangeRate(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.fx.v1.FXService/GetExchangeRate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FXServiceServer).GetExchangeRate(ctx, req.(*GetExchangeRateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive // gRPC handler registration
-func _FXService_ConvertAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:errcheck
-	req := new(ConvertAmountRequest)
-	if err := dec(req); err != nil {
+func _FXService_ConvertAmount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:errcheck
+	in := new(ConvertAmountRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(FXServiceServer).ConvertAmount(ctx, req) //nolint:errcheck // gRPC type assertion
+	if interceptor == nil {
+		return srv.(FXServiceServer).ConvertAmount(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.fx.v1.FXService/ConvertAmount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FXServiceServer).ConvertAmount(ctx, req.(*ConvertAmountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive // gRPC handler registration
-func _FXService_ListExchangeRates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:errcheck
-	req := new(ListExchangeRatesRequest)
-	if err := dec(req); err != nil {
+func _FXService_ListExchangeRates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:errcheck
+	in := new(ListExchangeRatesRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(FXServiceServer).ListExchangeRates(ctx, req) //nolint:errcheck // gRPC type assertion
+	if interceptor == nil {
+		return srv.(FXServiceServer).ListExchangeRates(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.fx.v1.FXService/ListExchangeRates",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FXServiceServer).ListExchangeRates(ctx, req.(*ListExchangeRatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive // gRPC handler registration
-func _FXService_Revaluate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:errcheck
-	req := new(RevaluateRequest)
-	if err := dec(req); err != nil {
+func _FXService_Revaluate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:errcheck
+	in := new(RevaluateRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(FXServiceServer).Revaluate(ctx, req) //nolint:errcheck // gRPC type assertion
+	if interceptor == nil {
+		return srv.(FXServiceServer).Revaluate(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.fx.v1.FXService/Revaluate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FXServiceServer).Revaluate(ctx, req.(*RevaluateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }

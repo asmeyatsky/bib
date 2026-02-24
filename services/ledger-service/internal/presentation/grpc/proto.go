@@ -53,28 +53,58 @@ var _LedgerService_serviceDesc = grpclib.ServiceDesc{
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _LedgerService_PostJournalEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(PostJournalEntryRequest)
-	if err := dec(req); err != nil {
+func _LedgerService_PostJournalEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostJournalEntryRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(LedgerServiceServer).PostJournalEntry(ctx, req)
+	if interceptor == nil {
+		return srv.(LedgerServiceServer).PostJournalEntry(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.ledger.v1.LedgerService/PostJournalEntry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LedgerServiceServer).PostJournalEntry(ctx, req.(*PostJournalEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _LedgerService_GetBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(GetBalanceRequest)
-	if err := dec(req); err != nil {
+func _LedgerService_GetBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBalanceRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(LedgerServiceServer).GetBalance(ctx, req)
+	if interceptor == nil {
+		return srv.(LedgerServiceServer).GetBalance(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.ledger.v1.LedgerService/GetBalance",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LedgerServiceServer).GetBalance(ctx, req.(*GetBalanceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _LedgerService_GetJournalEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(GetJournalEntryRequest)
-	if err := dec(req); err != nil {
+func _LedgerService_GetJournalEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetJournalEntryRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(LedgerServiceServer).GetJournalEntry(ctx, req)
+	if interceptor == nil {
+		return srv.(LedgerServiceServer).GetJournalEntry(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.ledger.v1.LedgerService/GetJournalEntry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LedgerServiceServer).GetJournalEntry(ctx, req.(*GetJournalEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }

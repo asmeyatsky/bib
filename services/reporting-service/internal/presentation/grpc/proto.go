@@ -53,28 +53,58 @@ var _ReportingService_serviceDesc = grpclib.ServiceDesc{
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _ReportingService_GenerateReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(GenerateReportRequest)
-	if err := dec(req); err != nil {
+func _ReportingService_GenerateReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateReportRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(ReportingServiceServer).GenerateReport(ctx, req)
+	if interceptor == nil {
+		return srv.(ReportingServiceServer).GenerateReport(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.reporting.v1.ReportingService/GenerateReport",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReportingServiceServer).GenerateReport(ctx, req.(*GenerateReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _ReportingService_GetReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(GetReportRequest)
-	if err := dec(req); err != nil {
+func _ReportingService_GetReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReportRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(ReportingServiceServer).GetReport(ctx, req)
+	if interceptor == nil {
+		return srv.(ReportingServiceServer).GetReport(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.reporting.v1.ReportingService/GetReport",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReportingServiceServer).GetReport(ctx, req.(*GetReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _ReportingService_SubmitReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(SubmitReportRequest)
-	if err := dec(req); err != nil {
+func _ReportingService_SubmitReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SubmitReportRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(ReportingServiceServer).SubmitReport(ctx, req)
+	if interceptor == nil {
+		return srv.(ReportingServiceServer).SubmitReport(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.reporting.v1.ReportingService/SubmitReport",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReportingServiceServer).SubmitReport(ctx, req.(*SubmitReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }

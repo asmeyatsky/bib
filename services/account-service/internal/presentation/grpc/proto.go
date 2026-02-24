@@ -63,46 +63,96 @@ var _AccountService_serviceDesc = grpclib.ServiceDesc{
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _AccountService_OpenAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(OpenAccountRequest)
-	if err := dec(req); err != nil {
+func _AccountService_OpenAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OpenAccountRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(AccountServiceServer).OpenAccount(ctx, req)
+	if interceptor == nil {
+		return srv.(AccountServiceServer).OpenAccount(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.account.v1.AccountService/OpenAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServiceServer).OpenAccount(ctx, req.(*OpenAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _AccountService_GetAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(GetAccountRequest)
-	if err := dec(req); err != nil {
+func _AccountService_GetAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAccountRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(AccountServiceServer).GetAccount(ctx, req)
+	if interceptor == nil {
+		return srv.(AccountServiceServer).GetAccount(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.account.v1.AccountService/GetAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServiceServer).GetAccount(ctx, req.(*GetAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _AccountService_FreezeAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(FreezeAccountRequest)
-	if err := dec(req); err != nil {
+func _AccountService_FreezeAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FreezeAccountRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(AccountServiceServer).FreezeAccount(ctx, req)
+	if interceptor == nil {
+		return srv.(AccountServiceServer).FreezeAccount(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.account.v1.AccountService/FreezeAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServiceServer).FreezeAccount(ctx, req.(*FreezeAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _AccountService_CloseAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(CloseAccountRequest)
-	if err := dec(req); err != nil {
+func _AccountService_CloseAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CloseAccountRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(AccountServiceServer).CloseAccount(ctx, req)
+	if interceptor == nil {
+		return srv.(AccountServiceServer).CloseAccount(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.account.v1.AccountService/CloseAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServiceServer).CloseAccount(ctx, req.(*CloseAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _AccountService_ListAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(ListAccountsRequest)
-	if err := dec(req); err != nil {
+func _AccountService_ListAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAccountsRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(AccountServiceServer).ListAccounts(ctx, req)
+	if interceptor == nil {
+		return srv.(AccountServiceServer).ListAccounts(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.account.v1.AccountService/ListAccounts",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServiceServer).ListAccounts(ctx, req.(*ListAccountsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }

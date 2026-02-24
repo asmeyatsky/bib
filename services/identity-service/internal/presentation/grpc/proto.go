@@ -51,26 +51,56 @@ var _IdentityService_serviceDesc = grpclib.ServiceDesc{ //nolint:revive
 	Streams: []grpclib.StreamDesc{},
 }
 
-func _IdentityService_InitiateVerification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
-	req := new(InitiateVerificationRequest)
-	if err := dec(req); err != nil {
+func _IdentityService_InitiateVerification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	in := new(InitiateVerificationRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(IdentityServiceServer).InitiateVerification(ctx, req) //nolint:errcheck
+	if interceptor == nil {
+		return srv.(IdentityServiceServer).InitiateVerification(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.identity.v1.IdentityService/InitiateVerification",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityServiceServer).InitiateVerification(ctx, req.(*InitiateVerificationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _IdentityService_GetVerification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
-	req := new(GetVerificationRequest)
-	if err := dec(req); err != nil {
+func _IdentityService_GetVerification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	in := new(GetVerificationRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(IdentityServiceServer).GetVerification(ctx, req) //nolint:errcheck
+	if interceptor == nil {
+		return srv.(IdentityServiceServer).GetVerification(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.identity.v1.IdentityService/GetVerification",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityServiceServer).GetVerification(ctx, req.(*GetVerificationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _IdentityService_CompleteCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
-	req := new(CompleteCheckRequest)
-	if err := dec(req); err != nil {
+func _IdentityService_CompleteCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	in := new(CompleteCheckRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(IdentityServiceServer).CompleteCheck(ctx, req) //nolint:errcheck
+	if interceptor == nil {
+		return srv.(IdentityServiceServer).CompleteCheck(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.identity.v1.IdentityService/CompleteCheck",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityServiceServer).CompleteCheck(ctx, req.(*CompleteCheckRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }

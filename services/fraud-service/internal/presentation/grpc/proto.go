@@ -45,18 +45,38 @@ var _FraudService_serviceDesc = grpclib.ServiceDesc{ //nolint:revive
 	Streams: []grpclib.StreamDesc{},
 }
 
-func _FraudService_AssessTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
-	req := new(AssessTransactionRequest)
-	if err := dec(req); err != nil {
+func _FraudService_AssessTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	in := new(AssessTransactionRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(FraudServiceServer).AssessTransaction(ctx, req) //nolint:errcheck
+	if interceptor == nil {
+		return srv.(FraudServiceServer).AssessTransaction(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.fraud.v1.FraudService/AssessTransaction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FraudServiceServer).AssessTransaction(ctx, req.(*AssessTransactionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _FraudService_GetAssessment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
-	req := new(GetAssessmentRequest)
-	if err := dec(req); err != nil {
+func _FraudService_GetAssessment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) { //nolint:revive,errcheck // gRPC handler registration
+	in := new(GetAssessmentRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(FraudServiceServer).GetAssessment(ctx, req) //nolint:errcheck
+	if interceptor == nil {
+		return srv.(FraudServiceServer).GetAssessment(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.fraud.v1.FraudService/GetAssessment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FraudServiceServer).GetAssessment(ctx, req.(*GetAssessmentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }

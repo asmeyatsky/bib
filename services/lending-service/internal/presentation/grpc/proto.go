@@ -63,46 +63,96 @@ var _LendingService_serviceDesc = grpclib.ServiceDesc{
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _LendingService_SubmitApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(SubmitApplicationRequest)
-	if err := dec(req); err != nil {
+func _LendingService_SubmitApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SubmitApplicationRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(LendingServiceServer).SubmitApplication(ctx, req)
+	if interceptor == nil {
+		return srv.(LendingServiceServer).SubmitApplication(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.lending.v1.LendingService/SubmitApplication",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LendingServiceServer).SubmitApplication(ctx, req.(*SubmitApplicationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _LendingService_GetApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(GetApplicationRequest)
-	if err := dec(req); err != nil {
+func _LendingService_GetApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetApplicationRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(LendingServiceServer).GetApplication(ctx, req)
+	if interceptor == nil {
+		return srv.(LendingServiceServer).GetApplication(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.lending.v1.LendingService/GetApplication",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LendingServiceServer).GetApplication(ctx, req.(*GetApplicationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _LendingService_DisburseLoan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(DisburseLoanRequest)
-	if err := dec(req); err != nil {
+func _LendingService_DisburseLoan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DisburseLoanRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(LendingServiceServer).DisburseLoan(ctx, req)
+	if interceptor == nil {
+		return srv.(LendingServiceServer).DisburseLoan(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.lending.v1.LendingService/DisburseLoan",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LendingServiceServer).DisburseLoan(ctx, req.(*DisburseLoanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _LendingService_GetLoan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(GetLoanRequest)
-	if err := dec(req); err != nil {
+func _LendingService_GetLoan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLoanRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(LendingServiceServer).GetLoan(ctx, req)
+	if interceptor == nil {
+		return srv.(LendingServiceServer).GetLoan(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.lending.v1.LendingService/GetLoan",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LendingServiceServer).GetLoan(ctx, req.(*GetLoanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 //nolint:revive,errcheck // gRPC handler registration
-func _LendingService_MakePayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, _ grpclib.UnaryServerInterceptor) (interface{}, error) {
-	req := new(MakePaymentRequest)
-	if err := dec(req); err != nil {
+func _LendingService_MakePayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpclib.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MakePaymentRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return srv.(LendingServiceServer).MakePayment(ctx, req)
+	if interceptor == nil {
+		return srv.(LendingServiceServer).MakePayment(ctx, in)
+	}
+	info := &grpclib.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/bib.lending.v1.LendingService/MakePayment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LendingServiceServer).MakePayment(ctx, req.(*MakePaymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
