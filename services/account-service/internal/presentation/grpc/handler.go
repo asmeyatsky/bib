@@ -90,35 +90,29 @@ type OpenAccountResponse struct {
 
 // GetAccountRequest represents the proto GetAccountRequest message.
 type GetAccountRequest struct {
-	ID string `json:"id"`
+	ID string `json:"account_id"`
 }
 
-// GetAccountResponse represents the proto GetAccountResponse message.
-type GetAccountResponse struct {
-	Account *AccountMsg `json:"account"`
-}
+// GetAccountResponse represents the proto GetAccountResponse message (flat, matching gateway).
+type GetAccountResponse = AccountMsg
 
 // FreezeAccountRequest represents the proto FreezeAccountRequest message.
 type FreezeAccountRequest struct {
-	ID     string `json:"id"`
+	ID     string `json:"account_id"`
 	Reason string `json:"reason"`
 }
 
-// FreezeAccountResponse represents the proto FreezeAccountResponse message.
-type FreezeAccountResponse struct {
-	Account *AccountMsg `json:"account"`
-}
+// FreezeAccountResponse represents the proto FreezeAccountResponse message (flat, matching gateway).
+type FreezeAccountResponse = AccountMsg
 
 // CloseAccountRequest represents the proto CloseAccountRequest message.
 type CloseAccountRequest struct {
-	ID     string `json:"id"`
+	ID     string `json:"account_id"`
 	Reason string `json:"reason"`
 }
 
-// CloseAccountResponse represents the proto CloseAccountResponse message.
-type CloseAccountResponse struct {
-	Account *AccountMsg `json:"account"`
-}
+// CloseAccountResponse represents the proto CloseAccountResponse message (flat, matching gateway).
+type CloseAccountResponse = AccountMsg
 
 // ListAccountsRequest represents the proto ListAccountsRequest message.
 type ListAccountsRequest struct {
@@ -136,7 +130,7 @@ type ListAccountsResponse struct {
 
 // AccountMsg represents the proto Account message.
 type AccountMsg struct {
-	ID                string `json:"id"`
+	AccountID         string `json:"account_id"`
 	TenantID          string `json:"tenant_id"`
 	AccountNumber     string `json:"account_number"`
 	AccountType       string `json:"account_type"`
@@ -231,9 +225,7 @@ func (h *AccountHandler) GetAccount(ctx context.Context, req *GetAccountRequest)
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	return &GetAccountResponse{
-		Account: toAccountMsg(result),
-	}, nil
+	return toAccountMsg(result), nil
 }
 
 // FreezeAccount handles the gRPC FreezeAccount request.
@@ -259,9 +251,7 @@ func (h *AccountHandler) FreezeAccount(ctx context.Context, req *FreezeAccountRe
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &FreezeAccountResponse{
-		Account: toAccountMsg(result),
-	}, nil
+	return toAccountMsg(result), nil
 }
 
 // CloseAccount handles the gRPC CloseAccount request.
@@ -287,9 +277,7 @@ func (h *AccountHandler) CloseAccount(ctx context.Context, req *CloseAccountRequ
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &CloseAccountResponse{
-		Account: toAccountMsg(result),
-	}, nil
+	return toAccountMsg(result), nil
 }
 
 // ListAccounts handles the gRPC ListAccounts request.
@@ -346,7 +334,7 @@ func (h *AccountHandler) ListAccounts(ctx context.Context, req *ListAccountsRequ
 
 func toAccountMsg(a dto.AccountResponse) *AccountMsg {
 	return &AccountMsg{
-		ID:                a.AccountID.String(),
+		AccountID:         a.AccountID.String(),
 		TenantID:          a.TenantID.String(),
 		AccountNumber:     a.AccountNumber,
 		AccountType:       a.AccountType,

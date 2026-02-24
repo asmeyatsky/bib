@@ -66,46 +66,41 @@ func NewFraudServiceHandler(
 // AssessTransactionRequest represents the proto AssessTransactionRequest message.
 type AssessTransactionRequest struct {
 	Metadata        map[string]string `json:"metadata"`
-	Amount          *MoneyMsg         `json:"amount"`
 	TenantID        string            `json:"tenant_id"`
 	TransactionID   string            `json:"transaction_id"`
 	AccountID       string            `json:"account_id"`
+	Amount          string            `json:"amount"`
+	Currency        string            `json:"currency"`
 	TransactionType string            `json:"transaction_type"`
-}
-
-// MoneyMsg represents the proto Money message.
-type MoneyMsg struct {
-	Amount   string `json:"amount"`
-	Currency string `json:"currency"`
-}
-
-// TransactionAssessmentMsg represents the proto TransactionAssessment message.
-type TransactionAssessmentMsg struct {
-	Amount          *MoneyMsg `json:"amount"`
-	ID              string    `json:"id"`
-	TenantID        string    `json:"tenant_id"`
-	TransactionID   string    `json:"transaction_id"`
-	AccountID       string    `json:"account_id"`
-	TransactionType string    `json:"transaction_type"`
-	RiskLevel       string    `json:"risk_level"`
-	Decision        string    `json:"decision"`
-	RiskSignals     []string  `json:"risk_signals"`
-	RiskScore       int32     `json:"risk_score"`
 }
 
 // AssessTransactionResponse represents the proto AssessTransactionResponse message.
 type AssessTransactionResponse struct {
-	Assessment *TransactionAssessmentMsg `json:"assessment"`
+	AssessmentID string   `json:"assessment_id"`
+	RiskLevel    string   `json:"risk_level"`
+	Decision     string   `json:"decision"`
+	Signals      []string `json:"signals"`
+	RiskScore    int      `json:"risk_score"`
 }
 
 // GetAssessmentRequest represents the proto GetAssessmentRequest message.
 type GetAssessmentRequest struct {
-	ID string `json:"id"`
+	TenantID     string `json:"tenant_id"`
+	AssessmentID string `json:"assessment_id"`
 }
 
 // GetAssessmentResponse represents the proto GetAssessmentResponse message.
 type GetAssessmentResponse struct {
-	Assessment *TransactionAssessmentMsg `json:"assessment"`
+	AssessmentID    string   `json:"assessment_id"`
+	TransactionID   string   `json:"transaction_id"`
+	AccountID       string   `json:"account_id"`
+	Amount          string   `json:"amount"`
+	Currency        string   `json:"currency"`
+	TransactionType string   `json:"transaction_type"`
+	RiskLevel       string   `json:"risk_level"`
+	Decision        string   `json:"decision"`
+	Signals         []string `json:"signals"`
+	RiskScore       int      `json:"risk_score"`
 }
 
 // AssessTransaction handles a transaction assessment request.
@@ -133,15 +128,11 @@ func (h *FraudServiceHandler) AssessTransaction(ctx context.Context, req *Assess
 		return nil, status.Errorf(codes.InvalidArgument, "invalid account_id: %v", err)
 	}
 
-	var amount decimal.Decimal
-	var currency string
-	if req.Amount != nil {
-		amount, err = decimal.NewFromString(req.Amount.Amount)
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid amount: %v", err)
-		}
-		currency = req.Amount.Currency
+	amount, err := decimal.NewFromString(req.Amount)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid amount: %v", err)
 	}
+	currency := req.Currency
 
 	h.logger.Info("assessing transaction",
 		slog.String("tenant_id", tenantID.String()),
@@ -166,18 +157,11 @@ func (h *FraudServiceHandler) AssessTransaction(ctx context.Context, req *Assess
 	}
 
 	return &AssessTransactionResponse{
-		Assessment: &TransactionAssessmentMsg{
-			ID:              result.ID.String(),
-			TenantID:        tenantID.String(),
-			TransactionID:   transactionID.String(),
-			AccountID:       accountID.String(),
-			Amount:          req.Amount,
-			TransactionType: req.TransactionType,
-			RiskLevel:       result.RiskLevel,
-			RiskScore:       int32(result.RiskScore), //nolint:gosec
-			Decision:        result.Decision,
-			RiskSignals:     result.RiskSignals,
-		},
+		AssessmentID: result.ID.String(),
+		RiskLevel:    result.RiskLevel,
+		Decision:     result.Decision,
+		Signals:      result.RiskSignals,
+		RiskScore:    result.RiskScore,
 	}, nil
 }
 
@@ -196,9 +180,9 @@ func (h *FraudServiceHandler) GetAssessment(ctx context.Context, req *GetAssessm
 		return nil, err
 	}
 
-	assessmentID, err := uuid.Parse(req.ID)
+	assessmentID, err := uuid.Parse(req.AssessmentID)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid id: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid assessment_id: %v", err)
 	}
 
 	result, err := h.getAssessment.Execute(ctx, dto.GetAssessmentRequest{
@@ -210,16 +194,15 @@ func (h *FraudServiceHandler) GetAssessment(ctx context.Context, req *GetAssessm
 	}
 
 	return &GetAssessmentResponse{
-		Assessment: &TransactionAssessmentMsg{
-			ID:              result.ID.String(),
-			TransactionID:   result.TransactionID.String(),
-			AccountID:       result.AccountID.String(),
-			Amount:          &MoneyMsg{Amount: result.Amount, Currency: result.Currency},
-			TransactionType: result.TransactionType,
-			RiskLevel:       result.RiskLevel,
-			RiskScore:       int32(result.RiskScore), //nolint:gosec
-			Decision:        result.Decision,
-			RiskSignals:     result.RiskSignals,
-		},
+		AssessmentID:    result.ID.String(),
+		TransactionID:   result.TransactionID.String(),
+		AccountID:       result.AccountID.String(),
+		Amount:          result.Amount,
+		Currency:        result.Currency,
+		TransactionType: result.TransactionType,
+		RiskLevel:       result.RiskLevel,
+		Decision:        result.Decision,
+		Signals:         result.RiskSignals,
+		RiskScore:       result.RiskScore,
 	}, nil
 }

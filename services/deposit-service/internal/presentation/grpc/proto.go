@@ -47,9 +47,9 @@ var _DepositService_serviceDesc = grpclib.ServiceDesc{ //nolint:revive // gRPC h
 	ServiceName: "bib.deposit.v1.DepositService",
 	HandlerType: (*DepositServiceServer)(nil),
 	Methods: []grpclib.MethodDesc{
-		{MethodName: "CreateDepositProduct", Handler: _DepositService_CreateDepositProduct_Handler},
-		{MethodName: "OpenDepositPosition", Handler: _DepositService_OpenDepositPosition_Handler},
-		{MethodName: "GetDepositPosition", Handler: _DepositService_GetDepositPosition_Handler},
+		{MethodName: "CreateProduct", Handler: _DepositService_CreateDepositProduct_Handler},
+		{MethodName: "OpenPosition", Handler: _DepositService_OpenDepositPosition_Handler},
+		{MethodName: "GetPosition", Handler: _DepositService_GetDepositPosition_Handler},
 		{MethodName: "AccrueInterest", Handler: _DepositService_AccrueInterest_Handler},
 	},
 	Streams: []grpclib.StreamDesc{},

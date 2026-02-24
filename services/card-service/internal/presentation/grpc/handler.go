@@ -68,32 +68,29 @@ func NewCardServiceHandler(
 
 // Proto-aligned request/response message types.
 
-// MoneyMsg represents the proto Money message.
-type MoneyMsg struct {
-	Amount   string `json:"amount"`
-	Currency string `json:"currency"`
-}
-
 // IssueCardRequest represents the proto IssueCardRequest message.
 type IssueCardRequest struct {
-	DailyLimit   *MoneyMsg `json:"daily_limit"`
-	MonthlyLimit *MoneyMsg `json:"monthly_limit"`
-	TenantID     string    `json:"tenant_id"`
-	AccountID    string    `json:"account_id"`
-	CardType     string    `json:"type"`
+	TenantID     string `json:"tenant_id"`
+	AccountID    string `json:"account_id"`
+	CardType     string `json:"card_type"`
+	Currency     string `json:"currency"`
+	DailyLimit   string `json:"daily_limit"`
+	MonthlyLimit string `json:"monthly_limit"`
 }
 
 // IssueCardResponse represents the proto IssueCardResponse message.
 type IssueCardResponse struct {
-	Card *CardMsg `json:"card"`
+	CardID string `json:"card_id"`
+	Status string `json:"status"`
 }
 
 // AuthorizeTransactionRequest represents the proto AuthorizeTransactionRequest message.
 type AuthorizeTransactionRequest struct {
-	CardID           string    `json:"card_id"`
-	Amount           *MoneyMsg `json:"amount"`
-	MerchantName     string    `json:"merchant_name"`
-	MerchantCategory string    `json:"merchant_category"`
+	CardID           string `json:"card_id"`
+	Amount           string `json:"amount"`
+	Currency         string `json:"currency"`
+	MerchantName     string `json:"merchant_name"`
+	MerchantCategory string `json:"merchant_category"`
 }
 
 // AuthorizeTransactionResponse represents the proto AuthorizeTransactionResponse message.
@@ -105,26 +102,21 @@ type AuthorizeTransactionResponse struct {
 
 // GetCardRequest represents the proto GetCardRequest message.
 type GetCardRequest struct {
-	ID string `json:"id"`
+	ID string `json:"card_id"`
 }
 
 // GetCardResponse represents the proto GetCardResponse message.
 type GetCardResponse struct {
-	Card *CardMsg `json:"card"`
-}
-
-// CardMsg represents the proto Card message.
-type CardMsg struct {
-	DailyLimit   *MoneyMsg `json:"daily_limit"`
-	MonthlyLimit *MoneyMsg `json:"monthly_limit"`
-	ID           string    `json:"id"`
-	TenantID     string    `json:"tenant_id"`
-	AccountID    string    `json:"account_id"`
-	CardType     string    `json:"type"`
-	Status       string    `json:"status"`
-	LastFour     string    `json:"last_four"`
-	ExpiryMonth  string    `json:"expiry_month"`
-	ExpiryYear   string    `json:"expiry_year"`
+	CardID       string `json:"card_id"`
+	TenantID     string `json:"tenant_id"`
+	AccountID    string `json:"account_id"`
+	CardType     string `json:"card_type"`
+	Status       string `json:"status"`
+	Currency     string `json:"currency"`
+	DailyLimit   string `json:"daily_limit"`
+	MonthlyLimit string `json:"monthly_limit"`
+	MaskedPan    string `json:"masked_pan"`
+	Version      int32  `json:"version"`
 }
 
 // IssueCard handles the gRPC request to issue a new card.
@@ -147,41 +139,35 @@ func (h *CardServiceHandler) IssueCard(ctx context.Context, req *IssueCardReques
 		return nil, status.Errorf(codes.InvalidArgument, "invalid account_id: %v", err)
 	}
 
-	var dailyLimit, monthlyLimit decimal.Decimal
-	var currency string
-
 	if req.CardType == "" {
 		return nil, status.Error(codes.InvalidArgument, "card_type is required")
 	}
 
-	if req.DailyLimit != nil {
-		dailyLimit, err = decimal.NewFromString(req.DailyLimit.Amount)
+	var dailyLimit, monthlyLimit decimal.Decimal
+
+	if req.DailyLimit != "" {
+		dailyLimit, err = decimal.NewFromString(req.DailyLimit)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid daily_limit amount: %v", err)
 		}
 		if !dailyLimit.IsPositive() {
 			return nil, status.Error(codes.InvalidArgument, "daily_limit amount must be positive")
 		}
-		currency = req.DailyLimit.Currency
-		if currency != "" && !currencyCodeRE.MatchString(currency) {
-			return nil, status.Error(codes.InvalidArgument, "daily_limit currency must be a 3-letter uppercase ISO code")
-		}
 	}
 
-	if req.MonthlyLimit != nil {
-		monthlyLimit, err = decimal.NewFromString(req.MonthlyLimit.Amount)
+	if req.MonthlyLimit != "" {
+		monthlyLimit, err = decimal.NewFromString(req.MonthlyLimit)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid monthly_limit amount: %v", err)
 		}
 		if !monthlyLimit.IsPositive() {
 			return nil, status.Error(codes.InvalidArgument, "monthly_limit amount must be positive")
 		}
-		if currency == "" {
-			currency = req.MonthlyLimit.Currency
-		}
-		if req.MonthlyLimit.Currency != "" && !currencyCodeRE.MatchString(req.MonthlyLimit.Currency) {
-			return nil, status.Error(codes.InvalidArgument, "monthly_limit currency must be a 3-letter uppercase ISO code")
-		}
+	}
+
+	currency := req.Currency
+	if currency != "" && !currencyCodeRE.MatchString(currency) {
+		return nil, status.Error(codes.InvalidArgument, "currency must be a 3-letter uppercase ISO code")
 	}
 
 	dtoReq := dto.IssueCardRequest{
@@ -199,14 +185,8 @@ func (h *CardServiceHandler) IssueCard(ctx context.Context, req *IssueCardReques
 	}
 
 	return &IssueCardResponse{
-		Card: &CardMsg{
-			ID:        resp.CardID.String(),
-			TenantID:  tenantID.String(),
-			AccountID: req.AccountID,
-			CardType:  resp.CardType,
-			Status:    resp.Status,
-			LastFour:  resp.LastFour,
-		},
+		CardID: resp.CardID.String(),
+		Status: resp.Status,
 	}, nil
 }
 
@@ -225,17 +205,17 @@ func (h *CardServiceHandler) AuthorizeTransaction(ctx context.Context, req *Auth
 		return nil, status.Errorf(codes.InvalidArgument, "invalid card_id: %v", err)
 	}
 
-	if req.Amount == nil {
+	if req.Amount == "" {
 		return nil, status.Error(codes.InvalidArgument, "amount is required")
 	}
-	amount, err := decimal.NewFromString(req.Amount.Amount)
+	amount, err := decimal.NewFromString(req.Amount)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid amount: %v", err)
 	}
 	if !amount.IsPositive() {
 		return nil, status.Error(codes.InvalidArgument, "amount must be positive")
 	}
-	currency := req.Amount.Currency
+	currency := req.Currency
 	if currency == "" {
 		return nil, status.Error(codes.InvalidArgument, "currency is required")
 	}
@@ -289,24 +269,16 @@ func (h *CardServiceHandler) GetCard(ctx context.Context, req *GetCardRequest) (
 	}
 
 	return &GetCardResponse{
-		Card: &CardMsg{
-			ID:          resp.ID.String(),
-			TenantID:    resp.TenantID.String(),
-			AccountID:   resp.AccountID.String(),
-			CardType:    resp.CardType,
-			Status:      resp.Status,
-			LastFour:    resp.LastFour,
-			ExpiryMonth: resp.ExpiryMonth,
-			ExpiryYear:  resp.ExpiryYear,
-			DailyLimit: &MoneyMsg{
-				Amount:   resp.DailyLimit.String(),
-				Currency: resp.Currency,
-			},
-			MonthlyLimit: &MoneyMsg{
-				Amount:   resp.MonthlyLimit.String(),
-				Currency: resp.Currency,
-			},
-		},
+		CardID:       resp.ID.String(),
+		TenantID:     resp.TenantID.String(),
+		AccountID:    resp.AccountID.String(),
+		CardType:     resp.CardType,
+		Status:       resp.Status,
+		Currency:     resp.Currency,
+		DailyLimit:   resp.DailyLimit.String(),
+		MonthlyLimit: resp.MonthlyLimit.String(),
+		MaskedPan:    resp.LastFour,
+		Version:      1,
 	}, nil
 }
 

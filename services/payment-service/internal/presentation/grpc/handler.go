@@ -3,16 +3,15 @@ package grpc
 import (
 	"context"
 	"regexp"
-
-	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"time"
 
 	"github.com/bibbank/bib/pkg/auth"
 	"github.com/bibbank/bib/services/payment-service/internal/application/dto"
 	"github.com/bibbank/bib/services/payment-service/internal/application/usecase"
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var currencyCodeRE = regexp.MustCompile(`^[A-Z]{3}$`)
@@ -81,64 +80,64 @@ func (h *PaymentHandler) ListPayments(ctx context.Context, req *ListPaymentsRequ
 // Temporary gRPC message types until proto generation is wired.
 
 type InitiatePaymentRequest struct {
-	TenantID              string
-	SourceAccountID       string
-	DestinationAccountID  string
-	Amount                string
-	Currency              string
-	RoutingNumber         string
-	ExternalAccountNumber string
-	DestinationCountry    string
-	Reference             string
-	Description           string
+	TenantID              string `json:"tenant_id"`
+	SourceAccountID       string `json:"source_account_id"`
+	DestinationAccountID  string `json:"destination_account_id,omitempty"`
+	Amount                string `json:"amount"`
+	Currency              string `json:"currency"`
+	RoutingNumber         string `json:"routing_number,omitempty"`
+	ExternalAccountNumber string `json:"external_account_number,omitempty"`
+	DestinationCountry    string `json:"destination_country,omitempty"`
+	Reference             string `json:"reference,omitempty"`
+	Description           string `json:"description,omitempty"`
 }
 
 type InitiatePaymentResponse struct {
-	CreatedAt *timestamppb.Timestamp
-	ID        string
-	Status    string
-	Rail      string
+	ID        string `json:"id"`
+	Status    string `json:"status"`
+	Rail      string `json:"rail"`
+	CreatedAt string `json:"created_at"`
 }
 
 type GetPaymentRequestMsg struct {
-	PaymentID string
+	PaymentID string `json:"payment_id"`
 }
 
 type PaymentOrderMsg struct {
-	InitiatedAt           *timestamppb.Timestamp
-	UpdatedAt             *timestamppb.Timestamp
-	CreatedAt             *timestamppb.Timestamp
-	SettledAt             *timestamppb.Timestamp
-	RoutingNumber         string
-	Description           string
-	Rail                  string
-	Status                string
-	ID                    string
-	ExternalAccountNumber string
-	Reference             string
-	Currency              string
-	FailureReason         string
-	Amount                string
-	DestinationAccountID  string
-	TenantID              string
-	SourceAccountID       string
-	Version               int32
+	ID                    string `json:"id"`
+	TenantID              string `json:"tenant_id"`
+	SourceAccountID       string `json:"source_account_id"`
+	DestinationAccountID  string `json:"destination_account_id"`
+	Amount                string `json:"amount"`
+	Currency              string `json:"currency"`
+	RoutingNumber         string `json:"routing_number"`
+	ExternalAccountNumber string `json:"external_account_number"`
+	Rail                  string `json:"rail"`
+	Status                string `json:"status"`
+	Reference             string `json:"reference"`
+	Description           string `json:"description"`
+	FailureReason         string `json:"failure_reason,omitempty"`
+	InitiatedAt           string `json:"initiated_at"`
+	SettledAt             string `json:"settled_at,omitempty"`
+	UpdatedAt             string `json:"updated_at"`
+	CreatedAt             string `json:"created_at"`
+	Version               int32  `json:"version"`
 }
 
 type GetPaymentResponseMsg struct {
-	Payment *PaymentOrderMsg
+	Payment *PaymentOrderMsg `json:"payment"`
 }
 
 type ListPaymentsRequestMsg struct {
-	TenantID  string
-	AccountID string
-	PageSize  int32
-	Offset    int32
+	TenantID  string `json:"tenant_id"`
+	AccountID string `json:"account_id"`
+	PageSize  int32  `json:"page_size"`
+	Offset    int32  `json:"offset"`
 }
 
 type ListPaymentsResponseMsg struct {
-	Payments   []*PaymentOrderMsg
-	TotalCount int32
+	Payments   []*PaymentOrderMsg `json:"payments"`
+	TotalCount int32              `json:"total_count"`
 }
 
 func (h *PaymentHandler) HandleInitiatePayment(ctx context.Context, req *InitiatePaymentRequest) (*InitiatePaymentResponse, error) {
@@ -204,7 +203,7 @@ func (h *PaymentHandler) HandleInitiatePayment(ctx context.Context, req *Initiat
 		ID:        result.ID.String(),
 		Status:    result.Status,
 		Rail:      result.Rail,
-		CreatedAt: timestamppb.New(result.CreatedAt),
+		CreatedAt: result.CreatedAt.Format(time.RFC3339),
 	}, nil
 }
 
@@ -305,13 +304,13 @@ func toPaymentOrderMsg(r dto.PaymentOrderResponse) *PaymentOrderMsg {
 		Reference:             r.Reference,
 		Description:           r.Description,
 		FailureReason:         r.FailureReason,
-		InitiatedAt:           timestamppb.New(r.InitiatedAt),
+		InitiatedAt:           r.InitiatedAt.Format(time.RFC3339),
 		Version:               int32(r.Version), //nolint:gosec // bounded
-		CreatedAt:             timestamppb.New(r.CreatedAt),
-		UpdatedAt:             timestamppb.New(r.UpdatedAt),
+		CreatedAt:             r.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:             r.UpdatedAt.Format(time.RFC3339),
 	}
 	if r.SettledAt != nil {
-		msg.SettledAt = timestamppb.New(*r.SettledAt)
+		msg.SettledAt = r.SettledAt.Format(time.RFC3339)
 	}
 	return msg
 }

@@ -332,7 +332,7 @@ func TestToPaymentOrderMsg(t *testing.T) {
 	assert.Equal(t, "USD", msg.Currency)
 	assert.Equal(t, "ACH", msg.Rail)
 	assert.Equal(t, "INITIATED", msg.Status)
-	assert.Nil(t, msg.SettledAt)
+	assert.Empty(t, msg.SettledAt)
 }
 
 // requireGRPCCode asserts that an error is a gRPC status error with the given code.

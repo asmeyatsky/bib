@@ -97,6 +97,12 @@ func (uc *OpenAccountUseCase) Execute(ctx context.Context, req dto.OpenAccountRe
 		return dto.OpenAccountResponse{}, fmt.Errorf("failed to assign ledger code: %w", err)
 	}
 
+	// Activate the account now that setup is complete.
+	account, err = account.Activate(time.Now())
+	if err != nil {
+		return dto.OpenAccountResponse{}, fmt.Errorf("failed to activate account: %w", err)
+	}
+
 	// Create matching ledger account in ledger service.
 	if uc.ledgerClient != nil {
 		if err := uc.ledgerClient.CreateLedgerAccount(ctx, req.TenantID, ledgerCode, req.Currency); err != nil {

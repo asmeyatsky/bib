@@ -48,7 +48,11 @@ type GenerateReportRequest struct {
 }
 
 // GenerateReportResponse represents the proto GenerateReportResponse message.
-type GenerateReportResponse = dto.GenerateReportResponse
+type GenerateReportResponse struct {
+	ReportID  string `json:"report_id"`
+	Status    string `json:"status"`
+	CreatedAt string `json:"created_at"`
+}
 
 // GetReportRequest represents the proto GetReportRequest message.
 type GetReportRequest struct {
@@ -56,7 +60,15 @@ type GetReportRequest struct {
 }
 
 // GetReportResponse represents the proto GetReportResponse message.
-type GetReportResponse = dto.GetReportResponse
+type GetReportResponse struct {
+	ReportID   string `json:"report_id"`
+	TenantID   string `json:"tenant_id"`
+	ReportType string `json:"report_type"`
+	Period     string `json:"period"`
+	Status     string `json:"status"`
+	CreatedAt  string `json:"created_at"`
+	UpdatedAt  string `json:"updated_at"`
+}
 
 // SubmitReportRequest represents the proto SubmitReportRequest message.
 type SubmitReportRequest struct {
@@ -64,7 +76,10 @@ type SubmitReportRequest struct {
 }
 
 // SubmitReportResponse represents the proto SubmitReportResponse message.
-type SubmitReportResponse = dto.SubmitReportResponse
+type SubmitReportResponse struct {
+	ReportID string `json:"report_id"`
+	Status   string `json:"status"`
+}
 
 // ---------------------------------------------------------------------------
 // ReportingHandler
@@ -112,12 +127,16 @@ func (h *ReportingHandler) GenerateReport(ctx context.Context, req *GenerateRepo
 		Period:     req.Period,
 	}
 
-	resp, err := h.generateReport.Execute(ctx, dtoReq)
+	result, err := h.generateReport.Execute(ctx, dtoReq)
 	if err != nil {
 		// TODO: log original error server-side: err
 		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return &resp, nil
+	return &GenerateReportResponse{
+		ReportID:  result.ID.String(),
+		Status:    result.Status,
+		CreatedAt: result.GeneratedAt,
+	}, nil
 }
 
 // GetReport handles the get report request.
@@ -139,12 +158,20 @@ func (h *ReportingHandler) GetReport(ctx context.Context, req *GetReportRequest)
 		ID: id,
 	}
 
-	resp, err := h.getReport.Execute(ctx, dtoReq)
+	result, err := h.getReport.Execute(ctx, dtoReq)
 	if err != nil {
 		// TODO: log original error server-side: err
 		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return &resp, nil
+	return &GetReportResponse{
+		ReportID:   result.ID.String(),
+		TenantID:   result.TenantID.String(),
+		ReportType: result.ReportType,
+		Period:     result.ReportingPeriod,
+		Status:     result.Status,
+		CreatedAt:  result.CreatedAt.Format("2006-01-02T15:04:05Z"),
+		UpdatedAt:  result.UpdatedAt.Format("2006-01-02T15:04:05Z"),
+	}, nil
 }
 
 // SubmitReport handles the submit report request.
@@ -166,10 +193,13 @@ func (h *ReportingHandler) SubmitReport(ctx context.Context, req *SubmitReportRe
 		ID: id,
 	}
 
-	resp, err := h.submitReport.Execute(ctx, dtoReq)
+	result, err := h.submitReport.Execute(ctx, dtoReq)
 	if err != nil {
 		// TODO: log original error server-side: err
 		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return &resp, nil
+	return &SubmitReportResponse{
+		ReportID: result.ID.String(),
+		Status:   result.Status,
+	}, nil
 }

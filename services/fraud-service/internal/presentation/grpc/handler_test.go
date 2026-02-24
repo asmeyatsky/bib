@@ -141,13 +141,11 @@ func TestAssessTransaction(t *testing.T) {
 	t.Run("invalid amount returns InvalidArgument", func(t *testing.T) {
 		h := buildTestHandler()
 		_, err := h.AssessTransaction(contextWithClaims(), &AssessTransactionRequest{
-			TenantID:      uuid.New().String(),
-			TransactionID: uuid.New().String(),
-			AccountID:     uuid.New().String(),
-			Amount: &MoneyMsg{
-				Amount:   "not-a-number",
-				Currency: "USD",
-			},
+			TenantID:        uuid.New().String(),
+			TransactionID:   uuid.New().String(),
+			AccountID:       uuid.New().String(),
+			Amount:          "not-a-number",
+			Currency:        "USD",
 			TransactionType: "TRANSFER",
 		})
 		requireGRPCCode(t, err, codes.InvalidArgument)
@@ -157,20 +155,17 @@ func TestAssessTransaction(t *testing.T) {
 	t.Run("happy path returns assessment", func(t *testing.T) {
 		h := buildTestHandler()
 		resp, err := h.AssessTransaction(contextWithClaims(), &AssessTransactionRequest{
-			TenantID:      uuid.New().String(),
-			TransactionID: uuid.New().String(),
-			AccountID:     uuid.New().String(),
-			Amount: &MoneyMsg{
-				Amount:   "100.00",
-				Currency: "USD",
-			},
+			TenantID:        uuid.New().String(),
+			TransactionID:   uuid.New().String(),
+			AccountID:       uuid.New().String(),
+			Amount:          "100.00",
+			Currency:        "USD",
 			TransactionType: "TRANSFER",
 		})
 		require.NoError(t, err)
-		require.NotNil(t, resp.Assessment)
-		assert.NotEmpty(t, resp.Assessment.ID)
-		assert.NotEmpty(t, resp.Assessment.RiskLevel)
-		assert.NotEmpty(t, resp.Assessment.Decision)
+		assert.NotEmpty(t, resp.AssessmentID)
+		assert.NotEmpty(t, resp.RiskLevel)
+		assert.NotEmpty(t, resp.Decision)
 	})
 
 	t.Run("save failure returns Internal", func(t *testing.T) {
@@ -178,13 +173,11 @@ func TestAssessTransaction(t *testing.T) {
 		h := buildHandlerWithRepo(repo)
 
 		_, err := h.AssessTransaction(contextWithClaims(), &AssessTransactionRequest{
-			TenantID:      uuid.New().String(),
-			TransactionID: uuid.New().String(),
-			AccountID:     uuid.New().String(),
-			Amount: &MoneyMsg{
-				Amount:   "50.00",
-				Currency: "USD",
-			},
+			TenantID:        uuid.New().String(),
+			TransactionID:   uuid.New().String(),
+			AccountID:       uuid.New().String(),
+			Amount:          "50.00",
+			Currency:        "USD",
 			TransactionType: "PAYMENT",
 		})
 		requireGRPCCode(t, err, codes.Internal)
@@ -198,16 +191,16 @@ func TestGetAssessment(t *testing.T) {
 		requireGRPCCode(t, err, codes.InvalidArgument)
 	})
 
-	t.Run("invalid id returns InvalidArgument", func(t *testing.T) {
+	t.Run("invalid assessment_id returns InvalidArgument", func(t *testing.T) {
 		h := buildTestHandler()
-		_, err := h.GetAssessment(contextWithClaims(), &GetAssessmentRequest{ID: "bad-uuid"})
+		_, err := h.GetAssessment(contextWithClaims(), &GetAssessmentRequest{AssessmentID: "bad-uuid"})
 		requireGRPCCode(t, err, codes.InvalidArgument)
 	})
 
 	t.Run("not found returns Internal", func(t *testing.T) {
 		h := buildTestHandler()
 		_, err := h.GetAssessment(contextWithClaims(), &GetAssessmentRequest{
-			ID: uuid.New().String(),
+			AssessmentID: uuid.New().String(),
 		})
 		requireGRPCCode(t, err, codes.Internal)
 	})
@@ -215,7 +208,6 @@ func TestGetAssessment(t *testing.T) {
 	t.Run("happy path returns assessment", func(t *testing.T) {
 		repo := &mockAssessmentRepo{
 			findByIDFunc: func(_ context.Context, _, _ uuid.UUID) (*model.TransactionAssessment, error) {
-				// Create a mock assessment via the domain model
 				return createTestAssessment(), nil
 			},
 		}
@@ -223,12 +215,11 @@ func TestGetAssessment(t *testing.T) {
 
 		assessmentID := uuid.New()
 		resp, err := h.GetAssessment(contextWithClaims(), &GetAssessmentRequest{
-			ID: assessmentID.String(),
+			AssessmentID: assessmentID.String(),
 		})
 		require.NoError(t, err)
-		require.NotNil(t, resp.Assessment)
-		assert.NotEmpty(t, resp.Assessment.ID)
-		assert.NotEmpty(t, resp.Assessment.Decision)
+		assert.NotEmpty(t, resp.AssessmentID)
+		assert.NotEmpty(t, resp.Decision)
 	})
 }
 

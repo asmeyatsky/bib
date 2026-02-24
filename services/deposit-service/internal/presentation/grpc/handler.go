@@ -4,15 +4,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/bibbank/bib/pkg/auth"
+	"github.com/bibbank/bib/services/deposit-service/internal/application/dto"
+	"github.com/bibbank/bib/services/deposit-service/internal/application/usecase"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"github.com/bibbank/bib/pkg/auth"
-	"github.com/bibbank/bib/services/deposit-service/internal/application/dto"
-	"github.com/bibbank/bib/services/deposit-service/internal/application/usecase"
 )
 
 // requireRole checks that the caller has at least one of the given roles.
@@ -67,72 +65,80 @@ func NewDepositHandler(
 // Proto-aligned request/response message types.
 
 type CreateDepositProductRequest struct {
-	TenantID string
-	Name     string
-	Currency string
-	Tiers    []*InterestTierMsg
-	TermDays int32
+	TenantID string             `json:"tenant_id"`
+	Name     string             `json:"name"`
+	Currency string             `json:"currency"`
+	Tiers    []*InterestTierMsg `json:"tiers"`
+	TermDays int32              `json:"term_days"`
 }
 
 type InterestTierMsg struct {
-	MinBalance string
-	MaxBalance string
-	RateBps    string
+	MinBalance string `json:"min_balance"`
+	MaxBalance string `json:"max_balance"`
+	RateBps    int32  `json:"rate_bps"`
 }
 
 type DepositProductMsg struct {
-	ID       string
-	TenantID string
-	Name     string
-	Currency string
-	Tiers    []*InterestTierMsg
-	TermDays int32
+	ID        string             `json:"id"`
+	TenantID  string             `json:"tenant_id"`
+	Name      string             `json:"name"`
+	Currency  string             `json:"currency"`
+	CreatedAt string             `json:"created_at"`
+	UpdatedAt string             `json:"updated_at"`
+	Tiers     []*InterestTierMsg `json:"tiers"`
+	TermDays  int32              `json:"term_days"`
+	Version   int32              `json:"version"`
+	IsActive  bool               `json:"is_active"`
 }
 
 type CreateDepositProductResponse struct {
-	Product *DepositProductMsg
+	Product *DepositProductMsg `json:"product"`
 }
 
 type OpenDepositPositionRequest struct {
-	TenantID  string
-	AccountID string
-	ProductID string
-	Principal string
+	TenantID  string `json:"tenant_id"`
+	AccountID string `json:"account_id"`
+	ProductID string `json:"product_id"`
+	Principal string `json:"principal"`
 }
 
 type DepositPositionMsg struct {
-	OpenedAt        *timestamppb.Timestamp
-	MaturityDate    *timestamppb.Timestamp
-	ID              string
-	TenantID        string
-	AccountID       string
-	ProductID       string
-	Principal       string
-	Currency        string
-	AccruedInterest string
-	Status          string
+	ID              string `json:"id"`
+	TenantID        string `json:"tenant_id"`
+	AccountID       string `json:"account_id"`
+	ProductID       string `json:"product_id"`
+	Principal       string `json:"principal"`
+	Currency        string `json:"currency"`
+	AccruedInterest string `json:"accrued_interest"`
+	Status          string `json:"status"`
+	OpenedAt        string `json:"opened_at"`
+	LastAccrualDate string `json:"last_accrual_date"`
+	MaturityDate    string `json:"maturity_date,omitempty"`
+	CreatedAt       string `json:"created_at"`
+	UpdatedAt       string `json:"updated_at"`
+	Version         int32  `json:"version"`
 }
 
 type OpenDepositPositionResponse struct {
-	Position *DepositPositionMsg
+	Position *DepositPositionMsg `json:"position"`
 }
 
 type GetDepositPositionRequest struct {
-	ID string
+	ID string `json:"id"`
 }
 
 type GetDepositPositionResponse struct {
-	Position *DepositPositionMsg
+	Position *DepositPositionMsg `json:"position"`
 }
 
 type AccrueInterestRequest struct {
-	AsOfDate *timestamppb.Timestamp
-	TenantID string
+	AsOfDate string `json:"as_of_date"`
+	TenantID string `json:"tenant_id"`
 }
 
 type AccrueInterestResponse struct {
-	TotalAccrued       string
-	PositionsProcessed int32
+	TotalAccrued       string `json:"total_accrued"`
+	PositionsProcessed int32  `json:"positions_processed"`
 }
 
 // CreateDepositProduct processes product creation requests.
@@ -166,14 +172,7 @@ func (h *DepositHandler) CreateDepositProduct(ctx context.Context, req *CreateDe
 		if !maxBal.IsPositive() {
 			return nil, status.Error(codes.InvalidArgument, "max_balance must be positive")
 		}
-		rateBps := 0
-		if t.RateBps != "" {
-			d, parseErr := decimal.NewFromString(t.RateBps)
-			if parseErr != nil {
-				return nil, status.Errorf(codes.InvalidArgument, "invalid rate_bps: %v", parseErr)
-			}
-			rateBps = int(d.IntPart())
-		}
+		rateBps := int(t.RateBps)
 		tiers = append(tiers, dto.InterestTierDTO{
 			MinBalance: minBal,
 			MaxBalance: maxBal,
@@ -286,8 +285,12 @@ func (h *DepositHandler) AccrueInterest(ctx context.Context, req *AccrueInterest
 	}
 
 	var asOf time.Time
-	if req.AsOfDate != nil {
-		asOf = req.AsOfDate.AsTime()
+	if req.AsOfDate != "" {
+		var parseErr error
+		asOf, parseErr = time.Parse(time.RFC3339, req.AsOfDate)
+		if parseErr != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid as_of_date: %v", parseErr)
+		}
 	} else {
 		asOf = time.Now()
 	}
@@ -312,16 +315,20 @@ func toDepositProductMsg(r dto.DepositProductResponse) *DepositProductMsg {
 		tiers = append(tiers, &InterestTierMsg{
 			MinBalance: t.MinBalance.String(),
 			MaxBalance: t.MaxBalance.String(),
-			RateBps:    decimal.NewFromInt(int64(t.RateBps)).String(),
+			RateBps:    int32(t.RateBps), //nolint:gosec
 		})
 	}
 	return &DepositProductMsg{
-		ID:       r.ID.String(),
-		TenantID: r.TenantID.String(),
-		Name:     r.Name,
-		Currency: r.Currency,
-		Tiers:    tiers,
-		TermDays: int32(r.TermDays), //nolint:gosec
+		ID:        r.ID.String(),
+		TenantID:  r.TenantID.String(),
+		Name:      r.Name,
+		Currency:  r.Currency,
+		Tiers:     tiers,
+		TermDays:  int32(r.TermDays), //nolint:gosec
+		CreatedAt: r.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: r.UpdatedAt.Format(time.RFC3339),
+		Version:   int32(r.Version), //nolint:gosec
+		IsActive:  r.IsActive,
 	}
 }
 
@@ -335,10 +342,14 @@ func toPositionMsg(r dto.DepositPositionResponse) *DepositPositionMsg {
 		Currency:        r.Currency,
 		AccruedInterest: r.AccruedInterest.String(),
 		Status:          r.Status,
-		OpenedAt:        timestamppb.New(r.OpenedAt),
+		OpenedAt:        r.OpenedAt.Format(time.RFC3339),
+		LastAccrualDate: r.LastAccrualDate.Format(time.RFC3339),
+		CreatedAt:       r.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:       r.UpdatedAt.Format(time.RFC3339),
+		Version:         int32(r.Version), //nolint:gosec
 	}
 	if r.MaturityDate != nil {
-		msg.MaturityDate = timestamppb.New(*r.MaturityDate)
+		msg.MaturityDate = r.MaturityDate.Format(time.RFC3339)
 	}
 	return msg
 }

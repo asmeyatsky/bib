@@ -114,6 +114,7 @@ services:
       GRPC_PORT: "9081"
       LOG_LEVEL: debug
       LOG_FORMAT: json
+      JWT_SECRET: ${JWT_SECRET:-test-e2e-secret}
     depends_on:
       postgres:
         condition: service_healthy
@@ -147,6 +148,7 @@ services:
       GRPC_PORT: "9082"
       LOG_LEVEL: debug
       LOG_FORMAT: json
+      JWT_SECRET: ${JWT_SECRET:-test-e2e-secret}
     depends_on:
       postgres:
         condition: service_healthy
@@ -180,6 +182,7 @@ services:
       GRPC_PORT: "9083"
       LOG_LEVEL: debug
       LOG_FORMAT: json
+      JWT_SECRET: ${JWT_SECRET:-test-e2e-secret}
     depends_on:
       postgres:
         condition: service_healthy
@@ -213,6 +216,7 @@ services:
       GRPC_PORT: "9084"
       LOG_LEVEL: debug
       LOG_FORMAT: json
+      JWT_SECRET: ${JWT_SECRET:-test-e2e-secret}
     depends_on:
       postgres:
         condition: service_healthy
@@ -246,6 +250,7 @@ services:
       GRPC_PORT: "9085"
       LOG_LEVEL: debug
       LOG_FORMAT: json
+      JWT_SECRET: ${JWT_SECRET:-test-e2e-secret}
     depends_on:
       postgres:
         condition: service_healthy
@@ -279,6 +284,7 @@ services:
       GRPC_PORT: "9086"
       LOG_LEVEL: debug
       LOG_FORMAT: json
+      JWT_SECRET: ${JWT_SECRET:-test-e2e-secret}
     depends_on:
       postgres:
         condition: service_healthy
@@ -312,6 +318,7 @@ services:
       GRPC_PORT: "9087"
       LOG_LEVEL: debug
       LOG_FORMAT: json
+      JWT_SECRET: ${JWT_SECRET:-test-e2e-secret}
     depends_on:
       postgres:
         condition: service_healthy
@@ -345,6 +352,7 @@ services:
       GRPC_PORT: "9088"
       LOG_LEVEL: debug
       LOG_FORMAT: json
+      JWT_SECRET: ${JWT_SECRET:-test-e2e-secret}
     depends_on:
       postgres:
         condition: service_healthy
@@ -378,6 +386,7 @@ services:
       GRPC_PORT: "9089"
       LOG_LEVEL: debug
       LOG_FORMAT: json
+      JWT_SECRET: ${JWT_SECRET:-test-e2e-secret}
     depends_on:
       postgres:
         condition: service_healthy
@@ -411,6 +420,7 @@ services:
       GRPC_PORT: "9090"
       LOG_LEVEL: debug
       LOG_FORMAT: json
+      JWT_SECRET: ${JWT_SECRET:-test-e2e-secret}
     depends_on:
       postgres:
         condition: service_healthy

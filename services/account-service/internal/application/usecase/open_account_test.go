@@ -116,7 +116,7 @@ func TestOpenAccountUseCase_Execute(t *testing.T) {
 		// Verify response.
 		assert.NotEqual(t, uuid.Nil, resp.AccountID)
 		assert.NotEmpty(t, resp.AccountNumber)
-		assert.Equal(t, "PENDING", resp.Status)
+		assert.Equal(t, "ACTIVE", resp.Status)
 		assert.NotEmpty(t, resp.LedgerAccountCode)
 		assert.Contains(t, resp.LedgerAccountCode, "2000-")
 		assert.False(t, resp.CreatedAt.IsZero())
@@ -132,8 +132,9 @@ func TestOpenAccountUseCase_Execute(t *testing.T) {
 
 		// Verify events were published.
 		assert.Equal(t, "account-events", publisher.publishedTopic)
-		require.Len(t, publisher.publishedEvents, 1)
+		require.Len(t, publisher.publishedEvents, 2)
 		assert.Equal(t, "account.opened", publisher.publishedEvents[0].EventType())
+		assert.Equal(t, "account.activated", publisher.publishedEvents[1].EventType())
 	})
 
 	t.Run("successfully opens a savings account", func(t *testing.T) {

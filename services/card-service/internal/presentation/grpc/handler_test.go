@@ -175,13 +175,11 @@ func TestIssueCard(t *testing.T) {
 	t.Run("invalid daily_limit amount returns InvalidArgument", func(t *testing.T) {
 		h := buildTestHandler()
 		_, err := h.IssueCard(contextWithClaims(), &IssueCardRequest{
-			TenantID:  uuid.New().String(),
-			AccountID: uuid.New().String(),
-			CardType:  "VIRTUAL",
-			DailyLimit: &MoneyMsg{
-				Amount:   "not-a-number",
-				Currency: "USD",
-			},
+			TenantID:   uuid.New().String(),
+			AccountID:  uuid.New().String(),
+			CardType:   "VIRTUAL",
+			Currency:   "USD",
+			DailyLimit: "not-a-number",
 		})
 		requireGRPCCode(t, err, codes.InvalidArgument)
 		assert.Contains(t, err.Error(), "invalid daily_limit amount")
@@ -190,23 +188,16 @@ func TestIssueCard(t *testing.T) {
 	t.Run("happy path issues a card", func(t *testing.T) {
 		h := buildTestHandler()
 		resp, err := h.IssueCard(contextWithClaims(), &IssueCardRequest{
-			TenantID:  uuid.New().String(),
-			AccountID: uuid.New().String(),
-			CardType:  "VIRTUAL",
-			DailyLimit: &MoneyMsg{
-				Amount:   "5000",
-				Currency: "USD",
-			},
-			MonthlyLimit: &MoneyMsg{
-				Amount:   "20000",
-				Currency: "USD",
-			},
+			TenantID:     uuid.New().String(),
+			AccountID:    uuid.New().String(),
+			CardType:     "VIRTUAL",
+			Currency:     "USD",
+			DailyLimit:   "5000",
+			MonthlyLimit: "20000",
 		})
 		require.NoError(t, err)
-		require.NotNil(t, resp.Card)
-		assert.NotEmpty(t, resp.Card.ID)
-		assert.Equal(t, "VIRTUAL", resp.Card.CardType)
-		assert.NotEmpty(t, resp.Card.LastFour)
+		assert.NotEmpty(t, resp.CardID)
+		assert.NotEmpty(t, resp.Status)
 	})
 
 	t.Run("save failure returns Internal", func(t *testing.T) {
@@ -214,17 +205,12 @@ func TestIssueCard(t *testing.T) {
 		h := buildHandlerWithRepo(repo)
 
 		_, err := h.IssueCard(contextWithClaims(), &IssueCardRequest{
-			TenantID:  uuid.New().String(),
-			AccountID: uuid.New().String(),
-			CardType:  "VIRTUAL",
-			DailyLimit: &MoneyMsg{
-				Amount:   "1000",
-				Currency: "USD",
-			},
-			MonthlyLimit: &MoneyMsg{
-				Amount:   "5000",
-				Currency: "USD",
-			},
+			TenantID:     uuid.New().String(),
+			AccountID:    uuid.New().String(),
+			CardType:     "VIRTUAL",
+			Currency:     "USD",
+			DailyLimit:   "1000",
+			MonthlyLimit: "5000",
 		})
 		requireGRPCCode(t, err, codes.Internal)
 	})
@@ -249,8 +235,9 @@ func TestAuthorizeTransaction(t *testing.T) {
 	t.Run("invalid amount returns InvalidArgument", func(t *testing.T) {
 		h := buildTestHandler()
 		_, err := h.AuthorizeTransaction(contextWithClaims(), &AuthorizeTransactionRequest{
-			CardID: uuid.New().String(),
-			Amount: &MoneyMsg{Amount: "not-a-number", Currency: "USD"},
+			CardID:   uuid.New().String(),
+			Amount:   "not-a-number",
+			Currency: "USD",
 		})
 		requireGRPCCode(t, err, codes.InvalidArgument)
 		assert.Contains(t, err.Error(), "invalid amount")
@@ -281,10 +268,12 @@ func TestGetCard(t *testing.T) {
 
 		resp, err := h.GetCard(contextWithClaims(), &GetCardRequest{ID: card.ID().String()})
 		require.NoError(t, err)
-		require.NotNil(t, resp.Card)
-		assert.Equal(t, card.ID().String(), resp.Card.ID)
-		assert.Equal(t, "VIRTUAL", resp.Card.CardType)
-		assert.Equal(t, "ACTIVE", resp.Card.Status)
+		assert.Equal(t, card.ID().String(), resp.CardID)
+		assert.Equal(t, "VIRTUAL", resp.CardType)
+		assert.Equal(t, "ACTIVE", resp.Status)
+		assert.Equal(t, "1234", resp.MaskedPan)
+		assert.Equal(t, "5000", resp.DailyLimit)
+		assert.Equal(t, "20000", resp.MonthlyLimit)
 	})
 
 	t.Run("not found returns Internal", func(t *testing.T) {

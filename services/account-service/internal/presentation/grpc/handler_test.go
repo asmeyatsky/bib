@@ -174,7 +174,7 @@ func TestOpenAccount(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotEmpty(t, resp.AccountID)
 		assert.NotEmpty(t, resp.AccountNumber)
-		assert.Equal(t, "PENDING", resp.Status)
+		assert.Equal(t, "ACTIVE", resp.Status)
 		assert.NotEmpty(t, resp.LedgerAccountCode)
 	})
 
@@ -231,9 +231,9 @@ func TestGetAccount(t *testing.T) {
 
 		resp, err := h.GetAccount(contextWithClaims(), &GetAccountRequest{ID: account.ID().String()})
 		require.NoError(t, err)
-		require.NotNil(t, resp.Account)
-		assert.Equal(t, account.ID().String(), resp.Account.ID)
-		assert.Equal(t, "ACTIVE", resp.Account.Status)
+		require.NotNil(t, resp)
+		assert.Equal(t, account.ID().String(), resp.AccountID)
+		assert.Equal(t, "ACTIVE", resp.Status)
 	})
 
 	t.Run("not found returns NotFound", func(t *testing.T) {
@@ -269,8 +269,8 @@ func TestFreezeAccount(t *testing.T) {
 			Reason: "suspected fraud",
 		})
 		require.NoError(t, err)
-		require.NotNil(t, resp.Account)
-		assert.Equal(t, "FROZEN", resp.Account.Status)
+		require.NotNil(t, resp)
+		assert.Equal(t, "FROZEN", resp.Status)
 	})
 }
 
@@ -300,8 +300,8 @@ func TestCloseAccount(t *testing.T) {
 			Reason: "customer request",
 		})
 		require.NoError(t, err)
-		require.NotNil(t, resp.Account)
-		assert.Equal(t, "CLOSED", resp.Account.Status)
+		require.NotNil(t, resp)
+		assert.Equal(t, "CLOSED", resp.Status)
 	})
 }
 
@@ -372,7 +372,7 @@ func TestToAccountMsg(t *testing.T) {
 		Version:           3,
 	})
 
-	assert.Equal(t, accountID.String(), msg.ID)
+	assert.Equal(t, accountID.String(), msg.AccountID)
 	assert.Equal(t, tenantID.String(), msg.TenantID)
 	assert.Equal(t, "BIB-AAAA-BBBB-CCCC", msg.AccountNumber)
 	assert.Equal(t, "CHECKING", msg.AccountType)

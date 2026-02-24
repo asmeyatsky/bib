@@ -2,15 +2,14 @@ package grpc
 
 import (
 	"context"
-
-	"github.com/google/uuid"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"time"
 
 	"github.com/bibbank/bib/pkg/auth"
 	"github.com/bibbank/bib/services/identity-service/internal/application/dto"
 	"github.com/bibbank/bib/services/identity-service/internal/application/usecase"
+	"github.com/google/uuid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // requireRole checks that the caller has at least one of the given roles.
@@ -80,60 +79,60 @@ func (h *IdentityHandler) CompleteCheck(ctx context.Context, req *CompleteCheckR
 // Temporary gRPC message types until proto generation is wired.
 
 type InitiateVerificationRequest struct {
-	TenantID    string
-	FirstName   string
-	LastName    string
-	Email       string
-	DateOfBirth string
-	Country     string
+	TenantID    string `json:"tenant_id"`
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	Email       string `json:"email"`
+	DateOfBirth string `json:"date_of_birth"`
+	Country     string `json:"country"`
 }
 
 type InitiateVerificationResponse struct {
-	Verification *VerificationMsg
+	Verification *VerificationMsg `json:"verification"`
 }
 
 type GetVerificationRequest struct {
-	ID string
+	ID string `json:"id"`
 }
 
 type GetVerificationResponse struct {
-	Verification *VerificationMsg
+	Verification *VerificationMsg `json:"verification"`
 }
 
 type CompleteCheckRequest struct {
-	VerificationID string
-	CheckID        string
-	Status         string
-	FailureReason  string
+	VerificationID string `json:"verification_id"`
+	CheckID        string `json:"check_id"`
+	Status         string `json:"status"`
+	FailureReason  string `json:"failure_reason"`
 }
 
 type CompleteCheckResponse struct {
-	Verification *VerificationMsg
+	Verification *VerificationMsg `json:"verification"`
 }
 
 type VerificationMsg struct {
-	CreatedAt          *timestamppb.Timestamp
-	UpdatedAt          *timestamppb.Timestamp
-	ID                 string
-	TenantID           string
-	ApplicantFirstName string
-	ApplicantLastName  string
-	ApplicantEmail     string
-	ApplicantDOB       string
-	ApplicantCountry   string
-	Status             string
-	Checks             []*CheckMsg
-	Version            int32
+	ID                 string      `json:"id"`
+	TenantID           string      `json:"tenant_id"`
+	ApplicantFirstName string      `json:"applicant_first_name"`
+	ApplicantLastName  string      `json:"applicant_last_name"`
+	ApplicantEmail     string      `json:"applicant_email"`
+	ApplicantDOB       string      `json:"applicant_dob"`
+	ApplicantCountry   string      `json:"applicant_country"`
+	Status             string      `json:"status"`
+	CreatedAt          string      `json:"created_at"`
+	UpdatedAt          string      `json:"updated_at"`
+	Checks             []*CheckMsg `json:"checks"`
+	Version            int32       `json:"version"`
 }
 
 type CheckMsg struct {
-	CompletedAt       *timestamppb.Timestamp
-	ID                string
-	CheckType         string
-	Status            string
-	Provider          string
-	ProviderReference string
-	FailureReason     string
+	ID                string `json:"id"`
+	CheckType         string `json:"check_type"`
+	Status            string `json:"status"`
+	Provider          string `json:"provider"`
+	ProviderReference string `json:"provider_reference"`
+	CompletedAt       string `json:"completed_at,omitempty"`
+	FailureReason     string `json:"failure_reason,omitempty"`
 }
 
 func (h *IdentityHandler) HandleInitiateVerification(ctx context.Context, req *InitiateVerificationRequest) (*InitiateVerificationResponse, error) {
@@ -242,7 +241,7 @@ func toVerificationMsg(r dto.VerificationResponse) *VerificationMsg {
 			FailureReason:     c.FailureReason,
 		}
 		if c.CompletedAt != nil {
-			cm.CompletedAt = timestamppb.New(*c.CompletedAt)
+			cm.CompletedAt = c.CompletedAt.Format(time.RFC3339)
 		}
 		checks = append(checks, cm)
 	}
@@ -258,7 +257,7 @@ func toVerificationMsg(r dto.VerificationResponse) *VerificationMsg {
 		Status:             r.Status,
 		Checks:             checks,
 		Version:            int32(r.Version), //nolint:gosec
-		CreatedAt:          timestamppb.New(r.CreatedAt),
-		UpdatedAt:          timestamppb.New(r.UpdatedAt),
+		CreatedAt:          r.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:          r.UpdatedAt.Format(time.RFC3339),
 	}
 }

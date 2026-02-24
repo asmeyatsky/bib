@@ -10,7 +10,6 @@ import (
 	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/bibbank/bib/pkg/auth"
 	"github.com/bibbank/bib/services/ledger-service/internal/application/dto"
@@ -77,36 +76,36 @@ func NewLedgerHandler(
 
 // PostJournalEntryRequest/Response are temporary types until proto gen is wired.
 type PostJournalEntryRequest struct {
-	TenantID      string
-	EffectiveDate string
-	Description   string
-	Reference     string
-	Postings      []*PostingPairMsg
+	TenantID      string            `json:"tenant_id"`
+	EffectiveDate string            `json:"effective_date"`
+	Description   string            `json:"description,omitempty"`
+	Reference     string            `json:"reference,omitempty"`
+	Postings      []*PostingPairMsg `json:"postings"`
 }
 
 type PostingPairMsg struct {
-	DebitAccount  string
-	CreditAccount string
-	Amount        string
-	Currency      string
-	Description   string
+	DebitAccount  string `json:"debit_account"`
+	CreditAccount string `json:"credit_account"`
+	Amount        string `json:"amount"`
+	Currency      string `json:"currency"`
+	Description   string `json:"description,omitempty"`
 }
 
 type JournalEntryMsg struct {
-	CreatedAt     *timestamppb.Timestamp
-	UpdatedAt     *timestamppb.Timestamp
-	ID            string
-	TenantID      string
-	EffectiveDate string
-	Status        string
-	Description   string
-	Reference     string
-	Postings      []*PostingPairMsg
-	Version       int32
+	ID            string            `json:"id"`
+	TenantID      string            `json:"tenant_id"`
+	EffectiveDate string            `json:"effective_date"`
+	Status        string            `json:"status"`
+	Description   string            `json:"description"`
+	Reference     string            `json:"reference"`
+	CreatedAt     string            `json:"created_at"`
+	UpdatedAt     string            `json:"updated_at"`
+	Postings      []*PostingPairMsg `json:"postings"`
+	Version       int32             `json:"version"`
 }
 
 type PostJournalEntryResponse struct {
-	Entry *JournalEntryMsg
+	Entry *JournalEntryMsg `json:"entry"`
 }
 
 func (h *LedgerHandler) HandlePostJournalEntry(ctx context.Context, req *PostJournalEntryRequest) (*PostJournalEntryResponse, error) {
@@ -181,16 +180,16 @@ func (h *LedgerHandler) HandlePostJournalEntry(ctx context.Context, req *PostJou
 }
 
 type GetBalanceRequest struct {
-	AccountCode string
-	AsOf        string
-	Currency    string
+	AccountCode string `json:"account_code"`
+	AsOf        string `json:"as_of"`
+	Currency    string `json:"currency"`
 }
 
 type GetBalanceResponse struct {
-	AccountCode string
-	Amount      string
-	Currency    string
-	AsOf        string
+	AccountCode string `json:"account_code"`
+	Amount      string `json:"amount"`
+	Currency    string `json:"currency"`
+	AsOf        string `json:"as_of"`
 }
 
 func (h *LedgerHandler) HandleGetBalance(ctx context.Context, req *GetBalanceRequest) (*GetBalanceResponse, error) {
@@ -281,7 +280,7 @@ func toJournalEntryMsg(r dto.JournalEntryResponse) *JournalEntryMsg {
 		Description:   r.Description,
 		Reference:     r.Reference,
 		Version:       int32(min(r.Version, math.MaxInt32)), // #nosec G115
-		CreatedAt:     timestamppb.New(r.CreatedAt),
-		UpdatedAt:     timestamppb.New(r.UpdatedAt),
+		CreatedAt:     r.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:     r.UpdatedAt.Format(time.RFC3339),
 	}
 }

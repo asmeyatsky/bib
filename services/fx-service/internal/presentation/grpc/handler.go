@@ -94,19 +94,27 @@ type GetExchangeRateRequest struct {
 
 // GetExchangeRateResponse represents the proto GetExchangeRateResponse message.
 type GetExchangeRateResponse struct {
-	Rate *ExchangeRateMsg `json:"rate"`
+	BaseCurrency  string `json:"base_currency"`
+	QuoteCurrency string `json:"quote_currency"`
+	Rate          string `json:"rate"`
+	Timestamp     string `json:"timestamp"`
 }
 
 // ConvertAmountRequest represents the proto ConvertAmountRequest message.
 type ConvertAmountRequest struct {
-	Amount         *MoneyMsg `json:"amount"`
-	TargetCurrency string    `json:"target_currency"`
+	TenantID     string `json:"tenant_id"`
+	FromCurrency string `json:"from_currency"`
+	ToCurrency   string `json:"to_currency"`
+	Amount       string `json:"amount"`
 }
 
 // ConvertAmountResponse represents the proto ConvertAmountResponse message.
 type ConvertAmountResponse struct {
-	ConvertedAmount *MoneyMsg        `json:"converted_amount"`
-	RateUsed        *ExchangeRateMsg `json:"rate_used"`
+	OriginalAmount  string `json:"original_amount"`
+	ConvertedAmount string `json:"converted_amount"`
+	FromCurrency    string `json:"from_currency"`
+	ToCurrency      string `json:"to_currency"`
+	Rate            string `json:"rate"`
 }
 
 // ListExchangeRatesRequest represents the proto ListExchangeRatesRequest message.
@@ -178,14 +186,10 @@ func (h *Handler) GetExchangeRate(ctx context.Context, req *GetExchangeRateReque
 
 	h.logger.Info("GetExchangeRate succeeded", "pair", req.BaseCurrency+"/"+req.QuoteCurrency, "rate", resp.Rate.String())
 	return &GetExchangeRateResponse{
-		Rate: &ExchangeRateMsg{
-			ID:            resp.ID.String(),
-			BaseCurrency:  resp.BaseCurrency,
-			QuoteCurrency: resp.QuoteCurrency,
-			Rate:          resp.Rate.String(),
-			InverseRate:   resp.InverseRate.String(),
-			Provider:      resp.Provider,
-		},
+		BaseCurrency:  resp.BaseCurrency,
+		QuoteCurrency: resp.QuoteCurrency,
+		Rate:          resp.Rate.String(),
+		Timestamp:     resp.EffectiveAt.UTC().Format("2006-01-02T15:04:05Z"),
 	}, nil
 }
 
@@ -199,11 +203,11 @@ func (h *Handler) ConvertAmount(ctx context.Context, req *ConvertAmountRequest) 
 		return nil, status.Error(codes.InvalidArgument, "request is required")
 	}
 
-	if req.Amount == nil {
+	if req.Amount == "" {
 		return nil, status.Error(codes.InvalidArgument, "amount is required")
 	}
 
-	amt, err := decimal.NewFromString(req.Amount.Amount)
+	amt, err := decimal.NewFromString(req.Amount)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid amount: %v", err)
 	}
@@ -211,18 +215,18 @@ func (h *Handler) ConvertAmount(ctx context.Context, req *ConvertAmountRequest) 
 		return nil, status.Error(codes.InvalidArgument, "amount must be positive")
 	}
 
-	fromCurrency := req.Amount.Currency
+	fromCurrency := req.FromCurrency
 	if fromCurrency == "" {
-		return nil, status.Error(codes.InvalidArgument, "source currency is required")
+		return nil, status.Error(codes.InvalidArgument, "from_currency is required")
 	}
 	if !currencyCodeRE.MatchString(fromCurrency) {
-		return nil, status.Error(codes.InvalidArgument, "source currency must be a 3-letter uppercase ISO code")
+		return nil, status.Error(codes.InvalidArgument, "from_currency must be a 3-letter uppercase ISO code")
 	}
-	if req.TargetCurrency == "" {
-		return nil, status.Error(codes.InvalidArgument, "target_currency is required")
+	if req.ToCurrency == "" {
+		return nil, status.Error(codes.InvalidArgument, "to_currency is required")
 	}
-	if !currencyCodeRE.MatchString(req.TargetCurrency) {
-		return nil, status.Error(codes.InvalidArgument, "target_currency must be a 3-letter uppercase ISO code")
+	if !currencyCodeRE.MatchString(req.ToCurrency) {
+		return nil, status.Error(codes.InvalidArgument, "to_currency must be a 3-letter uppercase ISO code")
 	}
 
 	tenantID, err := tenantIDFromContext(ctx)
@@ -233,31 +237,27 @@ func (h *Handler) ConvertAmount(ctx context.Context, req *ConvertAmountRequest) 
 	dtoReq := dto.ConvertAmountRequest{
 		TenantID:     tenantID,
 		FromCurrency: fromCurrency,
-		ToCurrency:   req.TargetCurrency,
+		ToCurrency:   req.ToCurrency,
 		Amount:       amt,
 	}
 
 	resp, err := h.convert.Execute(ctx, dtoReq)
 	if err != nil {
-		h.logger.Error("ConvertAmount failed", "error", err, "from", fromCurrency, "to", req.TargetCurrency)
+		h.logger.Error("ConvertAmount failed", "error", err, "from", fromCurrency, "to", req.ToCurrency)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	h.logger.Info("ConvertAmount succeeded",
-		"from", fromCurrency, "to", req.TargetCurrency,
+		"from", fromCurrency, "to", req.ToCurrency,
 		"original", resp.OriginalAmount.String(),
 		"converted", resp.ConvertedAmount.String(),
 	)
 	return &ConvertAmountResponse{
-		ConvertedAmount: &MoneyMsg{
-			Amount:   resp.ConvertedAmount.String(),
-			Currency: req.TargetCurrency,
-		},
-		RateUsed: &ExchangeRateMsg{
-			BaseCurrency:  resp.FromCurrency,
-			QuoteCurrency: resp.ToCurrency,
-			Rate:          resp.Rate.String(),
-		},
+		OriginalAmount:  resp.OriginalAmount.String(),
+		ConvertedAmount: resp.ConvertedAmount.String(),
+		FromCurrency:    resp.FromCurrency,
+		ToCurrency:      resp.ToCurrency,
+		Rate:            resp.Rate.String(),
 	}, nil
 }
 

@@ -53,7 +53,11 @@ type SubmitApplicationRequest struct {
 }
 
 // SubmitApplicationResponse represents the proto SubmitApplicationResponse message.
-type SubmitApplicationResponse = dto.LoanApplicationResponse
+type SubmitApplicationResponse struct {
+	ApplicationID string `json:"application_id"`
+	Status        string `json:"status"`
+	CreatedAt     string `json:"created_at"`
+}
 
 // DisburseLoanRequest represents the proto DisburseLoanRequest message.
 type DisburseLoanRequest struct {
@@ -64,7 +68,13 @@ type DisburseLoanRequest struct {
 }
 
 // DisburseLoanResponse represents the proto DisburseLoanResponse message.
-type DisburseLoanResponse = dto.LoanResponse
+type DisburseLoanResponse struct {
+	LoanID    string `json:"loan_id"`
+	Status    string `json:"status"`
+	Amount    string `json:"amount"`
+	Currency  string `json:"currency"`
+	CreatedAt string `json:"created_at"`
+}
 
 // MakePaymentRequest represents the proto MakePaymentRequest message.
 type MakePaymentRequest struct {
@@ -74,7 +84,10 @@ type MakePaymentRequest struct {
 }
 
 // MakePaymentResponse represents the proto MakePaymentResponse message.
-type MakePaymentResponse = dto.PaymentResponse
+type MakePaymentResponse struct {
+	PaymentID string `json:"payment_id"`
+	Status    string `json:"status"`
+}
 
 // GetLoanRequest represents the proto GetLoanRequest message.
 type GetLoanRequest struct {
@@ -83,7 +96,13 @@ type GetLoanRequest struct {
 }
 
 // GetLoanResponse represents the proto GetLoanResponse message.
-type GetLoanResponse = dto.LoanResponse
+type GetLoanResponse struct {
+	LoanID    string `json:"loan_id"`
+	Status    string `json:"status"`
+	Amount    string `json:"amount"`
+	Currency  string `json:"currency"`
+	CreatedAt string `json:"created_at"`
+}
 
 // GetApplicationRequest represents the proto GetApplicationRequest message.
 type GetApplicationRequest struct {
@@ -92,7 +111,11 @@ type GetApplicationRequest struct {
 }
 
 // GetApplicationResponse represents the proto GetApplicationResponse message.
-type GetApplicationResponse = dto.LoanApplicationResponse
+type GetApplicationResponse struct {
+	ApplicationID string `json:"application_id"`
+	Status        string `json:"status"`
+	CreatedAt     string `json:"created_at"`
+}
 
 // ---------------------------------------------------------------------------
 // LendingHandler exposes lending operations over gRPC.
@@ -163,7 +186,7 @@ func (h *LendingHandler) SubmitApplication(ctx context.Context, req *SubmitAppli
 		return nil, status.Error(codes.InvalidArgument, "term_months must be positive")
 	}
 
-	resp, err := h.submitApp.Execute(ctx, dto.SubmitApplicationRequest{
+	result, err := h.submitApp.Execute(ctx, dto.SubmitApplicationRequest{
 		TenantID:        tid,
 		ApplicantID:     req.ApplicantID,
 		RequestedAmount: amount,
@@ -175,7 +198,11 @@ func (h *LendingHandler) SubmitApplication(ctx context.Context, req *SubmitAppli
 		// TODO: log original error server-side: err
 		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return &resp, nil
+	return &SubmitApplicationResponse{
+		ApplicationID: result.ID,
+		Status:        result.Status,
+		CreatedAt:     result.CreatedAt.Format("2006-01-02T15:04:05Z"),
+	}, nil
 }
 
 // DisburseLoan handles loan disbursement for an approved application.
@@ -203,7 +230,7 @@ func (h *LendingHandler) DisburseLoan(ctx context.Context, req *DisburseLoanRequ
 		return nil, status.Error(codes.InvalidArgument, "interest_rate_bps must be positive")
 	}
 
-	resp, err := h.disburse.Execute(ctx, dto.DisburseLoanRequest{
+	result, err := h.disburse.Execute(ctx, dto.DisburseLoanRequest{
 		TenantID:          tid,
 		ApplicationID:     req.ApplicationID,
 		BorrowerAccountID: req.BorrowerAccountID,
@@ -213,7 +240,13 @@ func (h *LendingHandler) DisburseLoan(ctx context.Context, req *DisburseLoanRequ
 		// TODO: log original error server-side: err
 		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return &resp, nil
+	return &DisburseLoanResponse{
+		LoanID:    result.ID,
+		Status:    result.Status,
+		Amount:    result.Principal.String(),
+		Currency:  result.Currency,
+		CreatedAt: result.CreatedAt.Format("2006-01-02T15:04:05Z"),
+	}, nil
 }
 
 // MakePayment handles a loan payment.
@@ -242,7 +275,7 @@ func (h *LendingHandler) MakePayment(ctx context.Context, req *MakePaymentReques
 		return nil, status.Error(codes.InvalidArgument, "amount must be positive")
 	}
 
-	resp, err := h.payment.Execute(ctx, dto.MakePaymentRequest{
+	result, err := h.payment.Execute(ctx, dto.MakePaymentRequest{
 		TenantID: tid,
 		LoanID:   req.LoanID,
 		Amount:   amt,
@@ -251,7 +284,10 @@ func (h *LendingHandler) MakePayment(ctx context.Context, req *MakePaymentReques
 		// TODO: log original error server-side: err
 		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return &resp, nil
+	return &MakePaymentResponse{
+		PaymentID: result.LoanID,
+		Status:    result.LoanStatus,
+	}, nil
 }
 
 // GetLoan retrieves a loan by ID.
@@ -273,7 +309,7 @@ func (h *LendingHandler) GetLoan(ctx context.Context, req *GetLoanRequest) (*Get
 		return nil, status.Error(codes.InvalidArgument, "loan_id is required")
 	}
 
-	resp, err := h.getLoan.Execute(ctx, dto.GetLoanRequest{
+	result, err := h.getLoan.Execute(ctx, dto.GetLoanRequest{
 		TenantID: tid,
 		LoanID:   req.LoanID,
 	})
@@ -281,7 +317,13 @@ func (h *LendingHandler) GetLoan(ctx context.Context, req *GetLoanRequest) (*Get
 		// TODO: log original error server-side: err
 		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return &resp, nil
+	return &GetLoanResponse{
+		LoanID:    result.ID,
+		Status:    result.Status,
+		Amount:    result.Principal.String(),
+		Currency:  result.Currency,
+		CreatedAt: result.CreatedAt.Format("2006-01-02T15:04:05Z"),
+	}, nil
 }
 
 // GetApplication retrieves a loan application by ID.
@@ -303,7 +345,7 @@ func (h *LendingHandler) GetApplication(ctx context.Context, req *GetApplication
 		return nil, status.Error(codes.InvalidArgument, "application_id is required")
 	}
 
-	resp, err := h.getApp.Execute(ctx, dto.GetApplicationRequest{
+	result, err := h.getApp.Execute(ctx, dto.GetApplicationRequest{
 		TenantID:      tid,
 		ApplicationID: req.ApplicationID,
 	})
@@ -311,5 +353,9 @@ func (h *LendingHandler) GetApplication(ctx context.Context, req *GetApplication
 		// TODO: log original error server-side: err
 		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return &resp, nil
+	return &GetApplicationResponse{
+		ApplicationID: result.ID,
+		Status:        result.Status,
+		CreatedAt:     result.CreatedAt.Format("2006-01-02T15:04:05Z"),
+	}, nil
 }
