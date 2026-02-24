@@ -18,7 +18,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /bin/fxd ./cmd/fxd
 
 FROM alpine:3.20
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata wget
 RUN addgroup -S app && adduser -S app -G app
 
 COPY --from=builder /bin/fxd /usr/local/bin/fxd
