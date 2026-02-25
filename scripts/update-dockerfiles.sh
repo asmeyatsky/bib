@@ -1,5 +1,5 @@
 #!/bin/bash
-# Update all service Dockerfiles to use distroless images and BuildKit
+# Update all service Dockerfiles to use minimal alpine with wget for healthchecks
 
 set -e
 
@@ -18,8 +18,6 @@ SERVICES=(
 for SERVICE in "${SERVICES[@]}"; do
     CMD_DIR=$(find "services/${SERVICE}/cmd" -mindepth 1 -maxdepth 1 -type d | head -1)
     CMD_NAME=$(basename "$CMD_DIR")
-    HTTP_PORT=$(grep -o 'HTTP_PORT: "[0-9]*"' "services/${SERVICE}/cmd/${CMD_NAME}/main.go" 2>/dev/null | grep -o '[0-9]*' || echo "")
-    GRPC_PORT=$(grep -o 'GRPC_PORT: "[0-9]*"' "services/${SERVICE}/cmd/${CMD_NAME}/main.go" 2>/dev/null | grep -o '[0-9]*' || echo "")
     
     # Default ports if not found
     case $SERVICE in
@@ -33,6 +31,14 @@ for SERVICE in "${SERVICES[@]}"; do
         "card-service") HTTP_PORT="8089"; GRPC_PORT="9089" ;;
         "reporting-service") HTTP_PORT="8090"; GRPC_PORT="9090" ;;
     esac
+
+    # Check if service has migrations
+    MIGRATIONS=""
+    if [ -d "services/${SERVICE}/internal/infrastructure/postgres/migrations" ]; then
+        MIGRATIONS="COPY --from=builder /build/services/${SERVICE}/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations"
+    elif [ -d "services/${SERVICE}/migrations" ]; then
+        MIGRATIONS="COPY --from=builder /build/services/${SERVICE}/migrations /app/internal/infrastructure/postgres/migrations"
+    fi
 
     cat > "services/${SERVICE}/Dockerfile" << EOF
 # syntax=docker/dockerfile:1
@@ -61,14 +67,16 @@ RUN --mount=type=cache,target=/go/pkg/mod \\
     CGO_ENABLED=0 GOOS=linux go build -trimpath -o /bin/${CMD_NAME} ./cmd/${CMD_NAME}
 
 # -----------------------------------------------------------------------------
-# Runtime Stage - Distroless
+# Runtime Stage - Minimal Alpine
 # -----------------------------------------------------------------------------
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM alpine:3.20
+
+RUN apk add --no-cache ca-certificates wget
 
 WORKDIR /app
 
 COPY --from=builder /bin/${CMD_NAME} /app/${CMD_NAME}
-COPY --from=builder /build/services/${SERVICE}/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
+${MIGRATIONS}
 
 EXPOSE ${HTTP_PORT} ${GRPC_PORT}
 

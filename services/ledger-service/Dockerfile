@@ -24,9 +24,11 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     CGO_ENABLED=0 GOOS=linux go build -trimpath -o /bin/ledgerd ./cmd/ledgerd
 
 # -----------------------------------------------------------------------------
-# Runtime Stage - Distroless
+# Runtime Stage - Minimal Alpine
 # -----------------------------------------------------------------------------
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM alpine:3.20
+
+RUN apk add --no-cache ca-certificates wget
 
 WORKDIR /app
 

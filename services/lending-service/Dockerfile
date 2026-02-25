@@ -24,14 +24,16 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     CGO_ENABLED=0 GOOS=linux go build -trimpath -o /bin/lendingd ./cmd/lendingd
 
 # -----------------------------------------------------------------------------
-# Runtime Stage - Distroless
+# Runtime Stage - Minimal Alpine
 # -----------------------------------------------------------------------------
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM alpine:3.20
+
+RUN apk add --no-cache ca-certificates wget
 
 WORKDIR /app
 
 COPY --from=builder /bin/lendingd /app/lendingd
-COPY --from=builder /build/services/lending-service/migrations /app/internal/infrastructure/postgres/migrations
+COPY --from=builder /build/services/lending-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
 
 EXPOSE 8087 9087
 
