@@ -136,7 +136,7 @@ func main() {
 	}
 
 	// gRPC server.
-	grpcHandler := grpcpresentation.NewCardServiceHandler(issueCardUC, authorizeUC, getCardUC, freezeCardUC)
+	grpcHandler := grpcpresentation.NewCardServiceHandler(issueCardUC, authorizeUC, getCardUC, freezeCardUC, logger)
 	grpcServer := grpcpresentation.NewServer(grpcHandler, logger, jwtSvc)
 
 	// HTTP server (health checks).

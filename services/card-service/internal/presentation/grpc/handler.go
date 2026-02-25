@@ -50,6 +50,7 @@ type CardServiceHandler struct {
 	authorizeUC  *usecase.AuthorizeTransactionUseCase
 	getCardUC    *usecase.GetCardUseCase
 	freezeCardUC *usecase.FreezeCardUseCase
+	logger       *slog.Logger
 }
 
 // NewCardServiceHandler creates a new CardServiceHandler.
@@ -58,12 +59,14 @@ func NewCardServiceHandler(
 	authorizeUC *usecase.AuthorizeTransactionUseCase,
 	getCardUC *usecase.GetCardUseCase,
 	freezeCardUC *usecase.FreezeCardUseCase,
+	logger *slog.Logger,
 ) *CardServiceHandler {
 	return &CardServiceHandler{
 		issueCardUC:  issueCardUC,
 		authorizeUC:  authorizeUC,
 		getCardUC:    getCardUC,
 		freezeCardUC: freezeCardUC,
+		logger:       logger,
 	}
 }
 
