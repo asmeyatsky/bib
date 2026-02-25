@@ -1,0 +1,83 @@
+# Reusable workflow for testing a single Go service
+# Usage:
+#   needs:
+#     test-service:
+#       uses: ./.github/workflows/reusable-service-test.yml
+#       with:
+#         service-name: ledger-service
+#         go-version: "1.24"
+
+name: Reusable Service Test
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        description: 'Name of the service to test (e.g., ledger-service)'
+        required: true
+        type: string
+      go-version:
+        description: 'Go version to use'
+        required: false
+        type: string
+        default: '1.24'
+      working-directory:
+        description: 'Base directory for the service'
+        required: false
+        type: string
+        default: 'services'
+
+jobs:
+  test:
+    name: Test ${{ inputs.service-name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: bib
+          POSTGRES_PASSWORD: bib_test_password
+          POSTGRES_DB: bib_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+          cache: true
+          cache-dependency-path: |
+            **/go.sum
+            go.work.sum
+      
+      - name: Run unit tests
+        run: |
+          cd ${{ inputs.working-directory }}/${{ inputs.service-name }}
+          go test -race -coverprofile=coverage.out -covermode=atomic ./...
+      
+      - name: Run integration tests
+        run: |
+          cd ${{ inputs.working-directory }}/${{ inputs.service-name }}
+          go test -race -tags=integration ./...
+        env:
+          TEST_DB_HOST: localhost
+          TEST_DB_PORT: 5432
+          TEST_DB_USER: bib
+          TEST_DB_PASSWORD: bib_test_password
+          TEST_DB_NAME: bib_test
+          TEST_DB_SSLMODE: disable
+      
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-${{ inputs.service-name }}
+          path: ${{ inputs.working-directory }}/${{ inputs.service-name }}/coverage.out
+          retention-days: 7
