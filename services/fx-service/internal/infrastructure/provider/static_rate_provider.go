@@ -10,18 +10,18 @@ import (
 	"github.com/bibbank/bib/services/fx-service/internal/domain/valueobject"
 )
 
-// staticRates maps "BASE/QUOTE" to a rate decimal string.
-var staticRates = map[string]string{
-	"EUR/USD": "1.0850",
-	"GBP/USD": "1.2650",
-	"USD/JPY": "149.50",
-	"USD/CHF": "0.8820",
-	"AUD/USD": "0.6520",
-	"USD/CAD": "1.3580",
-	"NZD/USD": "0.6080",
-	"EUR/GBP": "0.8580",
-	"EUR/JPY": "162.20",
-	"GBP/JPY": "189.10",
+// staticRates maps "BASE/QUOTE" to a rate decimal.
+var staticRates = map[string]decimal.Decimal{
+	"EUR/USD": decimal.RequireFromString("1.0850"),
+	"GBP/USD": decimal.RequireFromString("1.2650"),
+	"USD/JPY": decimal.RequireFromString("149.50"),
+	"USD/CHF": decimal.RequireFromString("0.8820"),
+	"AUD/USD": decimal.RequireFromString("0.6520"),
+	"USD/CAD": decimal.RequireFromString("1.3580"),
+	"NZD/USD": decimal.RequireFromString("0.6080"),
+	"EUR/GBP": decimal.RequireFromString("0.8580"),
+	"EUR/JPY": decimal.RequireFromString("162.20"),
+	"GBP/JPY": decimal.RequireFromString("189.10"),
 }
 
 // StaticRateProvider returns hardcoded exchange rates for common currency pairs.
@@ -37,15 +37,13 @@ func NewStaticRateProvider() *StaticRateProvider {
 func (p *StaticRateProvider) FetchRate(_ context.Context, base, quote string) (valueobject.SpotRate, error) {
 	key := strings.ToUpper(base) + "/" + strings.ToUpper(quote)
 
-	if rateStr, ok := staticRates[key]; ok {
-		d, _ := decimal.NewFromString(rateStr)
+	if d, ok := staticRates[key]; ok {
 		return valueobject.NewSpotRate(d)
 	}
 
 	// Try the inverse pair.
 	inverseKey := strings.ToUpper(quote) + "/" + strings.ToUpper(base)
-	if rateStr, ok := staticRates[inverseKey]; ok {
-		d, _ := decimal.NewFromString(rateStr)
+	if d, ok := staticRates[inverseKey]; ok {
 		rate, err := valueobject.NewSpotRate(d)
 		if err != nil {
 			return valueobject.SpotRate{}, err
