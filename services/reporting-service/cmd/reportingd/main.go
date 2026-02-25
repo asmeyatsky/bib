@@ -131,7 +131,7 @@ func main() {
 
 	// gRPC server.
 	handler := grpcpresentation.NewReportingHandler(generateReportUC, getReportUC, submitReportUC,
-		logger,)
+		logger)
 	grpcServer := grpcpresentation.NewServer(handler, logger, jwtSvc)
 
 	// HTTP server (health checks).

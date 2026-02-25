@@ -134,7 +134,8 @@ type LendingHandler struct {
 	getLoan   *usecase.GetLoanUseCase
 	getApp    *usecase.GetApplicationUseCase
 
-	logger               *slog.Logger}
+	logger *slog.Logger
+}
 
 // NewLendingHandler creates a new handler with all use-case dependencies.
 func NewLendingHandler(
@@ -151,8 +152,8 @@ func NewLendingHandler(
 		payment:   payment,
 		getLoan:   getLoan,
 		getApp:    getApp,
-	
-		logger:               logger,}
+
+		logger: logger}
 }
 
 // SubmitApplication handles a new loan application submission.

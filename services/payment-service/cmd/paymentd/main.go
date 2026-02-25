@@ -132,7 +132,7 @@ func main() {
 
 	// gRPC server.
 	handler := grpcPresentation.NewPaymentHandler(initiatePaymentUC, getPaymentUC, listPaymentsUC,
-		logger,)
+		logger)
 	grpcServer := grpcPresentation.NewServer(handler, cfg.GRPCPort, logger, jwtSvc)
 
 	// HTTP server (health checks + metrics).

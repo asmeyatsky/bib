@@ -2,8 +2,8 @@ package grpc
 
 import (
 	"context"
-	"log/slog"
 	"fmt"
+	"log/slog"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
@@ -93,7 +93,8 @@ type ReportingHandler struct {
 	getReport      *usecase.GetReportUseCase
 	submitReport   *usecase.SubmitReportUseCase
 
-	logger               *slog.Logger}
+	logger *slog.Logger
+}
 
 // NewReportingHandler creates a new ReportingHandler.
 func NewReportingHandler(
@@ -106,8 +107,8 @@ func NewReportingHandler(
 		generateReport: generateReport,
 		getReport:      getReport,
 		submitReport:   submitReport,
-	
-		logger:               logger,}
+
+		logger: logger}
 }
 
 // GenerateReport handles the generate report request.

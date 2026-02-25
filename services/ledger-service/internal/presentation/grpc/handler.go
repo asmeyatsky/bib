@@ -52,7 +52,8 @@ type LedgerHandler struct {
 	backvalue   *usecase.BackvalueEntry
 	periodClose *usecase.PeriodClose
 
-	logger               *slog.Logger}
+	logger *slog.Logger
+}
 
 func NewLedgerHandler(
 	postEntry *usecase.PostJournalEntry,
@@ -70,8 +71,8 @@ func NewLedgerHandler(
 		listEntries: listEntries,
 		backvalue:   backvalue,
 		periodClose: periodClose,
-	
-		logger:               logger,}
+
+		logger: logger}
 }
 
 // PostJournalEntry handles gRPC PostJournalEntry calls.

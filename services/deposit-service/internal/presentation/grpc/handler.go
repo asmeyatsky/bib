@@ -48,7 +48,8 @@ type DepositHandler struct {
 	getPosition    *usecase.GetDepositPosition
 	accrueInterest *usecase.AccrueInterest
 
-	logger               *slog.Logger}
+	logger *slog.Logger
+}
 
 func NewDepositHandler(
 	createProduct *usecase.CreateDepositProduct,
@@ -62,8 +63,8 @@ func NewDepositHandler(
 		openPosition:   openPosition,
 		getPosition:    getPosition,
 		accrueInterest: accrueInterest,
-	
-		logger:               logger,}
+
+		logger: logger}
 }
 
 // Proto-aligned request/response message types.

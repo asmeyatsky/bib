@@ -50,7 +50,8 @@ type PaymentHandler struct {
 	getPayment      *usecase.GetPayment
 	listPayments    *usecase.ListPayments
 
-	logger               *slog.Logger}
+	logger *slog.Logger
+}
 
 func NewPaymentHandler(
 	initiatePayment *usecase.InitiatePayment,
@@ -62,8 +63,8 @@ func NewPaymentHandler(
 		initiatePayment: initiatePayment,
 		getPayment:      getPayment,
 		listPayments:    listPayments,
-	
-		logger:               logger,}
+
+		logger: logger}
 }
 
 // InitiatePayment implements PaymentServiceServer by delegating to HandleInitiatePayment.

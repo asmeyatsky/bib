@@ -2,8 +2,8 @@ package grpc
 
 import (
 	"context"
-	"log/slog"
 	"fmt"
+	"log/slog"
 	"regexp"
 
 	"github.com/google/uuid"
@@ -52,7 +52,8 @@ type AccountHandler struct {
 	closeAccount  *usecase.CloseAccountUseCase
 	listAccounts  *usecase.ListAccountsUseCase
 
-	logger               *slog.Logger}
+	logger *slog.Logger
+}
 
 // NewAccountHandler creates a new gRPC account handler.
 func NewAccountHandler(
@@ -69,8 +70,8 @@ func NewAccountHandler(
 		freezeAccount: freezeAccount,
 		closeAccount:  closeAccount,
 		listAccounts:  listAccounts,
-	
-		logger:               logger,}
+
+		logger: logger}
 }
 
 // OpenAccountRequest represents the proto OpenAccountRequest message.

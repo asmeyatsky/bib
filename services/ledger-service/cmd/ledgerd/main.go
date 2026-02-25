@@ -134,7 +134,7 @@ func main() {
 
 	// gRPC server
 	handler := grpcPresentation.NewLedgerHandler(postEntryUC, getEntryUC, getBalanceUC, listEntriesUC, backvalueUC, periodCloseUC,
-		logger,)
+		logger)
 	grpcServer := grpcPresentation.NewServer(handler, cfg.GRPCPort, logger, jwtSvc)
 
 	// HTTP server (health checks + metrics)
