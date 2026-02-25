@@ -34,7 +34,7 @@ lint:
 	@echo "==> Running linters..."
 	@for mod in $(ALL_MODULES); do \
 		echo "  Linting $$mod..."; \
-		(cd $$mod && golangci-lint run ./...) || exit 1; \
+		(cd $$mod && golangci-lint run --timeout=5m --concurrency=2 ./...) || exit 1; \
 	done
 
 test:
