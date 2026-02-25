@@ -80,7 +80,7 @@ func main() {
 		Database: cfg.DB.Name,
 		SSLMode:  cfg.DB.SSLMode,
 	}.DSN()
-	if err = pgpkg.RunMigrations(dsn, "internal/infrastructure/postgres/migrations"); err != nil {
+	if err = pgpkg.RunMigrations(dsn, "file://internal/infrastructure/postgres/migrations"); err != nil {
 		logger.Warn("migration warning", "error", err)
 	}
 
