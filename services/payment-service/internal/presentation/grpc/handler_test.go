@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"testing"
 	"time"
 
@@ -79,22 +80,26 @@ func buildTestHandler() *PaymentHandler {
 	repo := &mockPaymentRepo{}
 	publisher := &mockEventPublisher{}
 	routingEngine := service.NewRoutingEngine()
+	logger := slog.Default()
 
 	return NewPaymentHandler(
 		usecase.NewInitiatePayment(repo, publisher, routingEngine, nil),
 		usecase.NewGetPayment(repo),
 		usecase.NewListPayments(repo),
+		logger,
 	)
 }
 
 func buildHandlerWithRepo(repo port.PaymentOrderRepository) *PaymentHandler {
 	publisher := &mockEventPublisher{}
 	routingEngine := service.NewRoutingEngine()
+	logger := slog.Default()
 
 	return NewPaymentHandler(
 		usecase.NewInitiatePayment(repo, publisher, routingEngine, nil),
 		usecase.NewGetPayment(repo),
 		usecase.NewListPayments(repo),
+		logger,
 	)
 }
 

@@ -107,6 +107,7 @@ func buildTestHandler() (*AccountHandler, *mockAccountRepo) {
 		usecase.NewFreezeAccountUseCase(repo, publisher, logger),
 		usecase.NewCloseAccountUseCase(repo, publisher, logger),
 		usecase.NewListAccountsUseCase(repo, logger),
+		logger,
 	), repo
 }
 
@@ -190,6 +191,7 @@ func TestOpenAccount(t *testing.T) {
 			usecase.NewFreezeAccountUseCase(repo, publisher, logger),
 			usecase.NewCloseAccountUseCase(repo, publisher, logger),
 			usecase.NewListAccountsUseCase(repo, logger),
+			logger,
 		)
 
 		_, err := h.OpenAccount(contextWithClaims(), &OpenAccountRequest{

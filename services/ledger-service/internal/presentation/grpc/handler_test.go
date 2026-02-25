@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"testing"
 	"time"
 
@@ -101,6 +102,7 @@ func buildTestHandler() *LedgerHandler {
 	periodRepo := &mockFiscalPeriodRepo{}
 	publisher := &mockEventPublisher{}
 	validator := service.NewPostingValidator()
+	logger := slog.Default()
 
 	return NewLedgerHandler(
 		usecase.NewPostJournalEntry(journalRepo, balanceRepo, publisher, validator),
@@ -109,6 +111,7 @@ func buildTestHandler() *LedgerHandler {
 		usecase.NewListJournalEntries(journalRepo),
 		usecase.NewBackvalueEntry(journalRepo),
 		usecase.NewPeriodClose(periodRepo, publisher),
+		logger,
 	)
 }
 
@@ -116,6 +119,7 @@ func buildHandlerWithRepos(journalRepo port.JournalRepository, balanceRepo port.
 	publisher := &mockEventPublisher{}
 	validator := service.NewPostingValidator()
 	periodRepo := &mockFiscalPeriodRepo{}
+	logger := slog.Default()
 
 	return NewLedgerHandler(
 		usecase.NewPostJournalEntry(journalRepo, balanceRepo, publisher, validator),
@@ -124,6 +128,7 @@ func buildHandlerWithRepos(journalRepo port.JournalRepository, balanceRepo port.
 		usecase.NewListJournalEntries(journalRepo),
 		usecase.NewBackvalueEntry(journalRepo),
 		usecase.NewPeriodClose(periodRepo, publisher),
+		logger,
 	)
 }
 

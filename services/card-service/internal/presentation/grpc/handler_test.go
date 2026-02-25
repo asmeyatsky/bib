@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"testing"
 	"time"
 
@@ -104,12 +105,14 @@ func buildTestHandler() *CardServiceHandler {
 	processor := &mockCardProcessor{}
 	balanceClient := &mockBalanceClient{balance: decimal.NewFromInt(10000)}
 	jitFunding := service.NewJITFundingService()
+	logger := slog.Default()
 
 	return NewCardServiceHandler(
 		usecase.NewIssueCardUseCase(repo, publisher, processor),
 		usecase.NewAuthorizeTransactionUseCase(repo, publisher, balanceClient, jitFunding),
 		usecase.NewGetCardUseCase(repo),
 		usecase.NewFreezeCardUseCase(repo, publisher),
+		logger,
 	)
 }
 
@@ -118,12 +121,14 @@ func buildHandlerWithRepo(repo *mockCardRepo) *CardServiceHandler {
 	processor := &mockCardProcessor{}
 	balanceClient := &mockBalanceClient{balance: decimal.NewFromInt(10000)}
 	jitFunding := service.NewJITFundingService()
+	logger := slog.Default()
 
 	return NewCardServiceHandler(
 		usecase.NewIssueCardUseCase(repo, publisher, processor),
 		usecase.NewAuthorizeTransactionUseCase(repo, publisher, balanceClient, jitFunding),
 		usecase.NewGetCardUseCase(repo),
 		usecase.NewFreezeCardUseCase(repo, publisher),
+		logger,
 	)
 }
 
