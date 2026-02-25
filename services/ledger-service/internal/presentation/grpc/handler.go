@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
 	"math"
 	"regexp"
 	"time"
@@ -50,7 +51,8 @@ type LedgerHandler struct {
 	listEntries *usecase.ListJournalEntries
 	backvalue   *usecase.BackvalueEntry
 	periodClose *usecase.PeriodClose
-}
+
+	logger               *slog.Logger}
 
 func NewLedgerHandler(
 	postEntry *usecase.PostJournalEntry,
@@ -59,6 +61,7 @@ func NewLedgerHandler(
 	listEntries *usecase.ListJournalEntries,
 	backvalue *usecase.BackvalueEntry,
 	periodClose *usecase.PeriodClose,
+	logger *slog.Logger,
 ) *LedgerHandler {
 	return &LedgerHandler{
 		postEntry:   postEntry,
@@ -67,7 +70,8 @@ func NewLedgerHandler(
 		listEntries: listEntries,
 		backvalue:   backvalue,
 		periodClose: periodClose,
-	}
+	
+		logger:               logger,}
 }
 
 // PostJournalEntry handles gRPC PostJournalEntry calls.
@@ -170,7 +174,7 @@ func (h *LedgerHandler) HandlePostJournalEntry(ctx context.Context, req *PostJou
 		Reference:     req.Reference,
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
@@ -223,7 +227,7 @@ func (h *LedgerHandler) HandleGetBalance(ctx context.Context, req *GetBalanceReq
 		AsOf:        asOf,
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 

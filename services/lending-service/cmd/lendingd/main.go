@@ -133,7 +133,8 @@ func main() {
 	}
 
 	// gRPC server.
-	handler := grpcPresentation.NewLendingHandler(submitAppUC, disburseUC, paymentUC, getLoanUC, getAppUC)
+	handler := grpcPresentation.NewLendingHandler(submitAppUC, disburseUC, paymentUC, getLoanUC, getAppUC,
+		logger,)
 	grpcServer := grpcPresentation.NewServer(handler, logger, jwtSvc)
 
 	// HTTP server (health checks).

@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/bibbank/bib/pkg/auth"
@@ -45,6 +46,7 @@ type IdentityHandler struct {
 	getVerification      *usecase.GetVerification
 	completeCheck        *usecase.CompleteCheck
 	listVerifications    *usecase.ListVerifications
+	logger               *slog.Logger
 }
 
 func NewIdentityHandler(
@@ -52,12 +54,14 @@ func NewIdentityHandler(
 	getVerification *usecase.GetVerification,
 	completeCheck *usecase.CompleteCheck,
 	listVerifications *usecase.ListVerifications,
+	logger *slog.Logger,
 ) *IdentityHandler {
 	return &IdentityHandler{
 		initiateVerification: initiateVerification,
 		getVerification:      getVerification,
 		completeCheck:        completeCheck,
 		listVerifications:    listVerifications,
+		logger:               logger,
 	}
 }
 
@@ -158,7 +162,7 @@ func (h *IdentityHandler) HandleInitiateVerification(ctx context.Context, req *I
 		Country:     req.Country,
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("initiate verification failed", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
@@ -185,7 +189,7 @@ func (h *IdentityHandler) HandleGetVerification(ctx context.Context, req *GetVer
 		ID: id,
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("get verification failed", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
@@ -220,7 +224,7 @@ func (h *IdentityHandler) HandleCompleteCheck(ctx context.Context, req *Complete
 		FailureReason:  req.FailureReason,
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 

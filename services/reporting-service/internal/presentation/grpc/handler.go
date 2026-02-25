@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -91,19 +92,22 @@ type ReportingHandler struct {
 	generateReport *usecase.GenerateReportUseCase
 	getReport      *usecase.GetReportUseCase
 	submitReport   *usecase.SubmitReportUseCase
-}
+
+	logger               *slog.Logger}
 
 // NewReportingHandler creates a new ReportingHandler.
 func NewReportingHandler(
 	generateReport *usecase.GenerateReportUseCase,
 	getReport *usecase.GetReportUseCase,
 	submitReport *usecase.SubmitReportUseCase,
+	logger *slog.Logger,
 ) *ReportingHandler {
 	return &ReportingHandler{
 		generateReport: generateReport,
 		getReport:      getReport,
 		submitReport:   submitReport,
-	}
+	
+		logger:               logger,}
 }
 
 // GenerateReport handles the generate report request.
@@ -129,7 +133,7 @@ func (h *ReportingHandler) GenerateReport(ctx context.Context, req *GenerateRepo
 
 	result, err := h.generateReport.Execute(ctx, dtoReq)
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 	return &GenerateReportResponse{
@@ -160,7 +164,7 @@ func (h *ReportingHandler) GetReport(ctx context.Context, req *GetReportRequest)
 
 	result, err := h.getReport.Execute(ctx, dtoReq)
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 	return &GetReportResponse{
@@ -195,7 +199,7 @@ func (h *ReportingHandler) SubmitReport(ctx context.Context, req *SubmitReportRe
 
 	result, err := h.submitReport.Execute(ctx, dtoReq)
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 	return &SubmitReportResponse{

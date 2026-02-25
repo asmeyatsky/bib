@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
 	"fmt"
 	"regexp"
 
@@ -50,7 +51,8 @@ type AccountHandler struct {
 	freezeAccount *usecase.FreezeAccountUseCase
 	closeAccount  *usecase.CloseAccountUseCase
 	listAccounts  *usecase.ListAccountsUseCase
-}
+
+	logger               *slog.Logger}
 
 // NewAccountHandler creates a new gRPC account handler.
 func NewAccountHandler(
@@ -59,6 +61,7 @@ func NewAccountHandler(
 	freezeAccount *usecase.FreezeAccountUseCase,
 	closeAccount *usecase.CloseAccountUseCase,
 	listAccounts *usecase.ListAccountsUseCase,
+	logger *slog.Logger,
 ) *AccountHandler {
 	return &AccountHandler{
 		openAccount:   openAccount,
@@ -66,7 +69,8 @@ func NewAccountHandler(
 		freezeAccount: freezeAccount,
 		closeAccount:  closeAccount,
 		listAccounts:  listAccounts,
-	}
+	
+		logger:               logger,}
 }
 
 // OpenAccountRequest represents the proto OpenAccountRequest message.

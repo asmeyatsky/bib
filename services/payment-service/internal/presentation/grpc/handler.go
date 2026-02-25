@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
 	"regexp"
 	"time"
 
@@ -48,18 +49,21 @@ type PaymentHandler struct {
 	initiatePayment *usecase.InitiatePayment
 	getPayment      *usecase.GetPayment
 	listPayments    *usecase.ListPayments
-}
+
+	logger               *slog.Logger}
 
 func NewPaymentHandler(
 	initiatePayment *usecase.InitiatePayment,
 	getPayment *usecase.GetPayment,
 	listPayments *usecase.ListPayments,
+	logger *slog.Logger,
 ) *PaymentHandler {
 	return &PaymentHandler{
 		initiatePayment: initiatePayment,
 		getPayment:      getPayment,
 		listPayments:    listPayments,
-	}
+	
+		logger:               logger,}
 }
 
 // InitiatePayment implements PaymentServiceServer by delegating to HandleInitiatePayment.
@@ -195,7 +199,7 @@ func (h *PaymentHandler) HandleInitiatePayment(ctx context.Context, req *Initiat
 		Description:           req.Description,
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
@@ -225,7 +229,7 @@ func (h *PaymentHandler) HandleGetPayment(ctx context.Context, req *GetPaymentRe
 		PaymentID: paymentID,
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
@@ -274,7 +278,7 @@ func (h *PaymentHandler) HandleListPayments(ctx context.Context, req *ListPaymen
 		Offset:    int(req.Offset),
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 

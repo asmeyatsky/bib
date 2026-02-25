@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/bibbank/bib/pkg/auth"
@@ -46,20 +47,23 @@ type DepositHandler struct {
 	openPosition   *usecase.OpenDepositPosition
 	getPosition    *usecase.GetDepositPosition
 	accrueInterest *usecase.AccrueInterest
-}
+
+	logger               *slog.Logger}
 
 func NewDepositHandler(
 	createProduct *usecase.CreateDepositProduct,
 	openPosition *usecase.OpenDepositPosition,
 	getPosition *usecase.GetDepositPosition,
 	accrueInterest *usecase.AccrueInterest,
+	logger *slog.Logger,
 ) *DepositHandler {
 	return &DepositHandler{
 		createProduct:  createProduct,
 		openPosition:   openPosition,
 		getPosition:    getPosition,
 		accrueInterest: accrueInterest,
-	}
+	
+		logger:               logger,}
 }
 
 // Proto-aligned request/response message types.

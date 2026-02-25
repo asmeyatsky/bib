@@ -130,7 +130,8 @@ func main() {
 	}
 
 	// gRPC server
-	handler := grpcPresentation.NewDepositHandler(createProductUC, openPositionUC, getPositionUC, accrueInterestUC)
+	handler := grpcPresentation.NewDepositHandler(createProductUC, openPositionUC, getPositionUC, accrueInterestUC,
+		logger,)
 	grpcServer := grpcPresentation.NewServer(handler, cfg.GRPCPort, logger, jwtSvc)
 
 	// HTTP server (health checks + metrics)

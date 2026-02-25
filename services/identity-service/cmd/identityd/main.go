@@ -134,6 +134,7 @@ func main() {
 		getVerificationUC,
 		completeCheckUC,
 		listVerificationsUC,
+		logger,
 	)
 	grpcServer := grpcPresentation.NewServer(handler, cfg.GRPCPort, logger, jwtSvc)
 

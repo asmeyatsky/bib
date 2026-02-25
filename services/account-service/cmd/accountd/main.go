@@ -122,7 +122,8 @@ func main() {
 		freezeAccountUC,
 		closeAccountUC,
 		listAccountsUC,
-	)
+	
+		logger,)
 	grpcServer := grpcPresentation.NewServer(handler, cfg.GRPCPort, logger, jwtSvc)
 
 	// Initialize HTTP health server.

@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
 	"regexp"
 
 	"github.com/shopspring/decimal"
@@ -132,7 +133,8 @@ type LendingHandler struct {
 	payment   *usecase.MakePaymentUseCase
 	getLoan   *usecase.GetLoanUseCase
 	getApp    *usecase.GetApplicationUseCase
-}
+
+	logger               *slog.Logger}
 
 // NewLendingHandler creates a new handler with all use-case dependencies.
 func NewLendingHandler(
@@ -141,6 +143,7 @@ func NewLendingHandler(
 	payment *usecase.MakePaymentUseCase,
 	getLoan *usecase.GetLoanUseCase,
 	getApp *usecase.GetApplicationUseCase,
+	logger *slog.Logger,
 ) *LendingHandler {
 	return &LendingHandler{
 		submitApp: submitApp,
@@ -148,7 +151,8 @@ func NewLendingHandler(
 		payment:   payment,
 		getLoan:   getLoan,
 		getApp:    getApp,
-	}
+	
+		logger:               logger,}
 }
 
 // SubmitApplication handles a new loan application submission.
@@ -195,7 +199,7 @@ func (h *LendingHandler) SubmitApplication(ctx context.Context, req *SubmitAppli
 		Purpose:         req.Purpose,
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 	return &SubmitApplicationResponse{
@@ -237,7 +241,7 @@ func (h *LendingHandler) DisburseLoan(ctx context.Context, req *DisburseLoanRequ
 		InterestRateBps:   req.InterestRateBps,
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 	return &DisburseLoanResponse{
@@ -281,7 +285,7 @@ func (h *LendingHandler) MakePayment(ctx context.Context, req *MakePaymentReques
 		Amount:   amt,
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 	return &MakePaymentResponse{
@@ -314,7 +318,7 @@ func (h *LendingHandler) GetLoan(ctx context.Context, req *GetLoanRequest) (*Get
 		LoanID:   req.LoanID,
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 	return &GetLoanResponse{
@@ -350,7 +354,7 @@ func (h *LendingHandler) GetApplication(ctx context.Context, req *GetApplication
 		ApplicationID: req.ApplicationID,
 	})
 	if err != nil {
-		// TODO: log original error server-side: err
+		h.logger.Error("handler error", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 	return &GetApplicationResponse{

@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
 	"regexp"
 
 	"github.com/google/uuid"
