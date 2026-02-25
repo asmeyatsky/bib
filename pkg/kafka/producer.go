@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -77,7 +78,7 @@ func resolveSASLMechanism(cfg Config) sasl.Mechanism {
 	}
 }
 
-// Publish sends messages to the specified topic.
+// Publish sends messages to the specified topic with retry logic.
 func (p *Producer) Publish(ctx context.Context, topic string, messages ...Message) error {
 	w := p.getOrCreateWriter(topic)
 
@@ -96,10 +97,39 @@ func (p *Producer) Publish(ctx context.Context, topic string, messages ...Messag
 		kafkaMessages = append(kafkaMessages, km)
 	}
 
-	if err := w.WriteMessages(ctx, kafkaMessages...); err != nil {
-		return fmt.Errorf("kafka publish to %s: %w", topic, err)
+	// Retry with backoff for transient Kafka errors (leader election, etc.)
+	var lastErr error
+	for attempt := 0; attempt < 3; attempt++ {
+		if err := w.WriteMessages(ctx, kafkaMessages...); err != nil {
+			lastErr = err
+			// Retry on transient errors
+			if isTransientError(err) {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case <-time.After(100 * time.Millisecond * time.Duration(attempt+1)):
+					continue
+				}
+			}
+			return fmt.Errorf("kafka publish to %s: %w", topic, err)
+		}
+		return nil
 	}
-	return nil
+	return fmt.Errorf("kafka publish to %s (after 3 attempts): %w", topic, lastErr)
+}
+
+// isTransientError checks if the error is transient and can be retried.
+func isTransientError(err error) bool {
+	if err == nil {
+		return false
+	}
+	errStr := err.Error()
+	// Kafka error codes: 5=Leader Not Available, 6=Not Leader For Partition, 9=Replica Not Available
+	return strings.Contains(errStr, "[5]") || 
+		strings.Contains(errStr, "[6]") || 
+		strings.Contains(errStr, "[9]") ||
+		strings.Contains(errStr, "Leader Not Available") ||
+		strings.Contains(errStr, "Not Leader")
 }
 
 // Close closes all writers.
