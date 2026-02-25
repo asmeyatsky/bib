@@ -115,8 +115,9 @@ func run() error {
 	default:
 		jwtSecret := os.Getenv("JWT_SECRET")
 		if jwtSecret == "" {
-			jwtSecret = "dev-secret-change-in-prod" // development only
+			jwtSecret = "test-e2e-secret" // Match gateway default for E2E tests
 		}
+		logger.Info("using JWT secret for token validation", "issuer", jwtCfg.Issuer)
 		jwtCfg.Secret = jwtSecret
 	}
 	jwtSvc, err := auth.NewJWTService(jwtCfg)

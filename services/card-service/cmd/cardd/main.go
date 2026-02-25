@@ -125,7 +125,7 @@ func main() {
 	default:
 		jwtSecret := os.Getenv("JWT_SECRET")
 		if jwtSecret == "" {
-			jwtSecret = "dev-secret-change-in-prod" // development only
+			jwtSecret = "test-e2e-secret" // Match gateway default for E2E tests
 		}
 		jwtCfg.Secret = jwtSecret
 	}

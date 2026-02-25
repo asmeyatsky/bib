@@ -43,6 +43,11 @@ func UnaryAuthInterceptor(jwtService *JWTService, skipMethods []string) grpc.Una
 			return handler(ctx, req)
 		}
 
+		// Validate JWT service is configured.
+		if jwtService == nil {
+			return nil, status.Error(codes.Internal, "JWT service not configured")
+		}
+
 		// Extract the authorization token from metadata.
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
@@ -55,6 +60,9 @@ func UnaryAuthInterceptor(jwtService *JWTService, skipMethods []string) grpc.Una
 		}
 
 		tokenString := strings.TrimPrefix(authHeader[0], "Bearer ")
+		if tokenString == "" {
+			return nil, status.Error(codes.Unauthenticated, "empty token")
+		}
 
 		// Validate the token.
 		claims, err := jwtService.ValidateToken(tokenString)
