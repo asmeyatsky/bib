@@ -253,8 +253,8 @@ func (h *Handler) ConvertAmount(ctx context.Context, req *ConvertAmountRequest) 
 		"converted", resp.ConvertedAmount.String(),
 	)
 	return &ConvertAmountResponse{
-		OriginalAmount:  resp.OriginalAmount.String(),
-		ConvertedAmount: resp.ConvertedAmount.String(),
+		OriginalAmount:  resp.OriginalAmount.StringFixed(2),
+		ConvertedAmount: resp.ConvertedAmount.StringFixed(2),
 		FromCurrency:    resp.FromCurrency,
 		ToCurrency:      resp.ToCurrency,
 		Rate:            resp.Rate.String(),

@@ -279,8 +279,8 @@ func (h *CardServiceHandler) GetCard(ctx context.Context, req *GetCardRequest) (
 		CardType:     resp.CardType,
 		Status:       resp.Status,
 		Currency:     resp.Currency,
-		DailyLimit:   resp.DailyLimit.String(),
-		MonthlyLimit: resp.MonthlyLimit.String(),
+		DailyLimit:   resp.DailyLimit.StringFixed(2),
+		MonthlyLimit: resp.MonthlyLimit.StringFixed(2),
 		MaskedPan:    resp.LastFour,
 		Version:      1,
 	}, nil

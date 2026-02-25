@@ -300,7 +300,7 @@ func toPaymentOrderMsg(r dto.PaymentOrderResponse) *PaymentOrderMsg {
 		TenantID:              r.TenantID.String(),
 		SourceAccountID:       r.SourceAccountID.String(),
 		DestinationAccountID:  r.DestinationAccountID.String(),
-		Amount:                r.Amount.String(),
+		Amount:                r.Amount.StringFixed(2),
 		Currency:              r.Currency,
 		Rail:                  r.Rail,
 		Status:                r.Status,

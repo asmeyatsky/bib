@@ -50,7 +50,7 @@ func FromModel(a *model.TransactionAssessment) AssessmentResponse {
 		TenantID:        a.TenantID(),
 		TransactionID:   a.TransactionID(),
 		AccountID:       a.AccountID(),
-		Amount:          a.Amount().String(),
+		Amount:          a.Amount().StringFixed(2),
 		Currency:        a.Currency(),
 		TransactionType: a.TransactionType(),
 		RiskLevel:       a.RiskLevel().String(),
