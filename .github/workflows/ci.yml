@@ -18,7 +18,7 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Change Detection - Only run what's necessary
+  # Change Detection - Only skip on PRs, always run on push to main
   # ---------------------------------------------------------------------------
   detect-changes:
     name: Detect Changes
@@ -27,8 +27,9 @@ jobs:
       pkg: ${{ steps.filter.outputs.pkg }}
       gateway: ${{ steps.filter.outputs.gateway }}
       services: ${{ steps.filter.outputs.services }}
-      any-service: ${{ steps.filter.outputs.any-service }}
+      any-service: ${{ steps.filter.outputs.any-service || github.event_name == 'push' }}
       ci: ${{ steps.filter.outputs.ci }}
+      force-run: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -67,6 +68,7 @@ jobs:
     timeout-minutes: 10
     needs: detect-changes
     if: >
+      needs.detect-changes.outputs.force-run == 'true' ||
       needs.detect-changes.outputs.any-service == 'true' ||
       needs.detect-changes.outputs.ci == 'true'
     steps:
@@ -93,7 +95,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [detect-changes, lint]
-    if: needs.detect-changes.outputs.services == 'true'
+    if: >
+      needs.detect-changes.outputs.force-run == 'true' ||
+      needs.detect-changes.outputs.services == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -162,7 +166,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [detect-changes, lint]
-    if: needs.detect-changes.outputs.gateway == 'true'
+    if: >
+      needs.detect-changes.outputs.force-run == 'true' ||
+      needs.detect-changes.outputs.gateway == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -185,7 +191,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [detect-changes, lint]
-    if: needs.detect-changes.outputs.pkg == 'true'
+    if: >
+      needs.detect-changes.outputs.force-run == 'true' ||
+      needs.detect-changes.outputs.pkg == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -218,7 +226,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [test-services, test-gateway, test-pkgs]
-    if: always() && needs.test-services.result == 'success'
+    if: >
+      always() &&
+      (needs.test-services.result == 'success' || needs.test-services.result == 'skipped') &&
+      (needs.test-gateway.result == 'success' || needs.test-gateway.result == 'skipped') &&
+      (needs.test-pkgs.result == 'success' || needs.test-pkgs.result == 'skipped')
     strategy:
       fail-fast: false
       matrix:
