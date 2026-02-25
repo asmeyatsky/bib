@@ -97,9 +97,9 @@ func (p *Producer) Publish(ctx context.Context, topic string, messages ...Messag
 		kafkaMessages = append(kafkaMessages, km)
 	}
 
-	// Retry with backoff for transient Kafka errors (leader election, etc.)
+	// Retry with backoff for transient Kafka errors (leader election, topic creation, etc.)
 	var lastErr error
-	for attempt := 0; attempt < 3; attempt++ {
+	for attempt := 0; attempt < 5; attempt++ {
 		if err := w.WriteMessages(ctx, kafkaMessages...); err != nil {
 			lastErr = err
 			// Retry on transient errors
@@ -107,7 +107,7 @@ func (p *Producer) Publish(ctx context.Context, topic string, messages ...Messag
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
-				case <-time.After(100 * time.Millisecond * time.Duration(attempt+1)):
+				case <-time.After(500 * time.Millisecond * time.Duration(attempt+1)):
 					continue
 				}
 			}
@@ -115,7 +115,7 @@ func (p *Producer) Publish(ctx context.Context, topic string, messages ...Messag
 		}
 		return nil
 	}
-	return fmt.Errorf("kafka publish to %s (after 3 attempts): %w", topic, lastErr)
+	return fmt.Errorf("kafka publish to %s (after 5 attempts): %w", topic, lastErr)
 }
 
 // isTransientError checks if the error is transient and can be retried.
@@ -124,12 +124,15 @@ func isTransientError(err error) bool {
 		return false
 	}
 	errStr := err.Error()
-	// Kafka error codes: 5=Leader Not Available, 6=Not Leader For Partition, 9=Replica Not Available
-	return strings.Contains(errStr, "[5]") ||
+	// Kafka error codes: 3=Unknown Topic Or Partition, 5=Leader Not Available,
+	// 6=Not Leader For Partition, 9=Replica Not Available
+	return strings.Contains(errStr, "[3]") ||
+		strings.Contains(errStr, "[5]") ||
 		strings.Contains(errStr, "[6]") ||
 		strings.Contains(errStr, "[9]") ||
 		strings.Contains(errStr, "Leader Not Available") ||
-		strings.Contains(errStr, "Not Leader")
+		strings.Contains(errStr, "Not Leader") ||
+		strings.Contains(errStr, "Unknown Topic Or Partition")
 }
 
 // Close closes all writers.

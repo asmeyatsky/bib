@@ -304,6 +304,21 @@ jobs:
           echo "=== Ledger Service Logs ==="
           docker compose logs --tail=50 ledger-service
           exit 1
+      - name: Functional readiness probe
+        run: |
+          echo "Verifying full stack is functionally ready..."
+          for i in {1..10}; do
+            status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
+              -X POST http://localhost:8080/api/v1/identity/verifications \
+              -H 'Content-Type: application/json' \
+              -d '{"type":"email","contact":"readiness@test.com"}' || true)
+            echo "Readiness probe attempt $i: HTTP $status"
+            if [ "$status" = "200" ] || [ "$status" = "201" ] || [ "$status" = "400" ] || [ "$status" = "401" ] || [ "$status" = "409" ]; then
+              echo "Stack is functionally ready (got a real response)."
+              break
+            fi
+            sleep 3
+          done
       - name: Run E2E tests
         run: make test-e2e
         env:

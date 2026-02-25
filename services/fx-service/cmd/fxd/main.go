@@ -15,10 +15,12 @@ import (
 	"github.com/bibbank/bib/pkg/postgres"
 
 	"github.com/bibbank/bib/services/fx-service/internal/application/usecase"
+	"github.com/bibbank/bib/services/fx-service/internal/domain/port"
 	"github.com/bibbank/bib/services/fx-service/internal/domain/service"
 	"github.com/bibbank/bib/services/fx-service/internal/infrastructure/config"
 	infraKafka "github.com/bibbank/bib/services/fx-service/internal/infrastructure/kafka"
 	infraPostgres "github.com/bibbank/bib/services/fx-service/internal/infrastructure/postgres"
+	"github.com/bibbank/bib/services/fx-service/internal/infrastructure/provider"
 	grpcPresentation "github.com/bibbank/bib/services/fx-service/internal/presentation/grpc"
 	"github.com/bibbank/bib/services/fx-service/internal/presentation/rest"
 )
@@ -91,12 +93,17 @@ func run() error {
 	// Domain services.
 	revalEngine := service.NewRevaluationEngine()
 
+	// Rate provider: use static rates when FX_RATE_PROVIDER=static (for dev/CI),
+	// otherwise nil (production should wire an HTTP-based external API provider).
+	var rateProvider port.RateProvider
+	if os.Getenv("FX_RATE_PROVIDER") == "static" {
+		rateProvider = provider.NewStaticRateProvider()
+		logger.Info("using static rate provider")
+	}
+
 	// Use cases.
-	// Note: RateProvider is nil here -- in production, wire in an HTTP-based
-	// provider that calls an external FX API. The use case gracefully handles
-	// nil by returning an error when the repo has no rate.
-	getExchangeRate := usecase.NewGetExchangeRate(rateRepo, nil, publisher)
-	convertAmount := usecase.NewConvertAmount(rateRepo, nil)
+	getExchangeRate := usecase.NewGetExchangeRate(rateRepo, rateProvider, publisher)
+	convertAmount := usecase.NewConvertAmount(rateRepo, rateProvider)
 	revaluate := usecase.NewRevaluate(rateRepo, publisher, revalEngine)
 
 	// JWT service for gRPC auth (validation-only: public key preferred, secret as fallback).

@@ -186,6 +186,7 @@ services:
       LOG_LEVEL: debug
       LOG_FORMAT: json
       JWT_SECRET: ${JWT_SECRET:-test-e2e-secret}
+      FX_RATE_PROVIDER: static
     depends_on:
       postgres:
         condition: service_healthy
