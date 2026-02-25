@@ -1,3 +1,8 @@
+# syntax=docker/dockerfile:1
+
+# -----------------------------------------------------------------------------
+# Build Stage
+# -----------------------------------------------------------------------------
 FROM golang:1.24-alpine AS builder
 
 RUN apk add --no-cache git ca-certificates
@@ -13,20 +18,20 @@ COPY services/lending-service/ services/lending-service/
 WORKDIR /build/services/lending-service
 
 ENV GOWORK=off
-RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /bin/lendingd ./cmd/lendingd
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath -o /bin/lendingd ./cmd/lendingd
 
-FROM alpine:3.20
-
-RUN apk add --no-cache ca-certificates tzdata wget && \
-    addgroup -S app && adduser -S app -G app
+# -----------------------------------------------------------------------------
+# Runtime Stage - Distroless
+# -----------------------------------------------------------------------------
+FROM gcr.io/distroless/static-debian12:nonroot
 
 WORKDIR /app
 
 COPY --from=builder /bin/lendingd /app/lendingd
 COPY --from=builder /build/services/lending-service/migrations /app/internal/infrastructure/postgres/migrations
-
-USER app
 
 EXPOSE 8087 9087
 

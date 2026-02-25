@@ -1,3 +1,8 @@
+# syntax=docker/dockerfile:1
+
+# -----------------------------------------------------------------------------
+# Build Stage
+# -----------------------------------------------------------------------------
 FROM golang:1.24-alpine AS builder
 
 RUN apk add --no-cache git ca-certificates
@@ -13,21 +18,21 @@ COPY services/fx-service/ services/fx-service/
 WORKDIR /build/services/fx-service
 
 ENV GOWORK=off
-RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /bin/fxd ./cmd/fxd
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath -o /bin/fxd ./cmd/fxd
 
-FROM alpine:3.20
-
-RUN apk add --no-cache ca-certificates tzdata wget
-RUN addgroup -S app && adduser -S app -G app
+# -----------------------------------------------------------------------------
+# Runtime Stage - Distroless
+# -----------------------------------------------------------------------------
+FROM gcr.io/distroless/static-debian12:nonroot
 
 WORKDIR /app
 
 COPY --from=builder /bin/fxd /app/fxd
 COPY --from=builder /build/services/fx-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
 
-USER app
-
 EXPOSE 8083 9083
 
-ENTRYPOINT ["fxd"]
+ENTRYPOINT ["/app/fxd"]

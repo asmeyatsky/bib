@@ -1,4 +1,8 @@
-# Build stage
+# syntax=docker/dockerfile:1
+
+# -----------------------------------------------------------------------------
+# Build Stage
+# -----------------------------------------------------------------------------
 FROM golang:1.24-alpine AS builder
 
 RUN apk add --no-cache git ca-certificates
@@ -14,29 +18,21 @@ COPY services/fraud-service/ services/fraud-service/
 WORKDIR /build/services/fraud-service
 
 ENV GOWORK=off
-RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /bin/fraudd ./cmd/fraudd
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath -o /bin/fraudd ./cmd/fraudd
 
-# Runtime stage
-FROM alpine:3.20
-
-RUN apk add --no-cache ca-certificates tzdata wget
-
-# Create non-root user.
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+# -----------------------------------------------------------------------------
+# Runtime Stage - Distroless
+# -----------------------------------------------------------------------------
+FROM gcr.io/distroless/static-debian12:nonroot
 
 WORKDIR /app
 
-# Copy binary from builder.
 COPY --from=builder /bin/fraudd /app/fraudd
-
-# Copy migrations.
 COPY --from=builder /build/services/fraud-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
 
-# Switch to non-root user.
-USER appuser
-
-# Expose gRPC and HTTP ports.
 EXPOSE 8088 9088
 
 ENTRYPOINT ["/app/fraudd"]

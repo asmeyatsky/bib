@@ -1,3 +1,8 @@
+# syntax=docker/dockerfile:1
+
+# -----------------------------------------------------------------------------
+# Build Stage
+# -----------------------------------------------------------------------------
 FROM golang:1.24-alpine AS builder
 
 RUN apk add --no-cache git ca-certificates
@@ -13,12 +18,15 @@ COPY services/payment-service/ services/payment-service/
 WORKDIR /build/services/payment-service
 
 ENV GOWORK=off
-RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/paymentd ./cmd/paymentd
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath -o /bin/paymentd ./cmd/paymentd
 
-FROM alpine:3.20
-
-RUN apk add --no-cache ca-certificates wget
+# -----------------------------------------------------------------------------
+# Runtime Stage - Distroless
+# -----------------------------------------------------------------------------
+FROM gcr.io/distroless/static-debian12:nonroot
 
 WORKDIR /app
 
@@ -27,4 +35,4 @@ COPY --from=builder /build/services/payment-service/internal/infrastructure/post
 
 EXPOSE 8086 9086
 
-ENTRYPOINT ["paymentd"]
+ENTRYPOINT ["/app/paymentd"]

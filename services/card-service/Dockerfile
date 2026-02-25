@@ -1,4 +1,8 @@
-# Build stage
+# syntax=docker/dockerfile:1
+
+# -----------------------------------------------------------------------------
+# Build Stage
+# -----------------------------------------------------------------------------
 FROM golang:1.24-alpine AS builder
 
 RUN apk add --no-cache git ca-certificates
@@ -14,23 +18,20 @@ COPY services/card-service/ services/card-service/
 WORKDIR /build/services/card-service
 
 ENV GOWORK=off
-RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /bin/cardd ./cmd/cardd
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath -o /bin/cardd ./cmd/cardd
 
-# Runtime stage
-FROM alpine:3.20
-
-RUN apk add --no-cache ca-certificates tzdata wget
-
-# Create non-root user.
-RUN adduser -D -g '' appuser
+# -----------------------------------------------------------------------------
+# Runtime Stage - Distroless
+# -----------------------------------------------------------------------------
+FROM gcr.io/distroless/static-debian12:nonroot
 
 WORKDIR /app
 
 COPY --from=builder /bin/cardd /app/cardd
 COPY --from=builder /build/services/card-service/internal/infrastructure/postgres/migrations /app/internal/infrastructure/postgres/migrations
-
-USER appuser
 
 EXPOSE 8089 9089
 

@@ -1,3 +1,8 @@
+# syntax=docker/dockerfile:1
+
+# -----------------------------------------------------------------------------
+# Build Stage
+# -----------------------------------------------------------------------------
 FROM golang:1.24-alpine AS builder
 
 RUN apk add --no-cache git ca-certificates
@@ -13,12 +18,15 @@ COPY services/deposit-service/ services/deposit-service/
 WORKDIR /build/services/deposit-service
 
 ENV GOWORK=off
-RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/depositd ./cmd/depositd
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath -o /bin/depositd ./cmd/depositd
 
-FROM alpine:3.20
-
-RUN apk add --no-cache ca-certificates wget
+# -----------------------------------------------------------------------------
+# Runtime Stage - Distroless
+# -----------------------------------------------------------------------------
+FROM gcr.io/distroless/static-debian12:nonroot
 
 WORKDIR /app
 
@@ -27,4 +35,4 @@ COPY --from=builder /build/services/deposit-service/internal/infrastructure/post
 
 EXPOSE 8084 9084
 
-ENTRYPOINT ["depositd"]
+ENTRYPOINT ["/app/depositd"]
