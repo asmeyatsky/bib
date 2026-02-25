@@ -42,10 +42,19 @@ func (uc *GetExchangeRate) Execute(ctx context.Context, req dto.GetExchangeRateR
 		return dto.ExchangeRateResponse{}, fmt.Errorf("invalid currency pair: %w", err)
 	}
 
-	// Try to load the rate from the repository.
+	// Try to load the cached rate from the repository.
 	existing, err := uc.rateRepo.FindByPair(ctx, req.TenantID, pair)
 	if err == nil && !existing.IsExpired(time.Now().UTC()) {
 		return toExchangeRateResponse(existing), nil
+	}
+
+	// Rate provider is not configured - return cached rate if available.
+	if uc.rateProvider == nil {
+		if err == nil && existing.ID() != [16]byte{} {
+			// Return stale rate with a warning.
+			return toExchangeRateResponse(existing), nil
+		}
+		return dto.ExchangeRateResponse{}, fmt.Errorf("rate provider not configured and no cached rate available")
 	}
 
 	// Rate not found or expired - fetch from external provider.
