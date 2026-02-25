@@ -125,8 +125,8 @@ func isTransientError(err error) bool {
 	}
 	errStr := err.Error()
 	// Kafka error codes: 5=Leader Not Available, 6=Not Leader For Partition, 9=Replica Not Available
-	return strings.Contains(errStr, "[5]") || 
-		strings.Contains(errStr, "[6]") || 
+	return strings.Contains(errStr, "[5]") ||
+		strings.Contains(errStr, "[6]") ||
 		strings.Contains(errStr, "[9]") ||
 		strings.Contains(errStr, "Leader Not Available") ||
 		strings.Contains(errStr, "Not Leader")
