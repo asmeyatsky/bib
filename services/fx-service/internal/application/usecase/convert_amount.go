@@ -39,7 +39,7 @@ func (uc *ConvertAmount) Execute(ctx context.Context, req dto.ConvertAmountReque
 		return dto.ConvertAmountResponse{}, fmt.Errorf("invalid currency pair: %w", err)
 	}
 
-	// Try to load the rate from the repository.
+	// Try to load the cached rate from the repository.
 	existing, err := uc.rateRepo.FindByPair(ctx, req.TenantID, pair)
 	if err == nil && !existing.IsExpired(time.Now().UTC()) {
 		converted := existing.Convert(req.Amount)
@@ -53,6 +53,11 @@ func (uc *ConvertAmount) Execute(ctx context.Context, req dto.ConvertAmountReque
 			Provider:        existing.Provider(),
 			EffectiveAt:     existing.EffectiveAt(),
 		}, nil
+	}
+
+	// Rate provider is not configured - return error if no cached rate.
+	if uc.rateProvider == nil {
+		return dto.ConvertAmountResponse{}, fmt.Errorf("rate provider not configured and no cached rate available")
 	}
 
 	// Fallback to external provider.
