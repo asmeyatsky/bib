@@ -277,8 +277,8 @@ func TestGetCard(t *testing.T) {
 		assert.Equal(t, "VIRTUAL", resp.CardType)
 		assert.Equal(t, "ACTIVE", resp.Status)
 		assert.Equal(t, "1234", resp.MaskedPan)
-		assert.Equal(t, "5000", resp.DailyLimit)
-		assert.Equal(t, "20000", resp.MonthlyLimit)
+		assert.Equal(t, "5000.00", resp.DailyLimit)
+		assert.Equal(t, "20000.00", resp.MonthlyLimit)
 	})
 
 	t.Run("not found returns Internal", func(t *testing.T) {

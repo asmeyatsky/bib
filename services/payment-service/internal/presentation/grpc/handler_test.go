@@ -333,7 +333,7 @@ func TestToPaymentOrderMsg(t *testing.T) {
 
 	assert.Equal(t, orderID.String(), msg.ID)
 	assert.Equal(t, tenantID.String(), msg.TenantID)
-	assert.Equal(t, "250", msg.Amount)
+	assert.Equal(t, "250.00", msg.Amount)
 	assert.Equal(t, "USD", msg.Currency)
 	assert.Equal(t, "ACH", msg.Rail)
 	assert.Equal(t, "INITIATED", msg.Status)
