@@ -265,15 +265,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build and start full stack
-        run: docker compose up -d --build --wait
+        run: docker compose up -d --build
         timeout-minutes: 25
       - name: Wait for all services to be healthy
         run: |
-          echo "Waiting for all services to be healthy..."
-          for i in {1..90}; do
+          echo "Waiting for all services to become healthy..."
+          for i in {1..120}; do
             healthy_count=0
             for port in 8081 8082 8083 8084 8085 8086 8087 8088 8089 8090 8080; do
-              if curl -sf http://localhost:$port/healthz > /dev/null 2>&1; then
+              if curl -sf --max-time 2 http://localhost:$port/healthz > /dev/null 2>&1; then
                 healthy_count=$((healthy_count + 1))
               fi
             done
@@ -282,11 +282,15 @@ jobs:
               echo "All services are healthy!"
               exit 0
             fi
-            sleep 5
+            sleep 3
           done
           echo "Services did not become healthy in time"
+          echo "=== Service Status ==="
           docker compose ps
-          docker compose logs --tail=50
+          echo "=== Gateway Logs ==="
+          docker compose logs --tail=50 gateway
+          echo "=== Ledger Service Logs ==="
+          docker compose logs --tail=50 ledger-service
           exit 1
       - name: Run E2E tests
         run: make test-e2e
@@ -295,7 +299,9 @@ jobs:
           JWT_SECRET: test-e2e-secret
       - name: Dump logs on failure
         if: failure()
-        run: docker compose logs --tail=100
+        run: |
+          echo "=== All Service Logs ==="
+          docker compose logs --tail=100
       - name: Cleanup
         if: always()
         run: docker compose down -v
