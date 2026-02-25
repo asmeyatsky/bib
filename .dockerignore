@@ -1,0 +1,22 @@
+# Build cache directories
+**/vendor/
+**/.git/
+**/.idea/
+**/*.md
+**/.DS_Store
+bin/
+tmp/
+coverage.out
+**/test/
+**/tests/
+**/*_test.go
+**/helm/
+.deploy/
+scripts/
+Makefile
+docker-compose*.yml
+.github/
+.golangci.yml
+go.work*
+!go.mod
+!go.sum

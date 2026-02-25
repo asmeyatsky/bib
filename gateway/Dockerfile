@@ -1,3 +1,8 @@
+# syntax=docker/dockerfile:1
+
+# -----------------------------------------------------------------------------
+# Build Stage
+# -----------------------------------------------------------------------------
 FROM golang:1.24-alpine AS builder
 
 RUN apk add --no-cache git ca-certificates
@@ -11,19 +16,21 @@ COPY gateway/ gateway/
 WORKDIR /build/gateway
 
 ENV GOWORK=off
-RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /bin/gatewayd ./cmd/gatewayd
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /bin/gatewayd ./cmd/gatewayd
 
-FROM alpine:3.20
-
-RUN apk add --no-cache ca-certificates tzdata wget
-RUN addgroup -S app && adduser -S app -G app
+# -----------------------------------------------------------------------------
+# Runtime Stage - Distroless
+# -----------------------------------------------------------------------------
+FROM gcr.io/distroless/static-debian12:nonroot
 
 WORKDIR /app
 
 COPY --from=builder /bin/gatewayd /app/gatewayd
 
-USER app
+USER nonroot
 
 EXPOSE 8080
 
