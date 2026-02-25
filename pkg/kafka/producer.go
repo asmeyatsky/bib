@@ -127,12 +127,13 @@ func (p *Producer) getOrCreateWriter(topic string) *kafkago.Writer {
 	}
 
 	w := &kafkago.Writer{
-		Addr:         kafkago.TCP(p.brokers...),
-		Topic:        topic,
-		Balancer:     &kafkago.LeastBytes{},
-		BatchTimeout: 10 * time.Millisecond,
-		RequiredAcks: kafkago.RequireAll,
-		Transport:    p.transport,
+		Addr:                   kafkago.TCP(p.brokers...),
+		Topic:                  topic,
+		Balancer:               &kafkago.LeastBytes{},
+		BatchTimeout:           10 * time.Millisecond,
+		RequiredAcks:           kafkago.RequireAll,
+		Transport:              p.transport,
+		AllowAutoTopicCreation: true,
 	}
 	p.writers[topic] = w
 	return w
