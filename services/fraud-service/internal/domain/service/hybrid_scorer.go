@@ -12,8 +12,8 @@ import (
 type HybridScorer struct {
 	rules    *RiskScorer
 	ml       port.MLModelClient
-	mlWeight float64
 	logger   *slog.Logger
+	mlWeight float64
 }
 
 // NewHybridScorer creates a HybridScorer with the given ML weight (0.0–1.0).

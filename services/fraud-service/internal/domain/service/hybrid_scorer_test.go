@@ -15,8 +15,8 @@ import (
 )
 
 type mockMLClient struct {
-	score float64
 	err   error
+	score float64
 }
 
 func (m *mockMLClient) Predict(_ context.Context, _ map[string]interface{}) (float64, error) {
