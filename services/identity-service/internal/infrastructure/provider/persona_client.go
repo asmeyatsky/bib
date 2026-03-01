@@ -18,9 +18,9 @@ var _ port.VerificationProvider = (*PersonaClient)(nil)
 
 // PersonaClient implements port.VerificationProvider using the Persona API.
 type PersonaClient struct {
+	client  *http.Client
 	apiKey  string
 	baseURL string
-	client  *http.Client
 }
 
 // NewPersonaClient creates a new Persona API client.
