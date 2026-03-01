@@ -14,14 +14,14 @@ import (
 type AssessTransaction struct {
 	repo      port.AssessmentRepository
 	publisher port.EventPublisher
-	scorer    *service.RiskScorer
+	scorer    service.Scorer
 }
 
 // NewAssessTransaction creates a new AssessTransaction use case.
 func NewAssessTransaction(
 	repo port.AssessmentRepository,
 	publisher port.EventPublisher,
-	scorer *service.RiskScorer,
+	scorer service.Scorer,
 ) *AssessTransaction {
 	return &AssessTransaction{
 		repo:      repo,

@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: bib
+  namespace: argocd
+spec:
+  description: Bank-in-a-Box microservices platform
+  sourceRepos:
+    - https://github.com/asmeyatsky/bib.git
+  destinations:
+    - namespace: bib-dev
+      server: https://kubernetes.default.svc
+    - namespace: bib-staging
+      server: https://kubernetes.default.svc
+    - namespace: bib-prod
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: "*"
+    - group: apps
+      kind: "*"
+    - group: batch
+      kind: "*"
+  orphanedResources:
+    warn: true

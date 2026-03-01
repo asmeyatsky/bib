@@ -18,6 +18,7 @@ import (
 	"github.com/bibbank/bib/services/fraud-service/internal/domain/service"
 	"github.com/bibbank/bib/services/fraud-service/internal/infrastructure/config"
 	"github.com/bibbank/bib/services/fraud-service/internal/infrastructure/kafka"
+	"github.com/bibbank/bib/services/fraud-service/internal/infrastructure/ml"
 	"github.com/bibbank/bib/services/fraud-service/internal/infrastructure/postgres"
 	grpcpresentation "github.com/bibbank/bib/services/fraud-service/internal/presentation/grpc"
 	"github.com/bibbank/bib/services/fraud-service/internal/presentation/rest"
@@ -101,8 +102,15 @@ func main() {
 	// Wire domain services.
 	riskScorer := service.NewRiskScorer()
 
+	var scorer service.Scorer = riskScorer
+	if getEnv("FRAUD_ML_ENABLED", "false") == "true" {
+		mlClient := ml.NewStubModelClient(logger)
+		scorer = service.NewHybridScorer(riskScorer, mlClient, 0.3, logger)
+		logger.Info("ML-enhanced hybrid scoring enabled")
+	}
+
 	// Wire use cases.
-	assessTransactionUC := usecase.NewAssessTransaction(assessmentRepo, eventPublisher, riskScorer)
+	assessTransactionUC := usecase.NewAssessTransaction(assessmentRepo, eventPublisher, scorer)
 	getAssessmentUC := usecase.NewGetAssessment(assessmentRepo)
 
 	// JWT service (validation-only: public key preferred, secret as fallback).

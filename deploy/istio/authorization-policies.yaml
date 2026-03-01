@@ -1,0 +1,63 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-gateway-to-all
+  namespace: bib-prod
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/bib-prod/sa/bib-gateway
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-payment-to-fraud
+  namespace: bib-prod
+spec:
+  selector:
+    matchLabels:
+      app: bib-fraud
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/bib-prod/sa/bib-payment
+              - cluster.local/ns/bib-prod/sa/bib-gateway
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-payment-to-ledger
+  namespace: bib-prod
+spec:
+  selector:
+    matchLabels:
+      app: bib-ledger
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/bib-prod/sa/bib-payment
+              - cluster.local/ns/bib-prod/sa/bib-gateway
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-payment-to-fx
+  namespace: bib-prod
+spec:
+  selector:
+    matchLabels:
+      app: bib-fx
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/bib-prod/sa/bib-payment
+              - cluster.local/ns/bib-prod/sa/bib-gateway

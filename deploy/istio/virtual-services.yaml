@@ -1,0 +1,60 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: bib-gateway
+  namespace: bib-prod
+spec:
+  hosts:
+    - bib-gateway.bib-prod.svc.cluster.local
+  http:
+    - route:
+        - destination:
+            host: bib-gateway.bib-prod.svc.cluster.local
+      timeout: 30s
+      retries:
+        attempts: 3
+        perTryTimeout: 10s
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,resource-exhausted
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: bib-services
+  namespace: bib-prod
+spec:
+  hosts:
+    - bib-ledger.bib-prod.svc.cluster.local
+    - bib-account.bib-prod.svc.cluster.local
+    - bib-payment.bib-prod.svc.cluster.local
+    - bib-fraud.bib-prod.svc.cluster.local
+    - bib-identity.bib-prod.svc.cluster.local
+    - bib-fx.bib-prod.svc.cluster.local
+    - bib-deposit.bib-prod.svc.cluster.local
+    - bib-card.bib-prod.svc.cluster.local
+    - bib-lending.bib-prod.svc.cluster.local
+    - bib-reporting.bib-prod.svc.cluster.local
+  http:
+    - route:
+        - destination:
+            host: bib-ledger.bib-prod.svc.cluster.local
+      match:
+        - headers:
+            x-service:
+              exact: ledger
+      timeout: 15s
+      retries:
+        attempts: 2
+        perTryTimeout: 5s
+        retryOn: connect-failure,refused-stream,unavailable
+    - route:
+        - destination:
+            host: bib-fraud.bib-prod.svc.cluster.local
+      match:
+        - headers:
+            x-service:
+              exact: fraud
+      timeout: 10s
+      retries:
+        attempts: 2
+        perTryTimeout: 3s
+        retryOn: connect-failure,refused-stream,unavailable

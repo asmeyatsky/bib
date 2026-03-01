@@ -15,6 +15,7 @@ import (
 	"github.com/bibbank/bib/pkg/observability"
 	pgpkg "github.com/bibbank/bib/pkg/postgres"
 	"github.com/bibbank/bib/services/identity-service/internal/application/usecase"
+	"github.com/bibbank/bib/services/identity-service/internal/domain/port"
 	"github.com/bibbank/bib/services/identity-service/internal/infrastructure/config"
 	"github.com/bibbank/bib/services/identity-service/internal/infrastructure/kafka"
 	"github.com/bibbank/bib/services/identity-service/internal/infrastructure/postgres"
@@ -92,7 +93,13 @@ func main() {
 
 	// Wire dependencies (DI via constructors)
 	verificationRepo := postgres.NewVerificationRepo(pool)
-	verificationProvider := provider.NewPersonaStub()
+	var verificationProvider port.VerificationProvider
+	if cfg.Persona.Enabled {
+		verificationProvider = provider.NewPersonaClient(cfg.Persona.APIKey, cfg.Persona.BaseURL)
+		logger.Info("using Persona API for identity verification")
+	} else {
+		verificationProvider = provider.NewPersonaStub()
+	}
 	publisher := kafka.NewPublisher(producer)
 
 	// Use cases

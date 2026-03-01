@@ -332,3 +332,39 @@ jobs:
       - name: Cleanup
         if: always()
         run: docker compose down -v
+
+  # ---------------------------------------------------------------------------
+  # Security Scanning - Independent, non-blocking
+  # ---------------------------------------------------------------------------
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [detect-changes, docker-build]
+    if: always() && needs.docker-build.result == 'success'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: |
+            **/go.sum
+            go.work.sum
+      - name: Install Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          exit-code: "0"
+          severity: CRITICAL,HIGH
+      - name: Install and run gosec
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          for dir in services/*/; do
+            echo "=== Scanning $dir ==="
+            (cd "$dir" && gosec ./...) || true
+          done
+          echo "=== Scanning gateway ==="
+          (cd gateway && gosec ./...) || true

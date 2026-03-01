@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: bib-services
+  namespace: argocd
+spec:
+  generators:
+    - matrix:
+        generators:
+          - list:
+              elements:
+                - service: bib-account
+                - service: bib-card
+                - service: bib-deposit
+                - service: bib-fraud
+                - service: bib-fx
+                - service: bib-gateway
+                - service: bib-identity
+                - service: bib-ledger
+                - service: bib-lending
+                - service: bib-payment
+                - service: bib-reporting
+          - list:
+              elements:
+                - env: dev
+                  namespace: bib-dev
+                  revision: main
+                - env: staging
+                  namespace: bib-staging
+                  revision: release
+                - env: prod
+                  namespace: bib-prod
+                  revision: release
+  template:
+    metadata:
+      name: "{{service}}-{{env}}"
+    spec:
+      project: bib
+      source:
+        repoURL: https://github.com/asmeyatsky/bib.git
+        targetRevision: "{{revision}}"
+        path: "deploy/charts/{{service}}"
+        helm:
+          valueFiles:
+            - values.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

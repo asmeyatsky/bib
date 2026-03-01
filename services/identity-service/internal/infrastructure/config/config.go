@@ -8,6 +8,7 @@ import (
 // Config holds all service configuration loaded from environment variables.
 type Config struct {
 	Telemetry TelemetryConfig
+	Persona   PersonaConfig
 	LogLevel  string
 	LogFormat string
 	Kafka     KafkaConfig
@@ -34,6 +35,12 @@ type KafkaConfig struct {
 type TelemetryConfig struct {
 	OTLPEndpoint string
 	ServiceName  string
+}
+
+type PersonaConfig struct {
+	APIKey  string
+	BaseURL string
+	Enabled bool
 }
 
 // Validate checks required configuration values.
@@ -64,6 +71,11 @@ func Load() Config {
 		Telemetry: TelemetryConfig{
 			OTLPEndpoint: getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317"),
 			ServiceName:  "identity-service",
+		},
+		Persona: PersonaConfig{
+			APIKey:  getEnv("PERSONA_API_KEY", ""),
+			BaseURL: getEnv("PERSONA_BASE_URL", "https://api.withpersona.com/api/v1"),
+			Enabled: getEnv("PERSONA_ENABLED", "false") == "true",
 		},
 		LogLevel:  getEnv("LOG_LEVEL", "info"),
 		LogFormat: getEnv("LOG_FORMAT", "json"),
